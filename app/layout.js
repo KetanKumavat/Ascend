@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "./../components/theme-provider";
 import Header from "./../components/header";
 import Footer from "./../components/footer";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const space = Space_Grotesk({ subsets: ["latin"] });
 
@@ -14,18 +15,20 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${space.className}`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${space.className}`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange>
+            <Header />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
