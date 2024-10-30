@@ -21,7 +21,7 @@ const customDarkTheme = {
     colorBackground: "#0d0d0d", // Darker background for contrast
     colorInputBackground: "#2a2a2a", // Softer dark gray
     colorInputText: "#f2f2f2",
-    colorButtonBackground: "#2f2f2f",
+    colorButtonBackground: "transparent", // Transparent button background
     colorButtonText: "#ffffff",
     colorButtonHoverBackground: "#3a3a3a",
     colorButtonHoverText: "#ffffff",
@@ -46,12 +46,13 @@ const customDarkTheme = {
       },
     },
     button: {
-      backgroundColor: "#2f2f2f",
+      // backgroundColor: "#2f2f2f",
       color: "#ffffff",
-      borderRadius: "6px",
-      padding: "10px 18px", // Add padding for a bolder look
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)", // Light shadow for button depth
+      // borderRadius: "6px",
+      padding: "15px 20px", // Add padding for a bolder look
+      // boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)", // Light shadow for button depth
       transition: "background-color 0.3s ease, transform 0.2s", // Smooth hover effects
+
       hover: {
         backgroundColor: "#3a3a3a",
         transform: "scale(1.03)", // Subtle zoom effect on hover
