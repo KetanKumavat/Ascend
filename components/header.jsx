@@ -12,9 +12,9 @@ import React from "react";
 
 export default function Header() {
   return (
-    <header className="flex justify-between items-center p-4 bg-neutral-400 sticky top-6 w-2/3 max-w-screen-lg min-w-fit mx-auto mt-6 rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
-      <Link href="/" className="flex gap-4">
-        <div className="absolute mt-2 top-1/3 left-2 transform -translate-x-1 -translate-y-1/2 w-36 h-20 scale-50  bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
+    <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-4 bg-neutral-400 fixed top-6 w-[min(768px,100%_-_2rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
+      <Link href="/" className="flex gap-2">
+        <div className="absolute mt-4 top-1/3 left-2 transform -translate-x-1 -translate-y-1/2 w-36 h-20 bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
         <ChartNoAxesCombined className="w-10 h-10 text-black dark:text-white cursor-pointer" />
         <h1 className="text-3xl mt-1 font-bold">
           <span className="text-lime-500">A</span>scend
