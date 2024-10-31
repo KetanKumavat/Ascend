@@ -1,25 +1,30 @@
-import React from "react";
+"use client";
+
 // import ModeToggle from "@/components/theme-toggler";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { ChartNoAxesCombined, PenBox } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UserMenu from "./ui/user-menu";
 import SignInBtn from "./ui/signin-btn";
 
-const Header = () => {
+import React from "react";
+
+export default function Header() {
   return (
-    <header className="flex justify-between items-center p-4 bg-neutral-100 dark:bg-neutral-800 w-full sticky top-0">
+    <header className="flex justify-between items-center p-4 bg-neutral-400 sticky top-6 w-2/3 max-w-screen-lg min-w-fit mx-auto mt-6 rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
       <Link href="/" className="flex gap-4">
+        <div className="absolute mt-2 top-1/3 left-2 transform -translate-x-1 -translate-y-1/2 w-36 h-20 scale-50  bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
         <ChartNoAxesCombined className="w-10 h-10 text-black dark:text-white cursor-pointer" />
-        <h1 className="text-3xl mt-1 font-bold">Ascend</h1>
-        {/* <p>Elevate your team's productivity with Ascend</p> */}
+        <h1 className="text-3xl mt-1 font-bold">
+          <span className="text-lime-500">A</span>scend
+        </h1>
       </Link>
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-center items-center">
         <Link href={"/project/create"}>
           <Button
             variant="default"
-            className="px-4 py-6 h-10 text-md font-semibold rounded-full flex items-center gap-2 mt-3">
+            className="px-4 py-6 h-10 text-md font-medium rounded-full items-center gap-2  hidden md:flex bg-white text-black hover:bg-neutral-300">
             <PenBox size={20} className="font-bold" />
             <span className="text-md font-bold ">Create Project</span>
           </Button>
@@ -34,6 +39,4 @@ const Header = () => {
       {/* <ModeToggle /> */}
     </header>
   );
-};
-
-export default Header;
+}

@@ -5,6 +5,7 @@ import Header from "./../components/header";
 import Footer from "./../components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
+import { BackgroundBeamsWithCollision } from "@/components/ui/aurora";
 const space = Space_Grotesk({ subsets: ["latin"] });
 
 export const metadata = {
@@ -78,9 +79,11 @@ export default function RootLayout({ children }) {
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange>
-            <Header />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
+            <div className="flex flex-col min-h-screen bg-black/90">
+              <Header />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </div>
           </ThemeProvider>
         </body>
       </html>

@@ -7,7 +7,7 @@ import React from "react";
 const UserMenu = () => {
   return (
     <UserButton
-      className="mt-2 focus-visible:border-none focus:outline-none focus:ring-0"
+      className="mt-1 focus-visible:border-none focus:outline-none focus:ring-0"
       appearance={{
         elements: {
           avatarBox: "w-10 h-10",
