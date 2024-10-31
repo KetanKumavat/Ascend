@@ -16,7 +16,7 @@ export default function Header() {
       <Link href="/" className="flex gap-4">
         <div className="absolute mt-2 top-1/3 left-2 transform -translate-x-1 -translate-y-1/2 w-36 h-20 scale-50  bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
         <ChartNoAxesCombined className="w-10 h-10 text-black dark:text-white cursor-pointer" />
-        <h1 className="text-3xl mt-1 font-extrabold">
+        <h1 className="text-3xl mt-1 font-bold">
           <span className="text-lime-500">A</span>scend
         </h1>
       </Link>
