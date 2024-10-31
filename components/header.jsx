@@ -1,5 +1,3 @@
-"use client";
-
 // import ModeToggle from "@/components/theme-toggler";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
@@ -9,8 +7,10 @@ import UserMenu from "./ui/user-menu";
 import SignInBtn from "./ui/signin-btn";
 
 import React from "react";
+import { checkUser } from "@/lib/checkUser";
 
-export default function Header() {
+const Header = async () => {
+  await checkUser();
   return (
     <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-4 bg-neutral-400 fixed top-6 w-[min(768px,100%_-_2rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
       <Link href="/" className="flex gap-2">
@@ -39,4 +39,6 @@ export default function Header() {
       {/* <ModeToggle /> */}
     </header>
   );
-}
+};
+
+export default Header;

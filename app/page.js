@@ -46,9 +46,11 @@ const Home = () => {
             <Button className="px-8 h-14 font-bold rounded-full text-lg bg-white/90 hover:bg-white/70 transition-all duration-300 hover:scale-105">
               Learn More
             </Button>
-            <Button className="px-8 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-300 hover:scale-105">
-              Get Started!
-            </Button>
+            <Link href="/onboarding">
+              <Button className="px-8 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-300 hover:scale-105">
+                Get Started!
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -89,7 +91,7 @@ const Home = () => {
             Join thousands of teams already using Ascend to streamline their
             projects and boost productivity.
           </p>
-          <Link href="/team-onboarding">
+          <Link href="/onboarding">
             <Button
               size="lg"
               className="animate-bounce font-semibold bg-lime-500 text-black hover:bg-lime-600 transition-all">

@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  clerkUserId   String    @unique
+  email         String    @unique
+  name          String?
+  imageUrl      String?
+  createdIssues Issue[]   @relation("Reporter")
+  assignedIssues Issue[]  @relation("Assignee")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Project {
+  id             String   @id @default(cuid())
+  name           String
+  key            String
+  description    String?
+  organizationId String
+  sprints        Sprint[]
+  issues         Issue[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, key])
+}
+
+model Sprint {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  startDate DateTime
+  endDate   DateTime
+  status    SprintStatus @default(PLANNED)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  issues    Issue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Issue {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      IssueStatus
+  order       Int
+  priority    IssuePriority
+  assignee    User?      @relation("Assignee", fields: [assigneeId], references: [id])
+  assigneeId  String?
+  reporter    User       @relation("Reporter", fields: [reporterId], references: [id])
+  reporterId  String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  sprint      Sprint?    @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  sprintId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status, order])
+}
+
+enum SprintStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+}
+
+enum IssueStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum IssuePriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
