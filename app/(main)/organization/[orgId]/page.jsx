@@ -4,8 +4,8 @@ import { getOrganization } from "@/actions/organization";
 import OrgSwitcher from "@/components/org-switcher";
 
 export default async function OrganizationPage({ params }) {
-  const { orgId } = params;
-  const { userId } = auth();
+  const { orgId } = await params;
+  const { userId } = await auth();
 
   if (!userId) {
     redirect("/sign-in");

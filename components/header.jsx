@@ -24,9 +24,11 @@ const Header = async () => {
         <Link href={"/project/create"}>
           <Button
             variant="default"
-            className="px-4 py-6 h-10 text-md font-medium rounded-full items-center gap-2  hidden md:flex bg-white text-black hover:bg-neutral-300">
+            className="px-4 py-6 h-10 text-md font-medium rounded-full items-center gap-2 md:flex bg-white text-black hover:bg-neutral-300">
             <PenBox size={20} className="font-bold" />
-            <span className="text-md font-bold ">Create Project</span>
+            <span className="text-md font-bold hidden md:block">
+              Create Project
+            </span>
           </Button>
         </Link>
         <SignedIn>

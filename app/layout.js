@@ -6,6 +6,7 @@ import Footer from "./../components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { BackgroundBeamsWithCollision } from "@/components/ui/aurora";
+import { Toaster } from "@/components/ui/sonner";
 // const space = Space_Grotesk({ subsets: ["latin"] });
 const inter = Inter({ subsets: ["latin"] });
 
@@ -84,6 +85,7 @@ export default function RootLayout({ children }) {
               <BackgroundBeamsWithCollision>
                 {children}
               </BackgroundBeamsWithCollision>
+              <Toaster richColors />
               <Footer />
             </div>
           </ThemeProvider>

@@ -43,9 +43,11 @@ const Home = () => {
             things done together, effortlessly!
           </p>
           <div className="mt-12 flex gap-4 justify-center">
-            <Button className="px-8 h-14 font-bold rounded-full text-lg bg-white/90 hover:bg-white/70 transition-all duration-300 hover:scale-105">
-              Learn More
-            </Button>
+            <Link href="#features">
+              <Button className="px-8 h-14 font-bold rounded-full text-lg bg-white/90 hover:bg-white/70 transition-all duration-300 hover:scale-105">
+                Learn More
+              </Button>
+            </Link>
             <Link href="/onboarding">
               <Button className="px-8 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-300 hover:scale-105">
                 Get Started!
@@ -55,7 +57,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="relative py-24">
+      <section className="relative py-24" id="features">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-5xl md:text-6xl font-bold text-center mb-20">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600">
