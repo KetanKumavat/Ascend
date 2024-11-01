@@ -85,7 +85,7 @@ export default function RootLayout({ children }) {
               <BackgroundBeamsWithCollision>
                 {children}
               </BackgroundBeamsWithCollision>
-              <Toaster richColors />
+              <Toaster />
               <Footer />
             </div>
           </ThemeProvider>

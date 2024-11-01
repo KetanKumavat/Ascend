@@ -163,7 +163,7 @@ export async function getOrganization(slug) {
 
 export async function getProjects(orgId) {
   // console.log("orgId", orgId);
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) {
     throw new Error("Unauthorized");
   }
