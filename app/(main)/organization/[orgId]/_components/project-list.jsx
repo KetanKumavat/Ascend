@@ -59,7 +59,7 @@ const ProjectList = ({ orgId }) => {
       {projects.map((project) => (
         <div
           key={project.id}
-          className="bg-neutral-900/100 shadow-neutral-800 rounded-lg shadow-xl p-6">
+          className="bg-neutral-800 shadow-neutral-800 rounded-lg shadow-xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-3xl font-bold text-white">{project.name}</h2>
             <DeleteProject

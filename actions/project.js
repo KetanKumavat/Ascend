@@ -44,7 +44,7 @@ export async function createProject(data) {
 }
 
 export async function getProject(projectId) {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -94,6 +94,11 @@ export async function deleteProject(projectId) {
 
   const project = await db.project.findUnique({
     where: { id: projectId },
+    include: {
+      sprints: {
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
 
   if (!project || project.organizationId !== orgId) {

@@ -49,7 +49,7 @@ const Home = () => {
               </Button>
             </Link>
             <Link href="/onboarding">
-              <Button className="px-8 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-1000 hover:scale-105 animate-pulse">
+              <Button className="px-8 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-1000 hover:scale-105">
                 Get Started!
               </Button>
             </Link>

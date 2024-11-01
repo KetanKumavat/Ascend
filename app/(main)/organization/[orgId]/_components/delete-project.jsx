@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { deleteProject } from "@/actions/project";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 const DeleteProject = ({ projectId, onDelete }) => {
   const { membership } = useOrganization();
-  const router = useRouter();
 
   const isAdmin = membership && membership.role === "org:admin";
 
