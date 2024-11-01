@@ -16,7 +16,11 @@ const Onboarding = () => {
 
   return (
     <div className="flex justify-center items-center pt-14">
-      <OrganizationList hidePersonal />
+      <OrganizationList
+        hidePersonal
+        afterLeaveOrganizationUrl="/organization/:slug"
+        afterSelectOrganizationUrl={`/organization/:slug`}
+      />
     </div>
   );
 };

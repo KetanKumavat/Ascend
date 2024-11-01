@@ -30,7 +30,7 @@ const Home = () => {
     <div className="relative w-full min-h-screen">
       <section className="z-10 px-4 mt-2 min-h-svh grid place-content-center">
         <div className="max-w-4xl mx-auto text-center relative">
-          <div className="absolute mt-32 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-500 opacity-20 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute mt-32 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-500 md:opacity-20 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight">
             Elevate your team&apos;s productivity with{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700 font-extrabold block mt-2 text-6xl md:text-8xl lg:text-9xl">

@@ -79,7 +79,7 @@ export default function RootLayout({ children }) {
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange>
-            <div className="min-h-screen z-0 bg-black/70">
+            <div className="min-h-screen z-0 dark:bg-black/70">
               <Header />
               <BackgroundBeamsWithCollision>
                 {children}
