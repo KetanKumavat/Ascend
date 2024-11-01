@@ -162,6 +162,7 @@ export async function getOrganization(slug) {
 }
 
 export async function getProjects(orgId) {
+  // console.log("orgId", orgId);
   const { userId } = auth();
   if (!userId) {
     throw new Error("Unauthorized");
@@ -180,6 +181,7 @@ export async function getProjects(orgId) {
     orderBy: { createdAt: "desc" },
   });
 
+  // console.log("projects", projects);
   return projects;
 }
 
