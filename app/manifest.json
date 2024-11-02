@@ -1,0 +1,12 @@
+{
+  "id": "3",
+  "name": "Ascend - Your Project Management Tool",
+  "short_name": "Ascend",
+  "description": "Ascend — a collaborative project management app designed to streamline workflows, enhance communication, and drive success. Get things done together, effortlessly!",
+  "icons": [],
+  "theme_color": "#84cc16",
+  "background_color": "rgb(0 0 0 / 0.7)",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
