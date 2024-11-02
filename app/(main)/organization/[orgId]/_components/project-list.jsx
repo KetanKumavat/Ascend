@@ -39,16 +39,16 @@ const ProjectList = ({ orgId }) => {
     );
   }
 
-  if (projects.length === 0) {
+  if (projects?.length === 0) {
     return (
       <div className="flex flex-col justify-center items-center h-96">
         <p className="min-h-fit text-2xl font-semibold flex justify-center items-center">
           No projects found.
         </p>
-        <Link
-          className="underline underline-offset-2 text-blue-200 mt-4"
-          href="/project/create">
-          Create New.
+        <Link href="/project/create">
+          <Button className="text-black mt-4 font-bold text-lg">
+            Create New
+          </Button>
         </Link>
       </div>
     );
@@ -56,10 +56,10 @@ const ProjectList = ({ orgId }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto">
-      {projects.map((project) => (
+      {projects?.map((project) => (
         <div
           key={project.id}
-          className="bg-neutral-800 shadow-neutral-800 rounded-lg shadow-xl p-6">
+          className="bg-gradient-to-b from-gray-900/20 via-neutral-700/40 to-neutral-800 backdrop-blur-xl border-2 border-neutral-800 shadow-neutral-800/60 rounded-lg shadow-xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-3xl font-bold text-white">{project.name}</h2>
             <DeleteProject
@@ -70,11 +70,13 @@ const ProjectList = ({ orgId }) => {
           <p className="text-xl text-neutral-400 mb-4 break-words overflow-hidden">
             {project.description}
           </p>
-          <Link href={`/project/${project.id}`}>
-            <Button className="text-black font-semibold text-md bg-lime-500 hover:bg-lime-600 transition-all duration-300 mt-10">
-              View Project
-            </Button>
-          </Link>
+          <div className="flex justify-center mt-10">
+            <Link href={`/project/${project.id}`}>
+              <Button className="text-black font-bold text-md bg-lime-500 hover:bg-lime-600 transition-all duration-300">
+                View Project
+              </Button>
+            </Link>
+          </div>
         </div>
       ))}
     </div>

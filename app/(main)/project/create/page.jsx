@@ -82,13 +82,13 @@ const CreateProject = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 mt-12 text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 via-neutral-500 to-neutral-400">
+      <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 md:mt-12 mt-32 text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 to-neutral-400">
         Create Project
       </h1>
       {errors.form && <div className="text-red-500 mb-4">{errors.form}</div>}
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl mx-auto bg-neutral-900 p-12 rounded-lg shadow-lg">
+        className="max-w-2xl mx-auto bg-neutral-800/50 border-2 border-gray-900/50 shadow-neutral-700/40 p-12 rounded-lg shadow-lg">
         <div className="mb-6">
           <label
             htmlFor="name"

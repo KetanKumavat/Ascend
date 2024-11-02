@@ -1,7 +1,20 @@
 "use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Layout, Calendar, BarChart, ArrowRight } from "lucide-react";
+import {
+  Layout,
+  Calendar,
+  BarChart,
+  ArrowRight,
+  CheckCircle,
+  UserPlus,
+  Briefcase,
+  Users,
+  ClipboardList,
+  BarChart2,
+  FileText,
+  CheckSquare,
+} from "lucide-react";
 import Link from "next/link";
 
 const features = [
@@ -25,15 +38,27 @@ const features = [
   },
 ];
 
+const processSteps = [
+  { title: "Sign Up / Log In", icon: UserPlus },
+  { title: "Create or Select Organization", icon: Briefcase },
+  { title: "Create a Project", icon: ClipboardList },
+  { title: "Add Team Members", icon: Users },
+  { title: "Add Tasks or Issues", icon: CheckCircle },
+  { title: "Organize Tasks into Sprints", icon: Calendar },
+  { title: "Track Progress on Sprint Board", icon: BarChart2 },
+  { title: "Generate Reports", icon: FileText },
+  { title: "Project Completion", icon: CheckSquare },
+];
+
 const Home = () => {
   return (
     <div className="relative w-full min-h-screen">
       <section className="z-10 px-4 mt-2 min-h-svh grid place-content-center">
         <div className="max-w-4xl mx-auto text-center relative">
           <div className="absolute mt-32 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-500 md:opacity-20 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight">
+          <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight">
             Elevate your team&apos;s productivity with{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700 font-extrabold block mt-2 text-6xl md:text-8xl lg:text-9xl">
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700 font-extrabold block mt-2 text-5xl md:text-8xl lg:text-9xl">
               Ascend
             </span>
           </h1>
@@ -43,17 +68,108 @@ const Home = () => {
             things done together, effortlessly!
           </p>
           <div className="mt-12 flex gap-4 justify-center">
-            <Link href="#features">
-              <Button className="px-8 h-14 font-bold rounded-full text-lg bg-white/90 hover:bg-white/70 transition-all duration-300 hover:scale-105">
+            <Link href="#how-it-works">
+              <Button className="md:px-8 px-6 h-14 font-bold rounded-full text-lg bg-white/90 hover:bg-white/70 transition-all duration-300 hover:scale-105">
                 Learn More
               </Button>
             </Link>
             <Link href="/onboarding">
-              <Button className="px-8 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-1000 hover:scale-105">
+              <Button className="md:px-8 px-6 h-14 font-bold rounded-full text-lg bg-lime-500 text-black hover:bg-lime-600 transition-all duration-1000 hover:scale-105">
                 Get Started!
               </Button>
             </Link>
+            {/* <div className="bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-neutral-300 z-10">
+              <div className="mouse-scroll mb-2">
+                <div className="mouse">
+                  <div className="mouse-wheel"></div>
+                </div>
+              </div>
+              <p className="text-sm">Scroll for more</p>
+            </div> */}
           </div>
+        </div>
+
+        {/* <style jsx>{`
+          .mouse-scroll {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 35px;
+            height: 55px;
+            border: 2px solid #aaa;
+            border-radius: 25px;
+            position: relative;
+            animation: fade-in 2s ease infinite;
+            z-index: 100;
+          }
+
+          .mouse {
+            width: 12px;
+            height: 24px;
+            border: 2px solid #aaa;
+            border-radius: 20px;
+            position: relative;
+          }
+
+          .mouse-wheel {
+            width: 4px;
+            height: 4px;
+            background: #aaa;
+            border-radius: 50%;
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll-wheel 1.5s ease infinite;
+          }
+
+          @keyframes scroll-wheel {
+            0%,
+            100% {
+              top: 6px;
+              opacity: 1;
+            }
+            50% {
+              top: 14px;
+              opacity: 0;
+            }
+          }
+
+          @keyframes fade-in {
+            0%,
+            100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.5;
+            }
+          }
+        `}</style> */}
+      </section>
+
+      <section
+        className="relative py-20 w-full mx-auto text-center bg-black/70 backdrop-blur-sm"
+        id="how-it-works">
+        <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 mb-16">
+          How It Works
+        </h2>
+        <div className="relative mx-auto flex flex-col items-center max-w-xl md:max-w-3xl">
+          <div className="w-1 h-full bg-lime-500/90 absolute left-1/2 transform -translate-x-1/2"></div>
+
+          {processSteps.map((step, index) => (
+            <div
+              key={index}
+              className={`flex items-center mb-8 w-full ${
+                index % 2 === 0 ? "flex-row" : "flex-row-reverse"
+              }`}>
+              <div className="w-1/2 p-2 flex justify-center">
+                <div className="bg-neutral-800/50 text-white rounded-lg p-4 shadow-lg flex items-center gap-4 border-2 border-neutral-900">
+                  <step.icon className="text-lime-500 w-8 h-8" />
+                  <h3 className="text-lg font-semibold">{step.title}</h3>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
