@@ -106,7 +106,7 @@ export default function IssueCreationDrawer({
             <Input
               id="title"
               {...register("title")}
-              className="bg-gray-100/10 text-gray-50"
+              className="text-gray-50"
             />
             {errors.title && (
               <p className="text-red-500 text-sm mt-1">
@@ -212,7 +212,7 @@ export default function IssueCreationDrawer({
           <Button
             type="submit"
             disabled={createIssueLoading}
-            className="w-full bg-lime-400 text-gray-900 hover:bg-lime-500">
+            className="w-full bg-lime-400 text-black font-semibold hover:bg-lime-500">
             {createIssueLoading ? "Creating..." : "Create Issue"}
           </Button>
         </form>

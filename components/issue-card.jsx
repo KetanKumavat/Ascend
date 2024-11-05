@@ -16,9 +16,9 @@ import { useRouter } from "next/navigation";
 
 const priorityColor = {
   LOW: "border-green-600",
-  MEDIUM: "border-yellow-300",
-  HIGH: "border-orange-400",
-  URGENT: "border-red-400",
+  MEDIUM: "border-yellow-400",
+  HIGH: "border-orange-500",
+  URGENT: "border-red-600",
 };
 
 export default function IssueCard({
@@ -47,7 +47,7 @@ export default function IssueCard({
   return (
     <>
       <Card
-        className="cursor-pointer hover:shadow-md transition-shadow shadow-md shadow-neutral-800 bg-slate-800/20"
+        className="hover:shadow-md transition-shadow shadow-md shadow-neutral-800 bg-slate-900/20"
         onClick={() => setIsDialogOpen(true)}>
         <CardHeader
           className={`border-t-2 ${priorityColor[issue.priority]} rounded-lg`}>

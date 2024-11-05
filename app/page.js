@@ -56,13 +56,13 @@ const Home = () => {
       <section className="z-10 px-4 mt-2 min-h-svh grid place-content-center">
         <div className="max-w-4xl mx-auto text-center relative">
           <div className="absolute mt-32 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-500 md:opacity-20 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
-          <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight">
+          <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight cursor-default">
             Elevate your team&apos;s productivity with{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700 font-extrabold block mt-2 text-5xl md:text-8xl lg:text-9xl">
               Ascend
             </span>
           </h1>
-          <p className="mt-8 text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto">
+          <p className="mt-8 text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto cursor-default">
             Ascend — a collaborative project management app designed to
             streamline workflows, enhance communication, and drive success. Get
             things done together, effortlessly!
@@ -154,7 +154,7 @@ const Home = () => {
           How It Works
         </h2>
         <div className="relative mx-auto flex flex-col items-center max-w-xl md:max-w-3xl">
-          <div className="w-1 h-full bg-lime-500/90 absolute left-1/2 transform -translate-x-1/2"></div>
+          <div className="w-1 h-full bg-gradient-to-b from-lime-400 via-lime-600 to-lime-800 absolute left-1/2 transform -translate-x-1/2"></div>
 
           {processSteps.map((step, index) => (
             <div
@@ -176,7 +176,7 @@ const Home = () => {
       <section className="relative py-24" id="features">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-5xl md:text-6xl font-bold text-center mb-20">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 cursor-default">
               Key Features
             </span>
           </h2>
@@ -184,7 +184,7 @@ const Home = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8 hover:scale-105 hover:border-lime-500 transition-all duration-300 group">
+                className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8 hover:scale-105 hover:border-lime-500 transition-all duration-300 group cursor-default">
                 <div className="flex items-center gap-4 mb-6">
                   <feature.icon className="h-10 w-10 text-lime-500 group-hover:text-lime-400" />
                   <h3 className="text-xl font-semibold text-white">
@@ -202,10 +202,10 @@ const Home = () => {
 
       <section className="py-20 w-full mx-auto text-center px-5 bg-black/70 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 mb-6">
+          <h3 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 mb-6 cursor-default">
             Ready to Transform Your Workflow?
           </h3>
-          <p className="text-lg md:text-xl text-neutral-300 mb-12">
+          <p className="text-lg md:text-xl text-neutral-300 mb-12 cursor-default">
             Join thousands of teams already using Ascend to streamline their
             projects and boost productivity.
           </p>

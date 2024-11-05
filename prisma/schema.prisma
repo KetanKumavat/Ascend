@@ -15,6 +15,7 @@ model User {
   imageUrl      String?
   createdIssues Issue[]   @relation("Reporter")
   assignedIssues Issue[]  @relation("Assignee")
+  messages      Message[]  @relation("UserMessages")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -27,6 +28,7 @@ model Project {
   organizationId String
   sprints        Sprint[]
   issues         Issue[]
+  messages       Message[] @relation("ProjectMessages")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -65,6 +67,16 @@ model Issue {
   updatedAt   DateTime   @updatedAt
 
   @@index([status, order])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  createdAt  DateTime @default(now())
+  projectId  String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], name: "UserMessages")
+  project    Project  @relation(fields: [projectId], references: [id], name: "ProjectMessages")
 }
 
 enum SprintStatus {
