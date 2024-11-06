@@ -59,7 +59,7 @@ const ProjectList = ({ orgId }) => {
       {projects?.map((project) => (
         <div
           key={project.id}
-          className="bg-gradient-to-b from-gray-900/20 via-neutral-700/40 to-neutral-800 backdrop-blur-xl border-2 border-neutral-800 shadow-neutral-800/60 rounded-lg shadow-xl p-6">
+          className="bg-gradient-to-b from-zinc-900/50 via-neutral-800/40 to-neutral-900 backdrop-blur-xl border-2 border-neutral-800/50 hover:shadow-neutral-800/20 rounded-lg shadow-neutral-800 shadow-lg p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-3xl font-bold text-white">{project.name}</h2>
             <DeleteProject

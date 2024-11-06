@@ -33,6 +33,7 @@ export async function createProject(data) {
         name: data.name,
         key: data.key,
         description: data.description,
+        repoName: data.repoName,
         organizationId: orgId,
       },
     });

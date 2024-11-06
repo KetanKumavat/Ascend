@@ -125,7 +125,7 @@ export default function SprintBoard({ sprints, projectId, orgId }) {
   if (issuesError) return <div>Error loading issues</div>;
 
   return (
-    <div className="flex flex-col p-6 bg-netral-300 rounded-lg">
+    <div className="flex flex-col p-6 rounded-lg">
       <SprintManager
         sprint={currentSprint}
         setSprint={setCurrentSprint}

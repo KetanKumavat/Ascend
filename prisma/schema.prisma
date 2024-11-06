@@ -13,6 +13,7 @@ model User {
   email         String    @unique
   name          String?
   imageUrl      String?
+  githubUsername String?
   createdIssues Issue[]   @relation("Reporter")
   assignedIssues Issue[]  @relation("Assignee")
   messages      Message[]  @relation("UserMessages")
@@ -26,6 +27,7 @@ model Project {
   key            String
   description    String?
   organizationId String
+  repoName       String?
   sprints        Sprint[]
   issues         Issue[]
   messages       Message[] @relation("ProjectMessages")

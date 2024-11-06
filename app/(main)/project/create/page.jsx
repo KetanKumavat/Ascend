@@ -19,6 +19,7 @@ const CreateProject = () => {
     name: "",
     description: "",
     key: "",
+    repoName: "",
   });
   const [errors, setErrors] = useState({});
   const router = useRouter();
@@ -144,6 +145,25 @@ const CreateProject = () => {
             required
           />
           {errors.key && <div className="text-red-500 mt-2">{errors.key}</div>}
+        </div>
+        <div className="mb-6">
+          <label
+            htmlFor="name"
+            className="block text-white text-lg font-semibold mb-2">
+            Github Repo Name <span className="text-sm ">(Optional)</span>
+          </label>
+          <input
+            type="text"
+            id="repoName"
+            name="repoName"
+            value={formData.repoName}
+            onChange={handleChange}
+            className="w-full px-6 py-3 border border-neutral-700 rounded-md bg-neutral-800 text-white focus:outline-none focus:border-lime-500"
+            placeholder="my-awesome-project"
+          />
+          {errors.repoName && (
+            <div className="text-red-500 mt-2">{errors.repoName}</div>
+          )}
         </div>
         <Button
           type="submit"

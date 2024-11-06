@@ -148,7 +148,7 @@ const Home = () => {
       </section>
 
       <section
-        className="relative py-20 w-full mx-auto text-center bg-black/70 backdrop-blur-sm"
+        className="relative py-20 w-full mx-auto text-center bg-black/70 backdrop-blur-sm z-0"
         id="how-it-works">
         <h2 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 mb-16">
           How It Works
@@ -173,7 +173,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="relative py-24" id="features">
+      <section className="relative py-24 z-50" id="features">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-5xl md:text-6xl font-bold text-center mb-20">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 cursor-default">
@@ -200,7 +200,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-20 w-full mx-auto text-center px-5 bg-black/70 backdrop-blur-sm">
+      <section className="py-20 w-full mx-auto text-center px-5 bg-black/70 backdrop-blur-sm z-50">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-lime-400 to-lime-600 mb-6 cursor-default">
             Ready to Transform Your Workflow?
