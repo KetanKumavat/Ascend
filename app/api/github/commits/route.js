@@ -17,7 +17,7 @@ export async function GET(request) {
     const todayDate = today.toISOString().split("T")[0];
     //since=${todayDate}T00:00:00Z&until=${todayDate}T23:59:59Z&
     const response = await fetch(
-      `https://api.github.com/repos/${username}/${repo}/commits?per_page=5`,
+      `https://api.github.com/repos/${username}/${repo}/commits?since=${todayDate}T00:00:00Z&until=${todayDate}T23:59:59Z&per_page=5`,
       {
         headers: {
           Accept: "application/vnd.github.v3+json",
