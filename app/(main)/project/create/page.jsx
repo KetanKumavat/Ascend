@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createProject } from "@/actions/project";
@@ -9,6 +16,7 @@ import { z } from "zod";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import OrgSwitcher from "@/components/org-switcher";
 import { toast } from "sonner";
+import { Info } from "lucide-react";
 
 const CreateProject = () => {
   const { isLoaded: isOrgLoaded, membership } = useOrganization();
@@ -83,7 +91,7 @@ const CreateProject = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 md:mt-12 mt-32 text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 to-neutral-400">
+      <h1 className="text-4xl md:text-5xl font-bold text-center mb-8 md:mt-[8%] mt-32 text-transparent bg-clip-text bg-gradient-to-r from-neutral-100 to-neutral-400">
         Create Project
       </h1>
       {errors.form && <div className="text-red-500 mb-4">{errors.form}</div>}
@@ -94,7 +102,7 @@ const CreateProject = () => {
           <label
             htmlFor="name"
             className="block text-white text-lg font-semibold mb-2">
-            Project Name
+            Project Name <span className=" text-base text-neutral-400">*</span>
           </label>
           <input
             type="text"
@@ -114,7 +122,7 @@ const CreateProject = () => {
           <label
             htmlFor="description"
             className="block text-white text-lg font-semibold mb-2">
-            Description
+            Description <span className=" text-base text-neutral-400">*</span>
           </label>
           <textarea
             id="description"
@@ -132,7 +140,7 @@ const CreateProject = () => {
           <label
             htmlFor="key"
             className="block text-white text-lg font-semibold mb-2">
-            Project Key
+            Project Key <span className=" text-base text-neutral-400">*</span>
           </label>
           <input
             type="text"
@@ -147,11 +155,26 @@ const CreateProject = () => {
           {errors.key && <div className="text-red-500 mt-2">{errors.key}</div>}
         </div>
         <div className="mb-6">
-          <label
-            htmlFor="name"
-            className="block text-white text-lg font-semibold mb-2">
-            Github Repo Name <span className="text-sm ">(Optional)</span>
-          </label>
+          <div className="flex justify-start items-center">
+            <label
+              htmlFor="repoName"
+              className="text-white text-lg font-semibold mb-2 flex items-center">
+              Github Repo Name
+              <TooltipProvider className="ml-2">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="ml-2 h-5 w-5 text-lime-500 cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="font-semibold">
+                      Repo name is required for further automated daily report
+                      generation.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </label>
+          </div>
           <input
             type="text"
             id="repoName"
@@ -159,7 +182,7 @@ const CreateProject = () => {
             value={formData.repoName}
             onChange={handleChange}
             className="w-full px-6 py-3 border border-neutral-700 rounded-md bg-neutral-800 text-white focus:outline-none focus:border-lime-500"
-            placeholder="my-awesome-project"
+            placeholder="https://github.com/ketankumavat/ascend"
           />
           {errors.repoName && (
             <div className="text-red-500 mt-2">{errors.repoName}</div>

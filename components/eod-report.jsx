@@ -3,12 +3,16 @@ import React, { useState, useEffect } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
+import { getUsernameFromRepoUrl } from "@/lib/getUsername";
 
-const EODReport = ({ username, repo }) => {
+const EODReport = ({ repoUrl }) => {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState("");
   const [commits, setCommits] = useState([]);
   const [commitReport, setCommitReport] = useState("");
+
+  const username = getUsernameFromRepoUrl(repoUrl);
+  const repo = new URL(repoUrl).pathname.split("/")[2];
 
   useEffect(() => {
     const fetchSummaryReport = async () => {

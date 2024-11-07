@@ -5,15 +5,16 @@ import SprintCreationForm from "../_components/create-sprint";
 import SprintBoard from "../_components/sprint-board";
 import TeamChat from "../_components/team-chat";
 import EODReport from "@/components/eod-report";
+import { db } from "@/lib/prisma";
 
 const page = async ({ params }) => {
   const { projectId } = await params;
   const project = await getProject(projectId);
-  const githubUsername = "ketankumavat";
-  const githubRepo = "ascend";
   if (!project) {
     return notFound();
   }
+
+  const repoUrl = project.repoName;
 
   return (
     <div className="container mx-auto min-h-screen mt-36 mb-24">
@@ -31,7 +32,7 @@ const page = async ({ params }) => {
             projectId={projectId}
             orgId={project.organizationId}
           />
-          <EODReport username={githubUsername} repo={githubRepo} />
+          <EODReport repoUrl={repoUrl} />
         </>
       ) : (
         <div>Create a Sprint from button above</div>
