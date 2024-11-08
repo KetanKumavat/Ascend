@@ -36,6 +36,12 @@ const features = [
       "Get quick insights on team progress with easy-to-understand reports and analytics.",
     icon: BarChart,
   },
+  {
+    title: "Automated Daily Reports",
+    description:
+      "Leverage AI to automatically generate end-of-day reports that summarize team progress, highlight key commits, and provide insights on the day's activities.",
+    icon: FileText,
+  },
 ];
 
 const processSteps = [
@@ -46,7 +52,7 @@ const processSteps = [
   { title: "Add Tasks or Issues", icon: CheckCircle },
   { title: "Organize Tasks into Sprints", icon: Calendar },
   { title: "Track Progress on Sprint Board", icon: BarChart2 },
-  { title: "Generate Reports", icon: FileText },
+  { title: "Get Automated Daily Reports", icon: FileText },
   { title: "Project Completion", icon: CheckSquare },
 ];
 
@@ -184,7 +190,9 @@ const Home = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8 hover:scale-105 hover:border-lime-500 transition-all duration-300 group cursor-default">
+                className={`bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8 hover:scale-105 hover:border-lime-500 transition-all duration-300 group cursor-default ${
+                  index === 3 ? "md:col-start-2 md:row-start-2" : ""
+                }`}>
                 <div className="flex items-center gap-4 mb-6">
                   <feature.icon className="h-10 w-10 text-lime-500 group-hover:text-lime-400" />
                   <h3 className="text-xl font-semibold text-white">
