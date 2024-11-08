@@ -4,18 +4,29 @@ import ClipLoader from "react-spinners/ClipLoader";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { getUsernameFromRepoUrl } from "@/lib/getUsername";
+import { updateProject } from "@/actions/project";
 
-const EODReport = ({ repoUrl }) => {
+const EODReport = ({ repoUrl, projectId }) => {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState("");
   const [commits, setCommits] = useState([]);
   const [commitReport, setCommitReport] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [newRepoUrl, setNewRepoUrl] = useState("");
 
-  const username = getUsernameFromRepoUrl(repoUrl);
-  const repo = new URL(repoUrl).pathname.split("/")[2];
+  const username = repoUrl ? getUsernameFromRepoUrl(repoUrl) : null;
+  const repo = repoUrl ? new URL(repoUrl).pathname.split("/")[2] : null;
 
   useEffect(() => {
+    if (!username || !repo) {
+      setLoading(false);
+      return;
+    }
+
     const fetchSummaryReport = async () => {
+      if (!username || !repo) {
+      return;
+      }
       try {
         const response = await fetch(
           `/api/github/summary?username=${username}&repo=${repo}`
@@ -37,6 +48,10 @@ const EODReport = ({ repoUrl }) => {
   }, [username, repo]);
 
   useEffect(() => {
+    if (!username || !repo) {
+      return;
+    }
+
     const fetchCommits = async () => {
       try {
         const response = await fetch(
@@ -58,15 +73,16 @@ const EODReport = ({ repoUrl }) => {
     fetchCommits();
   }, [username, repo]);
 
-  const fetchCommitReport = async (sha) => {
+  const handleAddRepoUrl = async () => {
     try {
-      const response = await fetch(
-        `/api/commits/${sha}?username=${username}&repo=${repo}`
-      );
-      const data = await response.text();
-      setCommitReport(data);
+      await updateProject({
+        id: projectId,
+        repoName: newRepoUrl,
+      });
+      setShowModal(false);
+      window.location.reload();
     } catch (error) {
-      console.error("Error fetching commit report:", error);
+      console.error("Error updating project:", error);
     }
   };
 
@@ -83,52 +99,96 @@ const EODReport = ({ repoUrl }) => {
         </div>
       ) : (
         <div>
-          <div className="summary-report p-6 bg-neutral-800/80 rounded-lg mb-6 shadow-md">
-            <h3 className="text-xl font-semibold mb-4 text-neutral-100">
-              Today&apos;s Summary
-            </h3>
-            <ReactMarkdown className="text-neutral-300">{report}</ReactMarkdown>
-          </div>
-
-          {commits.length === 0 ? (
-            <p className="text-neutral-400">No commits today.</p>
+          {!repoUrl ? (
+            <div className="text-neutral-400">
+              <p>No repository URL provided.</p>
+              <Button
+                className="mt-4 px-4 py-2 text-sm font-medium bg-lime-400 hover:bg-lime-500 text-black rounded-lg"
+                onClick={() => setShowModal(true)}>
+                Add Repository URL
+              </Button>
+            </div>
           ) : (
-            <ul className="commit-list space-y-4">
-              {commits.map((commit) => (
-                <li
-                  key={commit.sha}
-                  className="commit-item p-4 bg-neutral-700/50 rounded-md shadow-lg hover:bg-neutral-800 transition">
-                  <div className="commit-header flex justify-between items-center">
-                    <h3 className="font-semibold text-lime-400 text-lg">
-                      {commit.commit.message.replace(/#/g, "")}
-                    </h3>
-                    <p className="text-sm text-neutral-400">
-                      {commit.commit.author.name}
-                    </p>
-                  </div>
-                  <p className="text-sm text-neutral-500 mt-2">
-                    {new Date(commit.commit.author.date).toLocaleString()}
-                  </p>
-                  <Button
-                    onClick={() => fetchCommitReport(commit.sha)}
-                    className="mt-4 px-5 py-2 text-sm font-medium bg-lime-400 hover:bg-lime-500 text-black rounded-lg shadow-sm focus:outline-none transition-all">
-                    Generate Report
-                  </Button>
-                </li>
-              ))}
-            </ul>
+            <div>
+              <div className="summary-report p-6 bg-neutral-800/80 rounded-lg mb-6 shadow-md">
+                <h3 className="text-xl font-semibold mb-4 text-neutral-100">
+                  Today&apos;s Summary
+                </h3>
+                <ReactMarkdown className="text-neutral-300">
+                  {report}
+                </ReactMarkdown>
+              </div>
+
+              {commits.length === 0 ? (
+                <p className="text-neutral-400">No commits today.</p>
+              ) : (
+                <ul className="commit-list space-y-4">
+                  {commits.map((commit) => (
+                    <li
+                      key={commit.sha}
+                      className="commit-item p-4 bg-neutral-700/50 rounded-md shadow-lg hover:bg-neutral-800 transition">
+                      <div className="commit-header flex justify-between items-center">
+                        <h3 className="font-semibold text-lime-400 text-lg">
+                          {commit.commit.message.replace(/#/g, "")}
+                        </h3>
+                        <p className="text-sm text-neutral-400">
+                          {commit.commit.author.name}
+                        </p>
+                      </div>
+                      <p className="text-sm text-neutral-500 mt-2">
+                        {new Date(commit.commit.author.date).toLocaleString()}
+                      </p>
+                      <Button
+                        onClick={() => fetchCommitReport(commit.sha)}
+                        className="mt-4 px-5 py-2 text-sm font-medium bg-lime-400 hover:bg-lime-500 text-black rounded-lg shadow-sm focus:outline-none transition-all">
+                        Generate Report
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          {commitReport && (
+            <div className="commit-report mt-6 p-6 bg-neutral-800/80 rounded-lg shadow-md">
+              <h4 className="text-xl font-semibold text-neutral-100 mb-4">
+                Commit Report
+              </h4>
+              <ReactMarkdown className="text-neutral-300">
+                {commitReport}
+              </ReactMarkdown>
+            </div>
           )}
         </div>
       )}
 
-      {commitReport && (
-        <div className="commit-report mt-6 p-6 bg-neutral-800/80 rounded-lg shadow-md">
-          <h4 className="text-xl font-semibold text-neutral-100 mb-4">
-            Commit Report
-          </h4>
-          <ReactMarkdown className="text-neutral-300">
-            {commitReport}
-          </ReactMarkdown>
+      {showModal && (
+        <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="modal-content bg-white p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Add Repository URL
+            </h3>
+            <input
+              type="text"
+              value={newRepoUrl}
+              onChange={(e) => setNewRepoUrl(e.target.value)}
+              placeholder="Enter repository URL"
+              className="w-full p-2 border border-gray-300 rounded mb-4"
+            />
+            <div className="flex justify-end space-x-2">
+              <Button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddRepoUrl}
+                className="bg-lime-400 hover:bg-lime-500 text-black px-4 py-2 rounded">
+                Save
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

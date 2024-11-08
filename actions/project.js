@@ -114,3 +114,38 @@ export async function deleteProject(projectId) {
 
   return { success: true };
 }
+
+export async function updateProject(data) {
+  const { userId, orgId, orgRole } = await auth();
+  console.log("data", data);
+
+  if (!userId || !orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  if (orgRole !== "org:admin") {
+    throw new Error("Only organization admins can update projects");
+  }
+
+  const project = await db.project.findUnique({
+    where: { id: data.id },
+  });
+
+  if (!project || project.organizationId !== orgId) {
+    throw new Error(
+      "Project not found or you don't have permission to update it"
+    );
+  }
+
+  const updatedProject = await db.project.update({
+    where: { id: data.id },
+    data: {
+      name: data.name,
+      key: data.key,
+      description: data.description,
+      repoName: data.repoName,
+    },
+  });
+
+  return updatedProject;
+}

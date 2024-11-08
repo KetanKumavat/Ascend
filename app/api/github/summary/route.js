@@ -16,7 +16,9 @@ export async function GET(req) {
   }
 
   try {
-    const githubUrl = `https://api.github.com/repos/${username}/${repo}/commits?per_page=4`;
+    const today = new Date();
+    const todayDate = today.toISOString().split("T")[0];
+    const githubUrl = `https://api.github.com/repos/${username}/${repo}/commits?since=${todayDate}T00:00:00Z&until=${todayDate}T23:59:59Z&per_page=5`;
     const response = await axios.get(githubUrl, {
       headers: {
         Accept: "application/vnd.github+json",
@@ -30,6 +32,12 @@ export async function GET(req) {
       date: commit.commit.author.date,
       url: commit.html_url,
     }));
+
+    if (commits.length === 0) {
+      return new Response(JSON.stringify({ report: "No commits today." }), {
+        status: 200,
+      });
+    }
 
     const prompt = `
       Generate a short yet detailed summary report for my end of the day report for the following commits(avoid using tables) :
