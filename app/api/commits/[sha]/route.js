@@ -4,12 +4,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY);
 
 export async function GET(req) {
-  // Get the commit SHA from the URL
   const url = new URL(req.url);
   const pathParts = url.pathname.split("/");
   const commitSHA = pathParts[pathParts.length - 1];
 
-  // Get username and repo from searchParams
   const username = url.searchParams.get("username");
   const repo = url.searchParams.get("repo");
 
@@ -60,7 +58,7 @@ export async function GET(req) {
 
     // Create a detailed prompt for the Gemini API
     const prompt = `
-      Generate a detailed documentation for the following commit:
+      Generate a detailed documentation for the following commit (add '\n' for new lines):
 
       ## Commit Documentation
       **Commit Message**: ${commitData.message}

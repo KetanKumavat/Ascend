@@ -26,12 +26,32 @@ export async function GET(req) {
       },
     });
 
-    const commits = response.data.slice(0, 4).map((commit) => ({
-      message: commit.commit.message,
-      author: commit.commit.author.name,
-      date: commit.commit.author.date,
-      url: commit.html_url,
-    }));
+    const commits = await Promise.all(
+      response.data.slice(0, 4).map(async (commit) => {
+        // console.log("commit", commit);
+        const commitDetails = await axios.get(commit.url, {
+          headers: {
+            Accept: "application/vnd.github+json",
+            Authorization: `Bearer ${process.env.NEXT_GITHUB_TOKEN}`,
+          },
+        });
+
+        const files = commitDetails.data?.files?.map((file) => ({
+          filename: file.filename,
+          status: file.status,
+          changes: file.changes,
+          patch: file.patch ? file.patch.slice(0, 200) : "No patch available", // Limiting patch length
+        }));
+
+        return {
+          message: commit.commit.message,
+          author: commit.commit.author.name,
+          date: commit.commit.author.date,
+          url: commit.html_url,
+          files,
+        };
+      })
+    );
 
     if (commits.length === 0) {
       return new Response(JSON.stringify({ report: "No commits today." }), {
@@ -40,7 +60,8 @@ export async function GET(req) {
     }
 
     const prompt = `
-      Generate a short yet detailed summary report for my end of the day report for the following commits(avoid using tables) :
+      Generate a concise summary report for today's end of the day report, focusing on the commits and file-level changes listed below:
+
       ${commits
         .map(
           (commit, index) => `
@@ -49,13 +70,23 @@ export async function GET(req) {
         - Author: ${commit.author}
         - Date: ${commit.date}
         - URL: ${commit.url}
+        - Files:
+        ${commit.files
+          .map(
+            (file) => `
+          - File: ${file.filename}
+          - Status: ${file.status}
+          - Changes: ${file.changes} lines modified
+          - Summary of Patch: ${file.patch}
+        `
+          )
+          .join("\n")}
       `
         )
         .join("\n")}
       
-      - Provide any notes or considerations about the changes made over the time in these commits.
-      - Analyze the impact of these changes on the codebase.
-      - Suggest any potential improvements or areas that might need attention..
+      - Please summarize the intent behind each change and its potential impact.
+      - Provide any insights on how these modifications affect the overall project, and highlight any potential areas for improvement.
     `;
 
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });

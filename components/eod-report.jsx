@@ -5,12 +5,14 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { getUsernameFromRepoUrl } from "@/lib/getUsername";
 import { updateProject } from "@/actions/project";
+import remarkGfm from "remark-gfm";
 
 const EODReport = ({ repoUrl, projectId }) => {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState("");
   const [commits, setCommits] = useState([]);
   const [commitReport, setCommitReport] = useState("");
+  const [showCommitReport, setShowCommitReport] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [newRepoUrl, setNewRepoUrl] = useState("");
 
@@ -24,19 +26,12 @@ const EODReport = ({ repoUrl, projectId }) => {
     }
 
     const fetchSummaryReport = async () => {
-      if (!username || !repo) {
-      return;
-      }
       try {
         const response = await fetch(
           `/api/github/summary?username=${username}&repo=${repo}`
         );
         const data = await response.json();
-        if (data.error) {
-          console.error(data.error);
-        } else {
-          setReport(data.report);
-        }
+        if (!data.error) setReport(data.report);
       } catch (error) {
         console.error("Error fetching summary report:", error);
       } finally {
@@ -48,9 +43,7 @@ const EODReport = ({ repoUrl, projectId }) => {
   }, [username, repo]);
 
   useEffect(() => {
-    if (!username || !repo) {
-      return;
-    }
+    if (!username || !repo) return;
 
     const fetchCommits = async () => {
       try {
@@ -58,11 +51,7 @@ const EODReport = ({ repoUrl, projectId }) => {
           `/api/github/commits?username=${username}&repo=${repo}`
         );
         const data = await response.json();
-        if (data.error) {
-          console.error(data.error);
-        } else {
-          setCommits(data);
-        }
+        if (!data.error) setCommits(data);
       } catch (error) {
         console.error("Error fetching commits:", error);
       } finally {
@@ -75,14 +64,26 @@ const EODReport = ({ repoUrl, projectId }) => {
 
   const handleAddRepoUrl = async () => {
     try {
-      await updateProject({
-        id: projectId,
-        repoName: newRepoUrl,
-      });
+      await updateProject({ id: projectId, repoName: newRepoUrl });
       setShowModal(false);
       window.location.reload();
     } catch (error) {
       console.error("Error updating project:", error);
+    }
+  };
+
+  const fetchCommitReport = async (sha) => {
+    try {
+      const response = await fetch(
+        `/api/commits/${sha}?username=${username}&repo=${repo}`
+      );
+      const data = await response.text();
+      if (!data.error) {
+        setCommitReport(data);
+        setShowCommitReport(true);
+      }
+    } catch (error) {
+      console.error("Error fetching commit report:", error);
     }
   };
 
@@ -95,7 +96,7 @@ const EODReport = ({ repoUrl, projectId }) => {
       {loading ? (
         <div className="w-full h-full flex-col justify-center items-center">
           <ClipLoader color="#84cc16" size={50} />
-          <p className="text-neutral-400 mt-4">Fetching report...</p>
+          <p className="text-neutral-400 mt-4">Generating report...</p>
         </div>
       ) : (
         <div>
@@ -150,12 +151,21 @@ const EODReport = ({ repoUrl, projectId }) => {
             </div>
           )}
 
-          {commitReport && (
+          {showCommitReport && commitReport && (
             <div className="commit-report mt-6 p-6 bg-neutral-800/80 rounded-lg shadow-md">
-              <h4 className="text-xl font-semibold text-neutral-100 mb-4">
-                Commit Report
-              </h4>
-              <ReactMarkdown className="text-neutral-300">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-xl font-semibold text-neutral-100">
+                  Commit Report
+                </h4>
+                <Button
+                  onClick={() => setShowCommitReport(false)}
+                  className="px-2 py-1 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-sm">
+                  Close
+                </Button>
+              </div>
+              <ReactMarkdown
+                className="text-neutral-300"
+                remarkPlugins={[remarkGfm]}>
                 {commitReport}
               </ReactMarkdown>
             </div>
@@ -165,8 +175,8 @@ const EODReport = ({ repoUrl, projectId }) => {
 
       {showModal && (
         <div className="modal fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="modal-content bg-white p-6 rounded-lg shadow-lg w-96">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          <div className="modal-content bg-black p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-lg font-semibold text-white mb-4">
               Add Repository URL
             </h3>
             <input
@@ -174,9 +184,9 @@ const EODReport = ({ repoUrl, projectId }) => {
               value={newRepoUrl}
               onChange={(e) => setNewRepoUrl(e.target.value)}
               placeholder="Enter repository URL"
-              className="w-full p-2 border border-gray-300 rounded mb-4"
+              className="w-full p-2 border border-neutral-700 rounded-md bg-neutral-800 text-white focus:outline-none focus:border-lime-500"
             />
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end space-x-2 mt-4">
               <Button
                 onClick={() => setShowModal(false)}
                 className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded">
