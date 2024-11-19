@@ -111,7 +111,7 @@ export default function SprintManager({
           <Button
             onClick={() => handleStatusChange("ACTIVE")}
             disabled={loading}
-            className="bg-green-900 text-white">
+            className="bg-green-900 text-white hover:bg-green-600">
             Start Sprint
           </Button>
         )}

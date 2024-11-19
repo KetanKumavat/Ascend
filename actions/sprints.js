@@ -54,7 +54,9 @@ export async function updateSprintStatus(sprintId, newStatus) {
       throw new Error("Unauthorized");
     }
 
-    if (orgRole !== "org:admin") {
+    if (orgRole != "org:admin") {
+      // console.log("orgRole", orgRole);
+      // console.log("Only Admin can make this change");
       throw new Error("Only Admin can make this change");
     }
 

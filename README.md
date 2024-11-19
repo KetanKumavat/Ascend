@@ -1,67 +1,66 @@
-# Ascend - Your Project Management Tool
+# Ascend - Your Project Management Tool 🚀
 
-**Ascend** is a collaborative project management tool that streamlines workflows, enhances communication, and drives team success. Designed as a Progressive Web Application (PWA), Ascend combines the efficiency of a SaaS platform with the convenience of a mobile app, helping teams get things done effortlessly.
+**Ascend** is a modern, collaborative project management tool designed to simplify workflows, boost productivity, and enhance team communication. Whether you're planning sprints, tracking tasks, or generating insights, Ascend helps teams achieve their goals with precision.
 
 ---
 
 ## 🌟 Features
 
-- **Kanban Boards**: Track tasks visually and stay organized with easy-to-use Kanban boards.
-- **Sprint Planning**: Plan sprints with ease to keep your team on track and focused on goals.
-- **Reporting and Analytics**: Access intuitive, data-driven insights for team progress.
-- **Cross-Device Access**: Use Ascend on both desktop and mobile with seamless PWA functionality.
-- **Secure Access**: User authentication with Clerk ensures data security across the platform.
-- **Enhanced UI**: A modern, user-friendly interface designed with React, Next.js, and Tailwind CSS.
+- **Kanban Boards**: Visualize tasks with drag-and-drop ease for better organization.
+- **Sprint Planning**: Keep your team focused with streamlined sprint management.
+- **Automated GitHub Commit Reports**: Generate end-of-day reports summarizing GitHub commit activity to keep everyone aligned.
+- **Real-Time Reporting**: Leverage actionable insights into project progress and team performance.
+- **Secure Authentication**: Powered by Clerk for robust user management and data security.
+- **Enhanced UI/UX**: Built with Next.js and Tailwind CSS for a sleek and intuitive experience.
 
 ---
 
 ## 📋 Table of Contents
 
-- [Getting Started](#getting-started)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Tech Stack](#tech-stack)
-- [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
+1. [How It Works](#-how-it-works)
+2. [Getting Started](#-getting-started)
+3. [Installation](#-installation)
+4. [Usage](#-usage)
+5. [Tech Stack](#-tech-stack)
+6. [Contributing](#-contributing)
 
 ---
 
 ## 🧑‍💻 How It Works
 
 1. **Sign Up and Log In**
-
-   - Create your account and access the Ascend dashboard.
+   - Quickly create an account and access your personalized Ascend dashboard.
 
 2. **Set Up Your Organization**
+   - Start managing team projects in a collaborative workspace.
 
-   - Create or join an organization to start managing team projects in a shared workspace.
-
-3. **Create Projects and Manage Tasks**
-
-   - Add projects, organize tasks with Kanban boards, and assign team members to streamline workflows.
+3. **Manage Projects and Tasks**
+   - Create projects, organize tasks with Kanban boards, and assign team members to ensure efficient workflows.
 
 4. **Plan and Execute Sprints**
+   - Schedule, prioritize, and track sprint progress to meet your team’s goals.
 
-   - Schedule sprints, set priorities, and track task progress to meet deadlines.
+5. **Automated GitHub Commit Reports**
+   - Link GitHub repositories to your projects and get automated end-of-day commit reports, summarizing key updates and changes.
 
-5. **Track Progress with Reports**
-
-   - Get real-time insights into project progress with intuitive reports.
+6. **Track and Report Progress**
+   - Access real-time, visually intuitive reports to monitor team performance and milestones.
 
 ---
 
 ## 🚀 Getting Started
 
-To get started with Ascend, simply install it on your local environment by following the setup instructions below. Ensure you have Node.js and npm installed on your system.
+Ready to experience Ascend? Follow these steps to set up and explore the tool.
 
 ### Prerequisites
 
-- **Node.js**: Make sure Node.js (version 14 or higher) is installed. [Download Node.js](https://nodejs.org/)
-- **NPM**: NPM usually comes with Node.js, but you can update it by running:
+- **Node.js**: Ensure you have Node.js (v14 or higher) installed. [Download Node.js](https://nodejs.org/)
+- **NPM**: Update npm if necessary:
   ```bash
   npm install -g npm
   ```
+
+---
 
 ### Clone the Repository
 
@@ -70,49 +69,44 @@ git clone https://github.com/ketankumavat/ascend.git
 cd ascend
 ```
 
+---
+
 ## 🔧 Installation
 
-1.  **Install Dependencies**
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-    ```bash
-    npm install
-    ```
+2. **Environment Variables**:
+   - Create a `.env.local` file in the root directory.
+   - Configure the following variables:
+     ```plaintext
+     DATABASE_URL=<your_database_url>
+     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<clerk_publishable_key>
+     CLERK_SECRET_KEY=<clerk_secret_key>
+     GITHUB_PERSONAL_ACCESS_TOKEN=<your_github_access_token>
+     ```
 
-2.  **Environment Variables**:
+3. **Run Prisma Migrations**:
+   ```bash
+   npx prisma migrate dev
+   ```
 
-    - Create a `.env.local` file in the root directory.
-    - Add necessary environment variables for Prisma, Clerk authentication, and database connection:
-
-    ```plaintext
-    DATABASE_URL=<your_database_url>
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<clerk_publishable_key>
-    CLERK_SECRET_KEY=<clerk_secret_key>
-    ```
-
-    - These credentials are essential for configuring Prisma and Clerk authentication.
-
-3.  **Run Prisma Migrations**:
-
-    ```bash
-    npx prisma migrate dev
-    ```
-
-4.  **Run the Development Server**:
-
-    ```bash
-    npm run dev
-    ```
-
-    Now, open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+4. **Run the Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) to access the app.
 
 ---
 
 ## 💻 Usage
 
-1. **Kanban Boards**: Add, assign, and update tasks in real-time with a drag-and-drop interface.
-2. **Sprint Planning**: Create sprints, set goals, and align tasks to ensure smooth project execution.
-3. **Reporting**: Access team reports to view progress and insights, helping keep everyone accountable.
-4. **PWA Features**: Install Ascend as a PWA to access it offline and as a standalone app on mobile.
+1. **Kanban Boards**: Manage tasks visually with a simple drag-and-drop interface.
+2. **Sprint Planning**: Organize, assign, and execute tasks effectively to hit deadlines.
+3. **Automated Daily Report**: Connect GitHub repositories to projects and automatically generate daily reports summarizing contributions.
+4. **Real-Time Insights**: Use intuitive reporting tools to track team and project performance.
 
 ---
 
@@ -121,21 +115,31 @@ cd ascend
 - **Frontend**: Next.js, React, Tailwind CSS, Shadcn
 - **Backend**: Node.js, Prisma, Neon DB, Express
 - **Authentication**: Clerk
+- **Integrations**: GitHub API for commit tracking and reporting
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome!
+We welcome contributions, feature requests, and bug reports!
 
-1. **Fork the Project**
-2. **Create your Feature Branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit your Changes** (`git commit -m 'Add some AmazingFeature'`)
-4. **Push to the Branch** (`git push origin feature/AmazingFeature`)
-5. **Open a Pull Request**
+### Steps to Contribute:
 
-For major changes, please open an issue first to discuss what you would like to change.
+1. **Fork the Project**: Click on the "Fork" button in GitHub.
+2. **Create a Feature Branch**: 
+   ```bash
+   git checkout -b feature/YourFeatureName
+   ```
+3. **Commit Changes**:
+   ```bash
+   git commit -m "Add YourFeatureName"
+   ```
+4. **Push to Branch**:
+   ```bash
+   git push origin feature/YourFeatureName
+   ```
+5. **Open a Pull Request**: Submit your PR for review.
+
+For significant changes, please open an issue first to discuss your ideas.
 
 ---
-
-Enjoy using **Ascend** and happy project managing!
