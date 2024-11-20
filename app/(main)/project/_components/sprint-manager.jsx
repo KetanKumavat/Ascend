@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,14 +9,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-
 import { BarLoader } from "react-spinners";
 import { formatDistanceToNow, isAfter, isBefore, format } from "date-fns";
-
-import useFetch from "@/hooks/useFetch";
 import { useRouter, useSearchParams } from "next/navigation";
-
 import { updateSprintStatus } from "@/actions/sprints";
+import { toast } from "sonner";
 
 export default function SprintManager({
   sprint,
@@ -26,15 +22,10 @@ export default function SprintManager({
   projectId,
 }) {
   const [status, setStatus] = useState(sprint.status);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const {
-    fn: updateStatus,
-    loading,
-    error,
-    data: updatedStatus,
-  } = useFetch(updateSprintStatus);
 
   const startDate = new Date(sprint.startDate);
   const endDate = new Date(sprint.endDate);
@@ -46,18 +37,30 @@ export default function SprintManager({
   const canEnd = status === "ACTIVE";
 
   const handleStatusChange = async (newStatus) => {
-    updateStatus(sprint.id, newStatus);
-  };
+    setLoading(true);
+    setError(null);
 
-  useEffect(() => {
-    if (updatedStatus && updatedStatus.success) {
-      setStatus(updatedStatus.sprint.status);
-      setSprint({
-        ...sprint,
-        status: updatedStatus.sprint.status,
-      });
+    try {
+      const response = await updateSprintStatus(sprint.id, newStatus);
+
+      if (response.success) {
+        setStatus(response.sprint.status);
+        setSprint({
+          ...sprint,
+          status: response.sprint.status,
+        });
+        toast.success(`Sprint status updated to ${newStatus}`);
+      } else {
+        setError(response.message || "An error occurred");
+        toast.error(response.message || "An error occurred");
+      }
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [updatedStatus, loading]);
+  };
 
   const getStatusText = () => {
     if (status === "COMPLETED") {

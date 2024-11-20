@@ -4,7 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
 export async function createSprint(projectId, data) {
-  const { userId, orgId } = auth();
+  const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -33,10 +33,10 @@ export async function createSprint(projectId, data) {
 }
 
 export async function updateSprintStatus(sprintId, newStatus) {
-  const { userId, orgId, orgRole } = auth();
+  const { userId, orgId, orgRole } = await auth();
 
   if (!userId || !orgId) {
-    throw new Error("Unauthorized");
+    return { success: false, message: "Unauthorized" };
   }
 
   try {
@@ -44,20 +44,17 @@ export async function updateSprintStatus(sprintId, newStatus) {
       where: { id: sprintId },
       include: { project: true },
     });
-    console.log(sprint, orgRole);
 
     if (!sprint) {
-      throw new Error("Sprint not found");
+      return { success: false, message: "Sprint not found" };
     }
 
     if (sprint.project.organizationId !== orgId) {
-      throw new Error("Unauthorized");
+      return { success: false, message: "Unauthorized access" };
     }
 
-    if (orgRole != "org:admin") {
-      // console.log("orgRole", orgRole);
-      // console.log("Only Admin can make this change");
-      throw new Error("Only Admin can make this change");
+    if (orgRole !== "org:admin") {
+      return { success: false, message: "Only Admin can make this change" };
     }
 
     const now = new Date();
@@ -65,11 +62,14 @@ export async function updateSprintStatus(sprintId, newStatus) {
     const endDate = new Date(sprint.endDate);
 
     if (newStatus === "ACTIVE" && (now < startDate || now > endDate)) {
-      throw new Error("Cannot start sprint outside of its date range");
+      return {
+        success: false,
+        message: "Cannot start sprint outside of its date range",
+      };
     }
 
     if (newStatus === "COMPLETED" && sprint.status !== "ACTIVE") {
-      throw new Error("Can only complete an active sprint");
+      return { success: false, message: "Can only complete an active sprint" };
     }
 
     const updatedSprint = await db.sprint.update({
@@ -79,6 +79,6 @@ export async function updateSprintStatus(sprintId, newStatus) {
 
     return { success: true, sprint: updatedSprint };
   } catch (error) {
-    throw new Error(error.message);
+    return { success: false, message: error.message };
   }
 }

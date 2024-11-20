@@ -88,7 +88,7 @@ const EODReport = ({ repoUrl, projectId }) => {
   };
 
   return (
-    <div className="eod-report mt-8 p-8 bg-zinc-800/70 text-white rounded-lg shadow-lg">
+    <div className="eod-report mt-8 mx-auto p-8 bg-zinc-800/70 text-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-semibold mb-6 text-lime-400">
         End of Day (EOD) Report
       </h2>
