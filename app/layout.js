@@ -74,13 +74,14 @@ const customDarkTheme = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider appearance={customDarkTheme}>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className="dark" suppressHydrationWarning>
         <body className={`${inter.className}`}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
-            disableTransitionOnChange>
+            disableTransitionOnChange
+          >
             <div className="min-h-screen z-0 dark:bg-black/70">
               <Header />
               <BackgroundBeamsWithCollision>
