@@ -4,7 +4,8 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
 export async function getMessagesForProject(projectId) {
-  const { userId, orgId } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId } = auth_result;
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -20,7 +21,8 @@ export async function getMessagesForProject(projectId) {
 }
 
 export async function createMessage(projectId, data) {
-  const { userId, orgId } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId } = auth_result;
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");

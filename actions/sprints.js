@@ -4,7 +4,8 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
 export async function createSprint(projectId, data) {
-  const { userId, orgId } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId } = auth_result;
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -33,7 +34,8 @@ export async function createSprint(projectId, data) {
 }
 
 export async function updateSprintStatus(sprintId, newStatus) {
-  const { userId, orgId, orgRole } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId, orgRole } = auth_result;
 
   if (!userId || !orgId) {
     return { success: false, message: "Unauthorized" };

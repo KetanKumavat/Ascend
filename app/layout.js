@@ -76,21 +76,14 @@ export default function RootLayout({ children }) {
         <ClerkProvider appearance={customDarkTheme}>
             <html lang="en" className="dark" suppressHydrationWarning>
                 <body className={`${inter.className}`}>
-                    <ThemeProvider
-                        attribute="class"
-                        defaultTheme="dark"
-                        enableSystem
-                        disableTransitionOnChange
-                    >
-                        <div className="min-h-screen z-0 dark:bg-black/70">
-                            <Header />
-                            <BackgroundBeamsWithCollision>
-                                {children}
-                            </BackgroundBeamsWithCollision>
-                            <Toaster />
-                            <Footer />
-                        </div>
-                    </ThemeProvider>
+                    <div className="min-h-screen z-0 dark:bg-black/70">
+                        <Header />
+                        {/* <BackgroundBeamsWithCollision> */}
+                        {children}
+                        {/* </BackgroundBeamsWithCollision> */}
+                        <Toaster />
+                        <Footer />
+                    </div>
                 </body>
             </html>
         </ClerkProvider>

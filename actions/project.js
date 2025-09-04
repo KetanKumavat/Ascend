@@ -4,7 +4,8 @@ import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
 export async function createProject(data) {
-  const { userId, orgId } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId } = auth_result;
 
   if (!userId) {
     throw new Error("Unauthorized");
@@ -45,7 +46,8 @@ export async function createProject(data) {
 }
 
 export async function getProject(projectId) {
-  const { userId, orgId } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId } = auth_result;
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -83,7 +85,8 @@ export async function getProject(projectId) {
 }
 
 export async function deleteProject(projectId) {
-  const { userId, orgId, orgRole } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId, orgRole } = auth_result;
 
   if (!userId || !orgId) {
     throw new Error("Unauthorized");
@@ -116,7 +119,8 @@ export async function deleteProject(projectId) {
 }
 
 export async function updateProject(data) {
-  const { userId, orgId, orgRole } = await auth();
+  const auth_result = await auth();
+  const { userId, orgId, orgRole } = auth_result;
   console.log("data", data);
 
   if (!userId || !orgId) {
@@ -148,4 +152,24 @@ export async function updateProject(data) {
   });
 
   return updatedProject;
+}
+
+export async function getProjects(orgId) {
+  const auth_result = await auth();
+  const { userId } = auth_result;
+
+  if (!userId) {
+    throw new Error("Unauthorized");
+  }
+
+  const projects = await db.project.findMany({
+    where: {
+      organizationId: orgId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return projects;
 }

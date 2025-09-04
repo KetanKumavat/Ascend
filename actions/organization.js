@@ -121,7 +121,8 @@ import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 
 export async function getOrganization(slug) {
-  const { userId } = await auth();
+  const auth_result = await auth();
+  const { userId } = auth_result;
   if (!userId) {
     throw new Error("Unauthorized");
   }
@@ -163,7 +164,8 @@ export async function getOrganization(slug) {
 
 export async function getProjects(orgId) {
   // console.log("orgId", orgId);
-  const { userId } = await auth();
+  const auth_result = await auth();
+  const { userId } = auth_result;
   if (!userId) {
     throw new Error("Unauthorized");
   }
@@ -219,7 +221,8 @@ export async function getUserIssues(userId) {
 }
 
 export async function getOrganizationUsers(orgId) {
-  const { userId } = await auth();
+  const auth_result = await auth();
+  const { userId } = auth_result;
   if (!userId) {
     throw new Error("Unauthorized");
   }
