@@ -5,6 +5,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { GoogleAuth } from "google-auth-library";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { google } from "googleapis";
+import { getCachedMeetings, getCachedMeeting } from "@/lib/cache";
 
 // Initialize Google Auth
 const googleAuth = new GoogleAuth({
@@ -19,7 +20,7 @@ const googleAuth = new GoogleAuth({
 });
 
 // Initialize Gemini AI for transcript processing
-const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const gemini = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY);
 
 // Function to create actual Google Meet meeting using Calendar API
 async function createGoogleMeetEvent(meetingData) {
@@ -71,11 +72,14 @@ async function createGoogleMeetEvent(meetingData) {
             console.log("✅ Event created in primary calendar");
         } catch (primaryError) {
             console.log("❌ Primary calendar failed:", primaryError.message);
-            
+
             // Strategy 2: Try service account's own calendar
             try {
-                console.log("Attempting to create event in service account calendar...");
-                const serviceAccountEmail = process.env.NEXT_GOOGLE_CLIENT_EMAIL;
+                console.log(
+                    "Attempting to create event in service account calendar..."
+                );
+                const serviceAccountEmail =
+                    process.env.NEXT_GOOGLE_CLIENT_EMAIL;
                 response = await calendar.events.insert({
                     calendarId: serviceAccountEmail,
                     resource: event,
@@ -84,10 +88,15 @@ async function createGoogleMeetEvent(meetingData) {
                 calendarId = serviceAccountEmail;
                 console.log("✅ Event created in service account calendar");
             } catch (serviceError) {
-                console.log("❌ Service account calendar failed:", serviceError.message);
-                
+                console.log(
+                    "❌ Service account calendar failed:",
+                    serviceError.message
+                );
+
                 // If both fail, throw the original error with helpful context
-                throw new Error(`Google Calendar API access failed. ${primaryError.message}. This usually means domain-wide delegation is not enabled or the service account lacks permissions.`);
+                throw new Error(
+                    `Google Calendar API access failed. ${primaryError.message}. This usually means domain-wide delegation is not enabled or the service account lacks permissions.`
+                );
             }
         }
 
@@ -221,46 +230,59 @@ export async function createMeeting(data) {
         let googleMeetId = null;
 
         try {
-            console.log("Creating FREE Jitsi Meet room...");
+            console.log("Creating FREE meeting room...");
 
-            // Create Jitsi Meet room (completely free, no API key needed)
-            const roomName = `ascend-${meeting.id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+            // Create meeting room (completely free, no API key needed)
+            const roomName = `ascend-${meeting.id}-${Date.now()}-${Math.random()
+                .toString(36)
+                .substring(7)}`;
             meetingUrl = `https://meet.jit.si/${roomName}`;
             googleMeetId = roomName; // Use roomName as meeting ID
-            
-            console.log("✅ FREE Jitsi Meet created:", {
+
+            console.log("✅ FREE meeting room created:", {
                 meetingUrl,
                 roomName,
-                features: "Video, Audio, Screen Share, Chat, Recording, Live Transcription (all FREE)"
+                features:
+                    "Video, Audio, Screen Share, Chat, Recording, Live Transcription (all FREE)",
             });
 
             // Optional: Try Google Calendar integration if credentials available
             try {
                 const googleMeetResult = await createGoogleMeetEvent({
                     title: meeting.title,
-                    description: `${meeting.description}\n\n🎥 Join Jitsi Meeting: ${meetingUrl}\n\n📝 Live Transcript: ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/meeting/${meeting.id}/transcript`,
+                    description: `${
+                        meeting.description
+                    }\n\n🎥 Join Meeting: ${meetingUrl}\n\n📝 Live Transcript: ${
+                        process.env.NEXT_PUBLIC_APP_URL ||
+                        "http://localhost:3001"
+                    }/meeting/${meeting.id}/transcript`,
                     scheduledAt: meeting.scheduledAt,
                     duration: meeting.duration,
                 });
-                
+
                 if (googleMeetResult.googleEventId) {
                     googleEventId = googleMeetResult.googleEventId;
-                    console.log("📅 Also added to Google Calendar:", googleEventId);
+                    console.log(
+                        "📅 Also added to Google Calendar:",
+                        googleEventId
+                    );
                 }
             } catch (calendarError) {
-                console.log("📅 Google Calendar integration skipped:", calendarError.message);
-                // Don't fail - Jitsi Meet still works perfectly
+                console.log(
+                    "📅 Google Calendar integration skipped:",
+                    calendarError.message
+                );
+                // Don't fail - Meeting still works perfectly
             }
-
         } catch (error) {
-            console.error("Failed to create Jitsi meeting:", error.message);
-            
-            // Even simpler fallback - still use Jitsi
+            console.error("Failed to create meeting:", error.message);
+
+            // Even simpler fallback - still use secure meeting room
             const simpleRoom = `ascend-${Date.now()}`;
             meetingUrl = `https://meet.jit.si/${simpleRoom}`;
             googleMeetId = simpleRoom;
-            
-            console.log("Using simple Jitsi room:", meetingUrl);
+
+            console.log("Using simple meeting room:", meetingUrl);
         }
 
         // Update meeting with Google Meet details
@@ -301,37 +323,8 @@ export async function getMeetings(projectId = null) {
         throw new Error("Unauthorized");
     }
 
-    const user = await db.user.findUnique({
-        where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-        throw new Error("User not found");
-    }
-
-    const whereClause = {
-        organizationId: orgId,
-        ...(projectId && { projectId: projectId }),
-    };
-
-    const meetings = await db.meeting.findMany({
-        where: whereClause,
-        include: {
-            createdBy: true,
-            project: true,
-            participants: {
-                include: {
-                    user: true,
-                },
-            },
-            transcript: true,
-        },
-        orderBy: {
-            scheduledAt: "desc",
-        },
-    });
-
-    return meetings;
+    // Use cached meetings data
+    return await getCachedMeetings(orgId, userId, projectId);
 }
 
 export async function getMeeting(meetingId) {
@@ -342,38 +335,8 @@ export async function getMeeting(meetingId) {
         throw new Error("Unauthorized");
     }
 
-    const user = await db.user.findUnique({
-        where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-        throw new Error("User not found");
-    }
-
-    const meeting = await db.meeting.findUnique({
-        where: { id: meetingId },
-        include: {
-            createdBy: true,
-            project: true,
-            participants: {
-                include: {
-                    user: true,
-                },
-            },
-            transcript: true,
-        },
-    });
-
-    if (!meeting) {
-        throw new Error("Meeting not found");
-    }
-
-    // Verify meeting belongs to the organization
-    if (meeting.organizationId !== orgId) {
-        throw new Error("Access denied");
-    }
-
-    return meeting;
+    // Use cached meeting data
+    return await getCachedMeeting(meetingId, orgId, userId);
 }
 
 export async function joinMeeting(meetingId) {
@@ -588,5 +551,101 @@ async function generateMeetingHighlights(transcriptContent) {
     } catch (error) {
         console.error("Error generating highlights:", error);
         return "Failed to generate AI highlights. Please review the transcript manually.";
+    }
+}
+
+export async function saveTranscript(meetingId, transcriptData) {
+    try {
+        // Generate AI insights using Gemini first
+        const aiInsights = await generateTranscriptInsights(transcriptData.content);
+        
+        // Create highlights summary from AI insights
+        const highlights = JSON.stringify({
+            summary: aiInsights.summary,
+            keyPoints: aiInsights.keyPoints,
+            actionItems: aiInsights.actionItems,
+            followUps: aiInsights.followUps,
+            speakers: transcriptData.speakers || [],
+            metadata: {
+                startTime: transcriptData.startTime,
+                endTime: transcriptData.endTime,
+                language: transcriptData.language || 'en',
+                source: 'browser-transcript'
+            },
+            generatedAt: new Date().toISOString()
+        });
+
+        // Save transcript (create or update since it's unique per meeting)
+        const transcript = await db.meetingTranscript.upsert({
+            where: { meetingId: parseInt(meetingId) },
+            create: {
+                meetingId: parseInt(meetingId),
+                content: transcriptData.content,
+                highlights: highlights
+            },
+            update: {
+                content: transcriptData.content,
+                highlights: highlights
+            }
+        });
+
+        console.log("📝 Transcript saved with AI insights:", transcript.id);
+        return transcript;
+
+    } catch (error) {
+        console.error('Failed to save transcript:', error);
+        throw error;
+    }
+}
+
+async function generateTranscriptInsights(transcriptContent) {
+    try {
+        const model = gemini.getGenerativeModel({ model: "gemini-pro" });
+        
+        const prompt = `
+        Analyze this meeting transcript and provide:
+        1. A concise summary (2-3 sentences)
+        2. Key discussion points (bullet points)
+        3. Action items and decisions made
+        4. Important deadlines or follow-ups mentioned
+
+        Transcript:
+        ${transcriptContent}
+
+        Please format your response as JSON with these fields:
+        {
+            "summary": "...",
+            "keyPoints": ["...", "..."],
+            "actionItems": ["...", "..."],
+            "followUps": ["...", "..."]
+        }
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        
+        // Parse JSON response
+        const insights = JSON.parse(text);
+        
+        return {
+            summary: insights.summary,
+            keyPoints: insights.keyPoints,
+            actionItems: insights.actionItems,
+            followUps: insights.followUps || [],
+            generatedAt: new Date().toISOString()
+        };
+
+    } catch (error) {
+        console.error('AI insight generation failed:', error);
+        
+        // Fallback - basic insights
+        return {
+            summary: "Meeting transcript available. AI analysis temporarily unavailable.",
+            keyPoints: ["Full transcript saved"],
+            actionItems: ["Review meeting recording for details"],
+            followUps: [],
+            generatedAt: new Date().toISOString()
+        };
     }
 }

@@ -1,13 +1,12 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "./../components/theme-provider";
 import Header from "./../components/header";
 import Footer from "./../components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { BackgroundBeamsWithCollision } from "@/components/ui/aurora";
 import { Toaster } from "@/components/ui/sonner";
 // const space = Space_Grotesk({ subsets: ["latin"] });
+import PageWrapper from "@/components/landing-wrapper";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -73,17 +72,17 @@ const customDarkTheme = {
 
 export default function RootLayout({ children }) {
     return (
-        <ClerkProvider appearance={customDarkTheme}>
-            <html lang="en" className="dark" suppressHydrationWarning>
-                <body className={`${inter.className}`}>
-                    <div className="min-h-screen z-0 dark:bg-black/70">
-                        <Header />
-                        {/* <BackgroundBeamsWithCollision> */}
-                        {children}
-                        {/* </BackgroundBeamsWithCollision> */}
-                        <Toaster />
-                        <Footer />
-                    </div>
+        <ClerkProvider appearance={{ baseTheme: customDarkTheme }}>
+            <html lang="en" className="dark" suppressHydrationWarning={true}>
+                <body
+                    className={`${inter.className} antialiased min-h-screen flex flex-col pt-14`}
+                >
+                    {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
+                    <Header />
+                    <PageWrapper>{children}</PageWrapper>
+                    <Footer />
+                    {/* </ThemeProvider> */}
+                    <Toaster />
                 </body>
             </html>
         </ClerkProvider>

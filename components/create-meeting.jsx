@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
 import { CalendarIcon, VideoIcon, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,7 +81,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
 
             const meeting = await response.json();
             toast.success(
-                "🎉 FREE Jitsi meeting created successfully! Room ready for unlimited participants."
+                "🎉 FREE meeting created successfully! Room ready for unlimited participants."
             );
 
             setOpen(false);
@@ -124,7 +123,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                         Schedule New Meeting
                     </DialogTitle>
                     <DialogDescription>
-                        Create a FREE Jitsi Meet session with unlimited
+                        Create a FREE video meeting session with unlimited
                         participants, live transcription, and AI-powered
                         insights.
                     </DialogDescription>
@@ -133,7 +132,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                 {/* FREE Features Banner */}
                 {/* <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
-                        🎉 What you get for FREE with Jitsi Meet:
+                        🎉 What you get for FREE with Video Meetings:
                     </h4>
                     <div className="grid grid-cols-2 gap-2 text-sm text-green-700">
                         <div className="flex items-center gap-1">
@@ -309,7 +308,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                             ) : (
                                 <>
                                     <VideoIcon className="w-4 h-4 mr-2" />
-                                    Create FREE Jitsi Meeting
+                                    Create FREE Meeting
                                 </>
                             )}
                         </Button>

@@ -1,4 +1,4 @@
-// Enhanced Jitsi Meet Integration with Transcript Support
+// Enhanced Meeting Integration with Transcript Support
 "use server";
 
 import { db } from "@/lib/prisma";
@@ -7,13 +7,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Initialize Gemini AI for transcript processing
 const gemini = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY);
 
-export async function createJitsiMeeting(meetingData) {
+export async function createMeetingRoom(meetingData) {
     try {
         // Generate unique room name
         const roomName = `ascend-${meetingData.id || Date.now()}-${Math.random().toString(36).substring(7)}`;
         const meetingUrl = `https://meet.jit.si/${roomName}`;
         
-        console.log("✅ FREE Jitsi Meet created:", {
+        console.log("✅ FREE meeting room created:", {
             meetingUrl,
             roomName,
             features: "Video, Audio, Screen Share, Chat, Recording, Live Transcription"
@@ -22,7 +22,7 @@ export async function createJitsiMeeting(meetingData) {
         return {
             meetingUrl,
             roomName,
-            platform: 'jitsi',
+            platform: 'video-meeting',
             features: {
                 videoCall: true,
                 screenShare: true,
@@ -35,7 +35,7 @@ export async function createJitsiMeeting(meetingData) {
             }
         };
     } catch (error) {
-        console.error('Jitsi meeting creation failed:', error);
+        console.error('Meeting room creation failed:', error);
         throw error;
     }
 }

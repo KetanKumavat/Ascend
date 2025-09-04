@@ -119,6 +119,11 @@
 
 import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { 
+  getCachedOrganization, 
+  getCachedProjects, 
+  getCachedOrganizationUsers 
+} from "@/lib/cache";
 
 export async function getOrganization(slug) {
   const auth_result = await auth();
@@ -135,31 +140,8 @@ export async function getOrganization(slug) {
     throw new Error("User not found");
   }
 
-  // Get the organization details
-  const organization = await clerkClient().organizations.getOrganization({
-    slug,
-  });
-
-  if (!organization) {
-    return null;
-  }
-
-  // Check if user belongs to this organization
-  const { data: membership } =
-    await clerkClient().organizations.getOrganizationMembershipList({
-      organizationId: organization.id,
-    });
-
-  const userMembership = membership.find(
-    (member) => member.publicUserData.userId === userId
-  );
-
-  // If user is not a member, return null
-  if (!userMembership) {
-    return null;
-  }
-
-  return organization;
+  // Use cached organization data
+  return await getCachedOrganization(slug, userId);
 }
 
 export async function getProjects(orgId) {
@@ -170,21 +152,8 @@ export async function getProjects(orgId) {
     throw new Error("Unauthorized");
   }
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const projects = await db.project.findMany({
-    where: { organizationId: orgId },
-    orderBy: { createdAt: "desc" },
-  });
-
-  // console.log("projects", projects);
-  return projects;
+  // Use cached projects data
+  return await getCachedProjects(orgId, userId);
 }
 
 export async function getUserIssues(userId) {
@@ -227,30 +196,6 @@ export async function getOrganizationUsers(orgId) {
     throw new Error("Unauthorized");
   }
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const organizationMemberships =
-    await clerkClient().organizations.getOrganizationMembershipList({
-      organizationId: orgId,
-    });
-
-  const userIds = organizationMemberships.data.map(
-    (membership) => membership.publicUserData.userId
-  );
-
-  const users = await db.user.findMany({
-    where: {
-      clerkUserId: {
-        in: userIds,
-      },
-    },
-  });
-
-  return users;
+  // Use cached organization users data
+  return await getCachedOrganizationUsers(orgId, userId);
 }

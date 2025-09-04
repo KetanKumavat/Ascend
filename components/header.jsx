@@ -13,11 +13,11 @@ const Header = async () => {
   await checkUser();
 
   return (
-    <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-4 gap-5 bg-neutral-400 fixed top-8 w-[min(768px,100%_-_6rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
-      <Link href="/" className="flex gap-2">
-        <div className="absolute mt-4 top-1/3 left-2 transform -translate-x-1 -translate-y-1/2 w-36 h-20 bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
-        <ChartNoAxesCombined className="w-10 h-10 text-black dark:text-white cursor-pointer" />
-        <h1 className="text-3xl mt-1 font-bold">
+    <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-2 gap-3 bg-neutral-400 fixed top-2 w-[min(768px,100%_-_2rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
+      <Link href="/" className="flex gap-2 items-center">
+        <div className="absolute mt-2 top-1/2 left-2 transform -translate-x-1 -translate-y-1/2 w-24 h-12 bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
+        <ChartNoAxesCombined className="w-6 h-6 text-black dark:text-white cursor-pointer" />
+        <h1 className="text-lg font-bold">
           <span className="text-lime-500">A</span>scend
         </h1>
       </Link>
@@ -25,9 +25,9 @@ const Header = async () => {
         <Link href={"/project/create"}>
           <Button
             variant="default"
-            className="px-4 py-6 h-10 text-md font-medium rounded-full items-center gap-2 md:flex bg-white text-black hover:bg-neutral-300">
-            <PenBox size={20} className="font-bold" />
-            <span className="text-md font-bold hidden md:block">
+            className="px-2 py-1 h-7 text-xs font-medium rounded-full items-center gap-1 md:flex bg-white text-black hover:bg-neutral-300">
+            <PenBox size={14} className="font-bold" />
+            <span className="text-xs font-bold hidden md:block">
               Create Project
             </span>
           </Button>
@@ -38,7 +38,6 @@ const Header = async () => {
         <SignedOut>
           <SignInBtn />
         </SignedOut>
-        {/* <ModeToggle /> */}
       </div>
     </header>
   );

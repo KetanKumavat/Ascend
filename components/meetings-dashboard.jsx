@@ -269,7 +269,7 @@ export function MeetingsDashboard({ projects = [] }) {
               {!canJoin && meeting.meetingUrl && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    🎥 Jitsi Meet (FREE)
+                    🎥 Video Meeting (FREE)
                   </Badge>
                   
                   {meeting.transcript && (
@@ -305,7 +305,7 @@ export function MeetingsDashboard({ projects = [] }) {
         <div>
           <h1 className="text-2xl font-bold">Meetings</h1>
           <p className="text-muted-foreground">
-            Create FREE Jitsi meetings with unlimited participants, live transcription, and AI insights
+            Create FREE meetings with unlimited participants, live transcription, and AI insights
           </p>
         </div>
         <div className="flex gap-3">

@@ -27,7 +27,7 @@ export default async function MeetingTranscriptPage({ params }) {
                 new Date(Date.now() - meeting.duration * 60 * 1000);
 
         return (
-            <div className="mx-auto mt-24 p-6 space-y-6">
+            <div className="container mx-auto p-6 space-y-6 pt-6">
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -51,7 +51,7 @@ export default async function MeetingTranscriptPage({ params }) {
                                         ? "✅ Ended"
                                         : "📅 Scheduled"}
                                 </Badge>
-                                <Badge variant="outline">FREE Jitsi Meet</Badge>
+                                <Badge variant="outline">FREE Video Call</Badge>
                             </div>
                         </div>
                     </CardHeader>

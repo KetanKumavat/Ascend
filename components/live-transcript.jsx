@@ -14,7 +14,7 @@ import {
     User,
     Clock
 } from "lucide-react";
-import { saveTranscript } from "@/actions/jitsi-meetings";
+import { saveTranscript } from "@/actions/meetings";
 
 export function LiveTranscript({ meetingId, meetingTitle }) {
     const [isRecording, setIsRecording] = useState(false);
