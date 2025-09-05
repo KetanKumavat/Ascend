@@ -41,6 +41,9 @@ export function MeetingsDashboard({ projects = [] }) {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
+    const [realTimeUpdates, setRealTimeUpdates] = useState(true);
+    const params = useParams();
+
     // Auto-select project if only one is available
     useEffect(() => {
         if (projects.length === 1 && selectedProjectId === "all") {
@@ -185,7 +188,7 @@ export function MeetingsDashboard({ projects = [] }) {
     const MeetingCard = ({ meeting }) => {
         const status = getMeetingStatus(meeting);
         const hasTranscript = meeting.transcript && meeting.transcript.content;
-        
+
         // Safely parse highlights JSON with error handling
         let hasPartialTranscript = false;
         if (meeting.transcript && meeting.transcript.highlights) {
@@ -194,7 +197,7 @@ export function MeetingsDashboard({ projects = [] }) {
                 hasPartialTranscript = highlights.isPartial === true;
             } catch (error) {
                 // If highlights is not valid JSON (e.g., markdown), assume it's not partial
-                console.warn('Invalid JSON in transcript highlights:', error);
+                console.warn("Invalid JSON in transcript highlights:", error);
                 hasPartialTranscript = false;
             }
         }
@@ -215,12 +218,16 @@ export function MeetingsDashboard({ projects = [] }) {
                             <Badge variant={status.variant}>
                                 {status.label}
                             </Badge>
-                            {hasPartialTranscript && status.status === "live" && (
-                                <Badge variant="default" className="text-xs bg-blue-600 animate-pulse">
-                                    <Mic className="w-3 h-3 mr-1" />
-                                    Recording
-                                </Badge>
-                            )}
+                            {hasPartialTranscript &&
+                                status.status === "live" && (
+                                    <Badge
+                                        variant="default"
+                                        className="text-xs bg-blue-600 animate-pulse"
+                                    >
+                                        <Mic className="w-3 h-3 mr-1" />
+                                        Recording
+                                    </Badge>
+                                )}
                             {hasTranscript && !hasPartialTranscript && (
                                 <Badge variant="outline" className="text-xs">
                                     <FileTextIcon className="w-3 h-3 mr-1" />
@@ -297,7 +304,8 @@ export function MeetingsDashboard({ projects = [] }) {
                         >
                             <Button variant="outline" className="w-full">
                                 <FileTextIcon className="w-4 h-4 mr-2" />
-                                {hasPartialTranscript && status.status === "live"
+                                {hasPartialTranscript &&
+                                status.status === "live"
                                     ? "Join Transcript"
                                     : hasTranscript
                                     ? "View Transcript"
