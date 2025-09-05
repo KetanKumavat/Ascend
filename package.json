@@ -14,6 +14,7 @@
         "@clerk/nextjs": "^5.7.1",
         "@clerk/themes": "^2.1.39",
         "@ducanh2912/next-pwa": "^10.2.9",
+        "@excalidraw/excalidraw": "^0.18.0",
         "@google-apps/meet": "^0.7.0",
         "@google-cloud/local-auth": "^2.1.0",
         "@google/generative-ai": "^0.21.0",

@@ -19,6 +19,7 @@ model User {
   messages      Message[]  @relation("UserMessages")
   createdMeetings Meeting[] @relation("MeetingCreator")
   meetingParticipants MeetingParticipant[]
+  createdCanvases Canvas[] @relation("CanvasCreator")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -34,6 +35,7 @@ model Project {
   issues         Issue[]
   messages       Message[] @relation("ProjectMessages")
   meetings       Meeting[]
+  canvases       Canvas[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -150,4 +152,22 @@ enum MeetingStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+model Canvas {
+  id             String   @id @default(cuid())
+  title          String
+  elements       String   // JSON string of Excalidraw elements
+  appState       String   // JSON string of Excalidraw app state
+  organizationId String
+  projectId      String?  // Optional - can be organization-wide or project-specific
+  createdById    String
+  isDefault      Boolean  @default(false) // Whether this is the default canvas for org/project
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  createdBy      User     @relation("CanvasCreator", fields: [createdById], references: [id])
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([organizationId, projectId, isDefault]) // Ensure only one default canvas per org/project
 }

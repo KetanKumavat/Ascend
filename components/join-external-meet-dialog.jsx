@@ -130,7 +130,7 @@ export function JoinExternalMeetDialog({ onMeetingJoined }) {
                     </h4>
                     <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
                         <li>Enter the Google Meet code shared by your team</li>
-                        <li>We'll open the meeting in a new tab</li>
+                        <li>We&apos;ll open the meeting in a new tab</li>
                         <li>
                             Use our transcript capture to record the meeting
                         </li>

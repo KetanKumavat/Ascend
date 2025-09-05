@@ -75,7 +75,7 @@ export default function RootLayout({ children }) {
         <ClerkProvider appearance={{ baseTheme: customDarkTheme }}>
             <html lang="en" className="dark" suppressHydrationWarning={true}>
                 <body
-                    className={`${inter.className} antialiased min-h-screen flex flex-col pt-14`}
+                    className={`${inter.className} antialiased  flex flex-col mt-24 min-h-screen`}
                 >
                     {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
                     <Header />

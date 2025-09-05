@@ -22,14 +22,17 @@ export function GoogleMeetCodeCapture({ meetingId }) {
         // Open Google Meet with the code
         const meetUrl = `https://meet.google.com/${meetCode}`;
         window.open(meetUrl, "_blank");
-        
+
         // Start our own transcript capture
         startLocalTranscript();
     };
 
     const startLocalTranscript = () => {
         // Use browser speech recognition to capture audio
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        if (
+            "webkitSpeechRecognition" in window ||
+            "SpeechRecognition" in window
+        ) {
             setIsRecording(true);
             // Implementation similar to our Jitsi transcript component
         } else {
@@ -65,8 +68,14 @@ export function GoogleMeetCodeCapture({ meetingId }) {
                     </h4>
                     <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
                         <li>Enter any Google Meet code from your team</li>
-                        <li>Click "Join & Transcript" - opens Google Meet</li>
-                        <li>Our app captures audio using browser speech recognition</li>
+                        <li>
+                            Click &quot;Join &amp; Transcript&quot; - opens
+                            Google Meet
+                        </li>
+                        <li>
+                            Our app captures audio using browser speech
+                            recognition
+                        </li>
                         <li>Generates transcript with AI insights (FREE)</li>
                         <li>Saves to your project database</li>
                     </ol>
@@ -90,12 +99,16 @@ export function GoogleMeetCodeCapture({ meetingId }) {
                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                         <div className="flex items-center gap-2">
                             <Mic className="w-5 h-5 text-red-600" />
-                            <Badge variant="destructive" className="animate-pulse">
+                            <Badge
+                                variant="destructive"
+                                className="animate-pulse"
+                            >
                                 🔴 Recording Transcript
                             </Badge>
                         </div>
                         <p className="text-sm text-red-700 mt-2">
-                            Capturing audio from your microphone and generating live transcript...
+                            Capturing audio from your microphone and generating
+                            live transcript...
                         </p>
                     </div>
                 )}

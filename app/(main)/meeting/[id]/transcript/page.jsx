@@ -131,8 +131,8 @@ export default async function MeetingTranscriptPage({ params }) {
                                         Enter your name in the transcript field
                                     </li>
                                     <li>
-                                        Click "Start Recording" to begin
-                                        transcription
+                                        Click &quot;Start Recording&quot; to
+                                        begin transcription
                                     </li>
                                     <li>Speak clearly near your microphone</li>
                                     <li>
@@ -160,7 +160,7 @@ export default async function MeetingTranscriptPage({ params }) {
                                 💡 <strong>Pro Tip:</strong> Use Chrome or Edge
                                 for best transcription accuracy. Each
                                 participant can run their own transcription and
-                                we'll merge them automatically!
+                                we&apos;ll merge them automatically!
                             </p>
                         </div>
                     </CardContent>
