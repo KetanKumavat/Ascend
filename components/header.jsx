@@ -13,7 +13,7 @@ const Header = async () => {
     await checkUser();
 
     return (
-        <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-4 gap-3 bg-neutral-400 fixed top-2 w-[min(768px,100%_-_2rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-50">
+        <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-4 gap-3 bg-neutral-400 fixed top-2 w-[min(768px,100%_-_2rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10 z-[100]">
             <Link href="/" className="pl-2 flex gap-2 items-center">
                 <div className="absolute mt-2 top-1/2 left-2 transform -translate-x-1 -translate-y-1/2 w-24 h-12 bg-lime-500 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
                 <ChartNoAxesCombined className="w-6 h-6 text-black dark:text-white cursor-pointer" />

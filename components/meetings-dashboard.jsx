@@ -1,29 +1,37 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { format, isPast, isToday, isTomorrow, isThisWeek } from "date-fns";
+import { useState, useEffect, useMemo } from "react";
+import { format, isPast, isToday, isTomorrow } from "date-fns";
 import {
-  VideoIcon,
-  CalendarIcon,
-  ClockIcon,
-  UsersIcon,
-  PlayIcon,
-  EyeIcon,
-  MoreVerticalIcon,
-  FileTextIcon,
-  SparklesIcon,
-  MessageSquareTextIcon,
+    VideoIcon,
+    CalendarIcon,
+    ClockIcon,
+    UsersIcon,
+    PlayIcon,
+    EyeIcon,
+    MoreVerticalIcon,
+    FileTextIcon,
+    SparklesIcon,
+    MessageSquareTextIcon,
+    ExternalLinkIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { CreateMeetingDialog } from "@/components/create-meeting";
 import { JoinExternalMeetDialog } from "@/components/join-external-meet-dialog";
 import { toast } from "sonner";
@@ -31,383 +39,487 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 export function MeetingsDashboard({ projects = [] }) {
-  const [meetings, setMeetings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
-  const params = useParams();
+    const [meetings, setMeetings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedProjectId, setSelectedProjectId] = useState("all");
+    const params = useParams();
 
-  useEffect(() => {
-    fetchMeetings();
-  }, [selectedProjectId]);
+    // Auto-select project if only one is available
+    useEffect(() => {
+        if (projects.length === 1 && selectedProjectId === "all") {
+            setSelectedProjectId(projects[0].id);
+        }
+    }, [projects, selectedProjectId]);
 
-  const fetchMeetings = async () => {
-    try {
-      const url = selectedProjectId 
-        ? `/api/meetings?projectId=${selectedProjectId}`
-        : "/api/meetings";
-      
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch meetings");
-      
-      const data = await response.json();
-      setMeetings(data);
-    } catch (error) {
-      console.error("Error fetching meetings:", error);
-      toast.error("Failed to load meetings");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Fetch meetings with better caching
+    useEffect(() => {
+        let isMounted = true;
 
-  const handleJoinMeeting = async (meetingId) => {
-    try {
-      const response = await fetch(`/api/meetings/${meetingId}/join`, {
-        method: "POST",
-      });
-      
-      if (!response.ok) throw new Error("Failed to join meeting");
-      
-      const { meetingUrl } = await response.json();
-      
-      // Open meeting in new tab
-      window.open(meetingUrl, "_blank");
-      toast.success("Joining meeting...");
-    } catch (error) {
-      console.error("Error joining meeting:", error);
-      toast.error("Failed to join meeting");
-    }
-  };
+        const fetchMeetings = async () => {
+            try {
+                const url =
+                    selectedProjectId && selectedProjectId !== "all"
+                        ? `/api/meetings?projectId=${selectedProjectId}`
+                        : "/api/meetings";
 
-  const handleAddDemoTranscript = async (meetingId) => {
-    try {
-      const response = await fetch(`/api/meetings/${meetingId}/demo-transcript`, {
-        method: "POST",
-      });
-      
-      if (!response.ok) throw new Error("Failed to add demo transcript");
-      
-      toast.success("Demo transcript added! Check the meeting details.");
-      fetchMeetings(); // Refresh meetings to show transcript indicator
-    } catch (error) {
-      console.error("Error adding demo transcript:", error);
-      toast.error("Failed to add demo transcript");
-    }
-  };
+                const response = await fetch(url, {
+                    headers: {
+                        "Cache-Control": "max-age=60", // Cache for 1 minute
+                    },
+                });
 
-  const getMeetingStatus = (meeting) => {
-    const now = new Date();
-    const scheduledTime = new Date(meeting.scheduledAt);
-    const endTime = new Date(scheduledTime.getTime() + (meeting.duration || 60) * 60000);
+                if (!response.ok) throw new Error("Failed to fetch meetings");
 
-    if (meeting.status === "CANCELLED") return "cancelled";
-    if (meeting.status === "COMPLETED") return "completed";
-    if (now >= scheduledTime && now <= endTime) return "in-progress";
-    if (now > endTime) return "ended";
-    return "upcoming";
-  };
+                const data = await response.json();
 
-  const getStatusBadge = (meeting) => {
-    const status = getMeetingStatus(meeting);
-    
-    const statusConfig = {
-      "upcoming": { variant: "secondary", label: "Upcoming" },
-      "in-progress": { variant: "default", label: "Live", className: "bg-green-600 hover:bg-green-700" },
-      "ended": { variant: "outline", label: "Ended" },
-      "completed": { variant: "outline", label: "Completed" },
-      "cancelled": { variant: "destructive", label: "Cancelled" },
+                if (isMounted) {
+                    setMeetings(data);
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error("Error fetching meetings:", error);
+                if (isMounted) {
+                    toast.error("Failed to load meetings");
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchMeetings();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [selectedProjectId]);
+
+    // Memoize meeting categorization for performance
+    const categorizedMeetings = useMemo(() => {
+        const now = new Date();
+
+        const upcoming = meetings
+            .filter((meeting) => {
+                const scheduledTime = new Date(meeting.scheduledAt);
+                return scheduledTime > now;
+            })
+            .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt));
+
+        const ongoing = meetings.filter((meeting) => {
+            const scheduledTime = new Date(meeting.scheduledAt);
+            const endTime = new Date(
+                scheduledTime.getTime() + (meeting.duration || 60) * 60000
+            );
+            return scheduledTime <= now && endTime > now;
+        });
+
+        const past = meetings
+            .filter((meeting) => {
+                const scheduledTime = new Date(meeting.scheduledAt);
+                const endTime = new Date(
+                    scheduledTime.getTime() + (meeting.duration || 60) * 60000
+                );
+                return endTime <= now;
+            })
+            .sort((a, b) => new Date(b.scheduledAt) - new Date(a.scheduledAt));
+
+        return { upcoming, ongoing, past };
+    }, [meetings]);
+
+    const handleJoinMeeting = async (meetingId, meetingUrl) => {
+        try {
+            // Optimistic UI - open meeting immediately
+            if (meetingUrl) {
+                window.open(meetingUrl, "_blank");
+                toast.success("Opening meeting...");
+                return;
+            }
+
+            const response = await fetch(`/api/meetings/${meetingId}/join`, {
+                method: "POST",
+            });
+
+            if (!response.ok) throw new Error("Failed to join meeting");
+
+            const { meetingUrl: url } = await response.json();
+            window.open(url, "_blank");
+            toast.success("Joining meeting...");
+        } catch (error) {
+            console.error("Error joining meeting:", error);
+            toast.error("Failed to join meeting");
+        }
     };
 
-    const config = statusConfig[status];
-    return (
-      <Badge variant={config.variant} className={config.className}>
-        {config.label}
-      </Badge>
-    );
-  };
+    const getMeetingStatus = (meeting) => {
+        const now = new Date();
+        const scheduledTime = new Date(meeting.scheduledAt);
+        const endTime = new Date(
+            scheduledTime.getTime() + (meeting.duration || 60) * 60000
+        );
 
-  const getTimeDescription = (date) => {
-    if (isToday(date)) return "Today";
-    if (isTomorrow(date)) return "Tomorrow";
-    if (isThisWeek(date)) return format(date, "EEEE");
-    return format(date, "MMM dd");
-  };
-
-  const groupMeetingsByStatus = (meetings) => {
-    const now = new Date();
-    
-    return {
-      upcoming: meetings.filter(m => new Date(m.scheduledAt) > now && m.status !== "CANCELLED"),
-      live: meetings.filter(m => {
-        const start = new Date(m.scheduledAt);
-        const end = new Date(start.getTime() + (m.duration || 60) * 60000);
-        return now >= start && now <= end && m.status !== "CANCELLED";
-      }),
-      past: meetings.filter(m => {
-        const end = new Date(new Date(m.scheduledAt).getTime() + (m.duration || 60) * 60000);
-        return now > end || m.status === "COMPLETED";
-      }),
+        if (scheduledTime <= now && endTime > now) {
+            return { status: "live", label: "🔴 Live", variant: "destructive" };
+        } else if (endTime <= now) {
+            return { status: "ended", label: "✅ Ended", variant: "secondary" };
+        } else if (isToday(scheduledTime)) {
+            return { status: "today", label: "📅 Today", variant: "default" };
+        } else if (isTomorrow(scheduledTime)) {
+            return {
+                status: "tomorrow",
+                label: "📅 Tomorrow",
+                variant: "outline",
+            };
+        } else {
+            return {
+                status: "upcoming",
+                label: "📅 Scheduled",
+                variant: "outline",
+            };
+        }
     };
-  };
 
-  const MeetingCard = ({ meeting }) => {
-    const scheduledDate = new Date(meeting.scheduledAt);
-    const status = getMeetingStatus(meeting);
-    const canJoin = status === "upcoming" || status === "in-progress";
+    const MeetingCard = ({ meeting }) => {
+        const status = getMeetingStatus(meeting);
+        const hasTranscript = meeting.transcript && meeting.transcript.content;
 
-    return (
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <VideoIcon className="w-5 h-5 text-blue-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm">{meeting.title}</h3>
-              {meeting.project && (
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">
-                    {meeting.project.key}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {meeting.project.name}
-                  </span>
+        return (
+            <Card className="hover:shadow-lg transition-all duration-200 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg truncate">
+                                {meeting.title}
+                            </CardTitle>
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                {meeting.description || "No description"}
+                            </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <Badge variant={status.variant}>
+                                {status.label}
+                            </Badge>
+                            {hasTranscript && (
+                                <Badge variant="outline" className="text-xs">
+                                    <FileTextIcon className="w-3 h-3 mr-1" />
+                                    Transcript
+                                </Badge>
+                            )}
+                        </div>
+                    </div>
+                </CardHeader>
+
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4 text-muted-foreground" />
+                            <span>
+                                {format(
+                                    new Date(meeting.scheduledAt),
+                                    "MMM d, yyyy"
+                                )}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <ClockIcon className="w-4 h-4 text-muted-foreground" />
+                            <span>
+                                {format(
+                                    new Date(meeting.scheduledAt),
+                                    "h:mm a"
+                                )}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <UsersIcon className="w-4 h-4 text-muted-foreground" />
+                            <span>
+                                {meeting.participants?.length || 0} participants
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                        {status.status === "live" && (
+                            <Button
+                                onClick={() =>
+                                    handleJoinMeeting(
+                                        meeting.id,
+                                        meeting.meetingUrl
+                                    )
+                                }
+                                className="bg-red-600 hover:bg-red-700 text-white flex-1 sm:flex-none"
+                            >
+                                <PlayIcon className="w-4 h-4 mr-2" />
+                                Join Live
+                            </Button>
+                        )}
+
+                        {status.status !== "live" && meeting.meetingUrl && (
+                            <Button
+                                onClick={() =>
+                                    handleJoinMeeting(
+                                        meeting.id,
+                                        meeting.meetingUrl
+                                    )
+                                }
+                                variant="outline"
+                                className="flex-1 sm:flex-none"
+                            >
+                                <VideoIcon className="w-4 h-4 mr-2" />
+                                Join Meeting
+                            </Button>
+                        )}
+
+                        <Link
+                            href={`/meeting/${meeting.id}/transcript`}
+                            className="flex-1 sm:flex-none"
+                        >
+                            <Button variant="outline" className="w-full">
+                                <FileTextIcon className="w-4 h-4 mr-2" />
+                                {hasTranscript
+                                    ? "View Transcript"
+                                    : "Live Transcript"}
+                            </Button>
+                        </Link>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <MoreVerticalIcon className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href={`/meeting/${meeting.id}`}>
+                                        <EyeIcon className="w-4 h-4 mr-2" />
+                                        View Details
+                                    </Link>
+                                </DropdownMenuItem>
+                                {meeting.meetingUrl && (
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                                meeting.meetingUrl
+                                            );
+                                            toast.success(
+                                                "Meeting link copied!"
+                                            );
+                                        }}
+                                    >
+                                        <ExternalLinkIcon className="w-4 h-4 mr-2" />
+                                        Copy Link
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    };
+
+    if (loading) {
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                    <div className="h-8 bg-muted rounded animate-pulse w-48"></div>
+                    <div className="h-10 bg-muted rounded animate-pulse w-32"></div>
                 </div>
-              )}
+                <div className="grid gap-4">
+                    {[1, 2, 3].map((i) => (
+                        <div
+                            key={i}
+                            className="h-32 bg-muted rounded animate-pulse"
+                        ></div>
+                    ))}
+                </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {getStatusBadge(meeting)}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <MoreVerticalIcon className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <Link href={`/organization/${params.orgId}/meetings/${meeting.id}`}>
-                  <DropdownMenuItem>
-                    <EyeIcon className="w-4 h-4 mr-2" />
-                    View Details
-                  </DropdownMenuItem>
-                </Link>
-                {!meeting.transcript && (
-                  <DropdownMenuItem onClick={() => handleAddDemoTranscript(meeting.id)}>
-                    <FileTextIcon className="w-4 h-4 mr-2" />
-                    Add Demo Transcript
-                  </DropdownMenuItem>
-                )}
-                {meeting.transcript && (
-                  <>
-                    <Link href={`/organization/${params.orgId}/meetings/${meeting.id}`}>
-                      <DropdownMenuItem>
-                        <FileTextIcon className="w-4 h-4 mr-2" />
-                        View Transcript
-                      </DropdownMenuItem>
-                    </Link>
-                    <Link href={`/organization/${params.orgId}/meetings/${meeting.id}`}>
-                      <DropdownMenuItem>
-                        <SparklesIcon className="w-4 h-4 mr-2" />
-                        View Highlights
-                      </DropdownMenuItem>
-                    </Link>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {meeting.description && (
-            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-              {meeting.description}
-            </p>
-          )}
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <CalendarIcon className="w-4 h-4" />
-                <span>
-                  {getTimeDescription(scheduledDate)} at {format(scheduledDate, "HH:mm")}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <ClockIcon className="w-4 h-4" />
-                <span>{meeting.duration || 60}m</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <UsersIcon className="w-4 h-4" />
-                <span>{meeting.participants?.length || 0}</span>
-              </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Header with actions */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <h2 className="text-2xl font-semibold">Team Meetings</h2>
+                    {projects.length > 1 && (
+                        <Select
+                            value={selectedProjectId}
+                            onValueChange={setSelectedProjectId}
+                        >
+                            <SelectTrigger className="w-full sm:w-48">
+                                <SelectValue placeholder="All projects" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    All projects
+                                </SelectItem>
+                                {projects.map((project) => (
+                                    <SelectItem
+                                        key={project.id}
+                                        value={project.id}
+                                    >
+                                        {project.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                </div>
+
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <CreateMeetingDialog projects={projects}>
+                        <Button className="flex-1 sm:flex-none">
+                            <VideoIcon className="w-4 h-4 mr-2" />
+                            Create Meeting
+                        </Button>
+                    </CreateMeetingDialog>
+
+                    <JoinExternalMeetDialog>
+                        <Button
+                            variant="outline"
+                            className="flex-1 sm:flex-none"
+                        >
+                            <ExternalLinkIcon className="w-4 h-4 mr-2" />
+                            Join External
+                        </Button>
+                    </JoinExternalMeetDialog>
+                </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              {canJoin && (
-                <>
-                  <Button
-                    size="sm"
-                    onClick={() => handleJoinMeeting(meeting.id)}
-                    className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-                  >
-                    <PlayIcon className="w-4 h-4 mr-1" />
-                    Join Meeting
-                  </Button>
-                  
-                  <Link href={`/meeting/${meeting.id}/transcript`}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-blue-200 text-blue-600 hover:bg-blue-50"
+
+            {/* Meetings tabs */}
+            <Tabs defaultValue="upcoming" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger
+                        value="upcoming"
+                        className="flex items-center gap-2"
                     >
-                      <MessageSquareTextIcon className="w-4 h-4 mr-1" />
-                      Live Transcript
-                    </Button>
-                  </Link>
-                </>
-              )}
-              
-              {!canJoin && meeting.meetingUrl && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    🎥 Video Meeting (FREE)
-                  </Badge>
-                  
-                  {meeting.transcript && (
-                    <Link href={`/organization/${params.orgId}/meetings/${meeting.id}`}>
-                      <Button size="sm" variant="outline">
-                        <FileTextIcon className="w-4 h-4 mr-1" />
-                        View Transcript
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
+                        <CalendarIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">Upcoming</span>
+                        <span className="sm:hidden">Up</span>
+                        {categorizedMeetings.upcoming.length > 0 && (
+                            <Badge variant="secondary" className="ml-1 text-xs">
+                                {categorizedMeetings.upcoming.length}
+                            </Badge>
+                        )}
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="live"
+                        className="flex items-center gap-2"
+                    >
+                        <PlayIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">Live</span>
+                        <span className="sm:hidden">Live</span>
+                        {categorizedMeetings.ongoing.length > 0 && (
+                            <Badge
+                                variant="destructive"
+                                className="ml-1 text-xs"
+                            >
+                                {categorizedMeetings.ongoing.length}
+                            </Badge>
+                        )}
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="past"
+                        className="flex items-center gap-2"
+                    >
+                        <FileTextIcon className="w-4 h-4" />
+                        <span className="hidden sm:inline">Past</span>
+                        <span className="sm:hidden">Past</span>
+                    </TabsTrigger>
+                </TabsList>
 
-  const groupedMeetings = groupMeetingsByStatus(meetings);
+                <TabsContent value="upcoming" className="space-y-4 mt-6">
+                    {categorizedMeetings.upcoming.length === 0 ? (
+                        <Card>
+                            <CardContent className="py-8 text-center">
+                                <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-medium mb-2">
+                                    No upcoming meetings
+                                </h3>
+                                <p className="text-muted-foreground mb-4">
+                                    Create your first meeting to get started
+                                </p>
+                                <CreateMeetingDialog projects={projects}>
+                                    <Button>
+                                        <VideoIcon className="w-4 h-4 mr-2" />
+                                        Create Meeting
+                                    </Button>
+                                </CreateMeetingDialog>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-4">
+                            {categorizedMeetings.upcoming.map((meeting) => (
+                                <MeetingCard
+                                    key={meeting.id}
+                                    meeting={meeting}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </TabsContent>
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+                <TabsContent value="live" className="space-y-4 mt-6">
+                    {categorizedMeetings.ongoing.length === 0 ? (
+                        <Card>
+                            <CardContent className="py-8 text-center">
+                                <PlayIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-medium mb-2">
+                                    No live meetings
+                                </h3>
+                                <p className="text-muted-foreground">
+                                    Live meetings will appear here
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-4">
+                            {categorizedMeetings.ongoing.map((meeting) => (
+                                <MeetingCard
+                                    key={meeting.id}
+                                    meeting={meeting}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </TabsContent>
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Meetings</h1>
-          <p className="text-muted-foreground">
-            Create FREE meetings with unlimited participants, live transcription, and AI insights
-          </p>
+                <TabsContent value="past" className="space-y-4 mt-6">
+                    {categorizedMeetings.past.length === 0 ? (
+                        <Card>
+                            <CardContent className="py-8 text-center">
+                                <FileTextIcon className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-medium mb-2">
+                                    No past meetings
+                                </h3>
+                                <p className="text-muted-foreground">
+                                    Completed meetings will appear here
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <div className="grid gap-4">
+                            {categorizedMeetings.past
+                                .slice(0, 10)
+                                .map((meeting) => (
+                                    <MeetingCard
+                                        key={meeting.id}
+                                        meeting={meeting}
+                                    />
+                                ))}
+                            {categorizedMeetings.past.length > 10 && (
+                                <Card>
+                                    <CardContent className="py-4 text-center">
+                                        <p className="text-muted-foreground">
+                                            {categorizedMeetings.past.length -
+                                                10}{" "}
+                                            more meetings...
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    )}
+                </TabsContent>
+            </Tabs>
         </div>
-        <div className="flex gap-3">
-          <CreateMeetingDialog 
-            projects={projects} 
-            onMeetingCreated={fetchMeetings}
-          />
-          <JoinExternalMeetDialog 
-            onMeetingJoined={(meetingInfo) => {
-              console.log("External meeting joined:", meetingInfo);
-              // Optionally refresh meetings list to show captured external meetings
-              fetchMeetings();
-            }}
-          />
-        </div>
-      </div>
-
-      <Tabs defaultValue="upcoming" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="upcoming" className="relative">
-            Upcoming
-            {groupedMeetings.upcoming.length > 0 && (
-              <Badge variant="secondary" className="ml-2 h-5 w-5 p-0 text-xs">
-                {groupedMeetings.upcoming.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="live" className="relative">
-            Live
-            {groupedMeetings.live.length > 0 && (
-              <Badge variant="default" className="ml-2 h-5 w-5 p-0 text-xs bg-green-600">
-                {groupedMeetings.live.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="past">Past</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="upcoming" className="space-y-4">
-          {groupedMeetings.upcoming.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <VideoIcon className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No upcoming meetings</h3>
-                <p className="text-muted-foreground text-center mb-4">
-                  Schedule your first team meeting to get started with collaboration.
-                </p>
-                <CreateMeetingDialog 
-                  projects={projects} 
-                  onMeetingCreated={fetchMeetings}
-                />
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {groupedMeetings.upcoming.map((meeting) => (
-                <MeetingCard key={meeting.id} meeting={meeting} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="live" className="space-y-4">
-          {groupedMeetings.live.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <PlayIcon className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No live meetings</h3>
-                <p className="text-muted-foreground">
-                  No meetings are currently in progress.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {groupedMeetings.live.map((meeting) => (
-                <MeetingCard key={meeting.id} meeting={meeting} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="past" className="space-y-4">
-          {groupedMeetings.past.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <CalendarIcon className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No past meetings</h3>
-                <p className="text-muted-foreground">
-                  Your meeting history will appear here.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {groupedMeetings.past.map((meeting) => (
-                <MeetingCard key={meeting.id} meeting={meeting} />
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+    );
 }

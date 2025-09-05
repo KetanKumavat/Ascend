@@ -59,7 +59,7 @@ const processSteps = [
 const Home = () => {
     return (
         <div className="relative w-full min-h-screen">
-            <section className="z-10 px-4 mt-2 min-h-svh grid place-content-center">
+            <section className="z-10 px-4 pt-24 min-h-screen grid place-content-center">
                 <div className="max-w-4xl mx-auto text-center relative">
                     <div className="absolute mt-32 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-500 md:opacity-20 opacity-50 blur-3xl rounded-full pointer-events-none"></div>
                     <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight cursor-default">

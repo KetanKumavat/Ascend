@@ -103,3 +103,8 @@ html {
 body {
     -ms-overflow-style: -ms-autohiding-scrollbar;
 }
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 1;
+}

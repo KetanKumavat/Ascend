@@ -5,7 +5,7 @@ import OrgSwitcher from "@/components/org-switcher";
 import ProjectList from "./_components/project-list";
 import UserIssues from "./_components/user-issues";
 import { Button } from "@/components/ui/button";
-import { VideoIcon, FolderIcon, CalendarIcon } from "lucide-react";
+import { VideoIcon, FolderIcon, CalendarIcon, Book } from "lucide-react";
 import Link from "next/link";
 
 export default async function OrganizationPage({ params }) {
@@ -58,9 +58,7 @@ export default async function OrganizationPage({ params }) {
                             variant="ghost"
                             className="rounded-none hover:border-b-2 hover:border-lime-500"
                         >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v1m0 0h6m-6 0V5a2 2 0 012-2h4a2 2 0 012 2v1m0 0h6M7 7v3a1 1 0 001 1h1m0 0v3a1 1 0 001 1h6a1 1 0 001-1v-3m0 0a1 1 0 001-1 1 1 0 00-1-1m-6 0h6" />
-                            </svg>
+                            <Book className="w-4 h-4 mr-2" />
                             Canvas
                         </Button>
                     </Link>

@@ -113,7 +113,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
             <DialogTrigger asChild>
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                     <VideoIcon className="w-4 h-4 mr-2" />
-                    Create FREE Meeting
+                    Create Meeting
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px]">
@@ -198,9 +198,9 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                                 id="scheduledAt"
                                 type="datetime-local"
                                 {...register("scheduledAt")}
-                                className={
+                                className={`text-white ${
                                     errors.scheduledAt ? "border-red-500" : ""
-                                }
+                                }`}
                                 min={new Date().toISOString().slice(0, 16)}
                             />
                             {errors.scheduledAt && (
@@ -308,7 +308,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                             ) : (
                                 <>
                                     <VideoIcon className="w-4 h-4 mr-2" />
-                                    Create FREE Meeting
+                                    Create Meeting
                                 </>
                             )}
                         </Button>

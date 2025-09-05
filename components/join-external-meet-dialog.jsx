@@ -106,7 +106,7 @@ export function JoinExternalMeetDialog({ onMeetingJoined }) {
             <DialogTrigger asChild>
                 <Button
                     variant="outline"
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                    className="border-blue-200 text-blue-600 "
                 >
                     <VideoIcon className="w-4 h-4 mr-2" />
                     Join Google Meet Code
@@ -123,21 +123,6 @@ export function JoinExternalMeetDialog({ onMeetingJoined }) {
                         FREE transcript with AI insights.
                     </DialogDescription>
                 </DialogHeader>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h4 className="font-semibold text-blue-800 mb-2">
-                        💡 How this works (100% FREE):
-                    </h4>
-                    <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-                        <li>Enter the Google Meet code shared by your team</li>
-                        <li>We&apos;ll open the meeting in a new tab</li>
-                        <li>
-                            Use our transcript capture to record the meeting
-                        </li>
-                        <li>Get AI-powered insights and action items</li>
-                        <li>Everything saves to your project dashboard</li>
-                    </ol>
-                </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
@@ -196,24 +181,6 @@ export function JoinExternalMeetDialog({ onMeetingJoined }) {
                             rows={2}
                             {...register("description")}
                         />
-                    </div>
-
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-1">
-                            <MicIcon className="w-4 h-4 text-green-600" />
-                            <Badge
-                                variant="outline"
-                                className="text-green-700 border-green-300"
-                            >
-                                FREE Transcript Features
-                            </Badge>
-                        </div>
-                        <div className="grid grid-cols-2 gap-1 text-xs text-green-700">
-                            <div>✅ Live speech-to-text</div>
-                            <div>✅ AI meeting summary</div>
-                            <div>✅ Action items extraction</div>
-                            <div>✅ Key points highlights</div>
-                        </div>
                     </div>
 
                     <div className="flex items-center justify-end gap-3 pt-4 border-t">

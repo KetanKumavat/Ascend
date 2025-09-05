@@ -3,8 +3,10 @@ import { LiveTranscript } from "@/components/live-transcript";
 import { getMeeting } from "@/actions/meetings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Video } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Clock, Users, Video, ArrowLeft, Home, FolderIcon } from "lucide-react";
 import { JoinMeetingButton } from "@/components/join-meeting-button";
+import Link from "next/link";
 
 export default async function MeetingTranscriptPage({ params }) {
     try {
@@ -28,13 +30,57 @@ export default async function MeetingTranscriptPage({ params }) {
 
         return (
             <div className="container mx-auto p-6 space-y-6 pt-6">
+                {/* Navigation Breadcrumb */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Link
+                        href={`/organization/${meeting.project.organizationId}`}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                        <Home className="w-4 h-4" />
+                        Organization
+                    </Link>
+                    <span>/</span>
+                    <Link
+                        href={`/project/${meeting.projectId}`}
+                        className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    >
+                        <FolderIcon className="w-4 h-4" />
+                        Project
+                    </Link>
+                    <span>/</span>
+                    <Link
+                        href={`/project/${meeting.projectId}/meetings`}
+                        className="hover:text-foreground transition-colors"
+                    >
+                        Meetings
+                    </Link>
+                    <span>/</span>
+                    <span className="text-foreground">Transcript</span>
+                </div>
+
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
-                                <Video className="w-6 h-6" />
-                                {meeting.title}
-                            </CardTitle>
+                            <div className="flex items-center gap-3">
+                                {/* Back Button */}
+                                <Link
+                                    href={`/project/${meeting.projectId}/meetings`}
+                                >
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="gap-2"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" />
+                                        Back to Meetings
+                                    </Button>
+                                </Link>
+
+                                <CardTitle className="flex items-center gap-2">
+                                    <Video className="w-6 h-6" />
+                                    {meeting.title}
+                                </CardTitle>
+                            </div>
                             <div className="flex gap-2">
                                 <Badge
                                     variant={
@@ -48,8 +94,8 @@ export default async function MeetingTranscriptPage({ params }) {
                                     {isLive
                                         ? "🔴 Live"
                                         : isPast
-                                        ? "✅ Ended"
-                                        : "📅 Scheduled"}
+                                        ? "Ended"
+                                        : "Scheduled"}
                                 </Badge>
                                 <Badge variant="outline">FREE Video Call</Badge>
                             </div>

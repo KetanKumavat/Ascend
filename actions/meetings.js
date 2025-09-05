@@ -557,8 +557,10 @@ async function generateMeetingHighlights(transcriptContent) {
 export async function saveTranscript(meetingId, transcriptData) {
     try {
         // Generate AI insights using Gemini first
-        const aiInsights = await generateTranscriptInsights(transcriptData.content);
-        
+        const aiInsights = await generateTranscriptInsights(
+            transcriptData.content
+        );
+
         // Create highlights summary from AI insights
         const highlights = JSON.stringify({
             summary: aiInsights.summary,
@@ -569,10 +571,10 @@ export async function saveTranscript(meetingId, transcriptData) {
             metadata: {
                 startTime: transcriptData.startTime,
                 endTime: transcriptData.endTime,
-                language: transcriptData.language || 'en',
-                source: 'browser-transcript'
+                language: transcriptData.language || "en",
+                source: "browser-transcript",
             },
-            generatedAt: new Date().toISOString()
+            generatedAt: new Date().toISOString(),
         });
 
         // Save transcript (create or update since it's unique per meeting)
@@ -581,19 +583,18 @@ export async function saveTranscript(meetingId, transcriptData) {
             create: {
                 meetingId: parseInt(meetingId),
                 content: transcriptData.content,
-                highlights: highlights
+                highlights: highlights,
             },
             update: {
                 content: transcriptData.content,
-                highlights: highlights
-            }
+                highlights: highlights,
+            },
         });
 
         console.log("📝 Transcript saved with AI insights:", transcript.id);
         return transcript;
-
     } catch (error) {
-        console.error('Failed to save transcript:', error);
+        console.error("Failed to save transcript:", error);
         throw error;
     }
 }
@@ -601,7 +602,7 @@ export async function saveTranscript(meetingId, transcriptData) {
 async function generateTranscriptInsights(transcriptContent) {
     try {
         const model = gemini.getGenerativeModel({ model: "gemini-pro" });
-        
+
         const prompt = `
         Analyze this meeting transcript and provide:
         1. A concise summary (2-3 sentences)
@@ -624,28 +625,28 @@ async function generateTranscriptInsights(transcriptContent) {
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-        
+
         // Parse JSON response
         const insights = JSON.parse(text);
-        
+
         return {
             summary: insights.summary,
             keyPoints: insights.keyPoints,
             actionItems: insights.actionItems,
             followUps: insights.followUps || [],
-            generatedAt: new Date().toISOString()
+            generatedAt: new Date().toISOString(),
         };
-
     } catch (error) {
-        console.error('AI insight generation failed:', error);
-        
+        console.error("AI insight generation failed:", error);
+
         // Fallback - basic insights
         return {
-            summary: "Meeting transcript available. AI analysis temporarily unavailable.",
+            summary:
+                "Meeting transcript available. AI analysis temporarily unavailable.",
             keyPoints: ["Full transcript saved"],
             actionItems: ["Review meeting recording for details"],
             followUps: [],
-            generatedAt: new Date().toISOString()
+            generatedAt: new Date().toISOString(),
         };
     }
 }
