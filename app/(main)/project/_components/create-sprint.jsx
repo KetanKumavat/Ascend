@@ -23,8 +23,6 @@ import useFetch from "@/hooks/useFetch";
 import { createSprint } from "@/actions/sprints";
 
 export default function SprintCreationForm({
-    projectTitle,
-    projectSubTitle,
     projectKey,
     projectId,
     sprintKey,

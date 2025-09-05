@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import UserMenu from "./ui/user-menu";
 import SignInBtn from "./ui/signin-btn";
 
-import React from "react";
 import { checkUser } from "@/lib/checkUser";
 
 const Header = async () => {

@@ -1,7 +1,6 @@
 import ClientExcalidrawWrapper from "../../../../../components/client-excalidraw-wrapper";
 import PageHeader from "@/components/ui/page-header";
 import { BaseNavigation } from "@/components/ui/base-navigation";
-import { VideoIcon, FolderIcon, Book, BarChart3 } from "lucide-react";
 
 export default async function OrganizationCanvasPage({ params }) {
     const { orgId } = await params;

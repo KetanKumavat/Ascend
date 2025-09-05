@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { format, isPast, isToday, isTomorrow } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import {
     VideoIcon,
     CalendarIcon,
@@ -11,8 +11,6 @@ import {
     EyeIcon,
     MoreVerticalIcon,
     FileTextIcon,
-    SparklesIcon,
-    MessageSquareTextIcon,
     ExternalLinkIcon,
     Mic,
 } from "lucide-react";
@@ -43,9 +41,6 @@ export function MeetingsDashboard({ projects = [] }) {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
-    const [realTimeUpdates, setRealTimeUpdates] = useState(true);
-    const params = useParams();
-
     // Auto-select project if only one is available
     useEffect(() => {
         if (projects.length === 1 && selectedProjectId === "all") {

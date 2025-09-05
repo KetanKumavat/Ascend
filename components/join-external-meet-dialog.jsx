@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { VideoIcon, ExternalLinkIcon, MicIcon } from "lucide-react";
+import { VideoIcon, ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
 const externalMeetSchema = z.object({
@@ -34,7 +33,6 @@ export function JoinExternalMeetDialog({ onMeetingJoined }) {
         handleSubmit,
         formState: { errors },
         reset,
-        watch,
     } = useForm({
         resolver: zodResolver(externalMeetSchema),
         defaultValues: {

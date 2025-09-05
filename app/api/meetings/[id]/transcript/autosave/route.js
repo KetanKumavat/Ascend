@@ -13,7 +13,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const { content, isPartial, timestamp, chunkId } = await request.json();
+    const { content, timestamp, chunkId } = await request.json();
     
     if (!content) {
       return NextResponse.json(

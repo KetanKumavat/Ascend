@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
-import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
+import { getCachedUser } from "@/lib/user-utils";
 
 export async function GET(request) {
   try {

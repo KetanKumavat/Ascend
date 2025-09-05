@@ -23,7 +23,6 @@ export default function SprintManager({
 }) {
   const [status, setStatus] = useState(sprint.status);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const router = useRouter();
   const searchParams = useSearchParams();
 

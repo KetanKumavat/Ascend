@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   useUser,
   useOrganization,
@@ -31,20 +30,27 @@ const OrgSwitcher = () => {
         appearance={{
           elements: {
             organizationSwitcherTrigger:
-              "border-2 border-neutral-500 rounded-md px-4 py-2 bg-neutral-900 text-white hover:bg-lime-500 hover:text-black transition-all duration-300 font-semibold text-lg",
+              "border border-neutral-200 dark:border-neutral-800 rounded-lg px-3 py-2 bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors duration-200 text-sm font-medium",
             organizationSwitcherPopover:
-              "bg-neutral-900 text-white border border-neutral-700 shadow-lg rounded-md hover:text-black",
+              "bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 shadow-lg rounded-lg",
             organizationSwitcherItem:
-              "px-4 py-2 hover:bg-neutral-700 transition-all duration-300 font-semibold text-lg hover:text-black",
+              "px-3 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors duration-200 text-sm",
             organizationSwitcherItemActive:
-              "bg-lime-500 text-black font-semibold text-lg",
-            organizationSwitcherItemIcon: "text-lime-500",
-            organizationSwitcherItemText: "text-white font-semibold text-lg",
+              "bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100",
+            organizationSwitcherItemIcon: "text-neutral-600 dark:text-neutral-400",
+            organizationSwitcherItemText: "text-neutral-900 dark:text-neutral-100 text-sm",
             organizationSwitcherItemTextActive:
-              "text-black font-semibold text-lg hover:text-black",
+              "text-neutral-900 dark:text-neutral-100 font-medium",
             organizationPreviewMainIdentifier:
-              " font-semibold text-xl truncate hover:text-black",
-            button: "hover:text-black",
+              "text-neutral-900 dark:text-neutral-100 font-medium text-sm truncate",
+            organizationPreviewSecondaryIdentifier:
+              "text-neutral-600 dark:text-neutral-400 text-xs",
+            button: "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100",
+            organizationSwitcherTriggerIcon: "text-neutral-600 dark:text-neutral-400",
+            organizationSwitcherPopoverCard: "border-0 shadow-none",
+            organizationSwitcherPopoverActions: "border-t border-neutral-200 dark:border-neutral-800 pt-2 mt-2",
+            organizationSwitcherPopoverActionButton: "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 text-sm",
+            organizationSwitcherPopoverActionButtonIcon: "text-neutral-500 dark:text-neutral-500",
           },
         }}
       />

@@ -16,7 +16,6 @@ export default function ExcalidrawWrapper({
     readOnly = false,
     title = "Team Canvas",
 }) {
-    const [excalidrawAPI, setExcalidrawAPI] = useState(null);
     const [elements, setElements] = useState([]);
     const [appState, setAppState] = useState({
         viewModeEnabled: readOnly,
@@ -54,7 +53,7 @@ export default function ExcalidrawWrapper({
             });
 
             if (response.ok) {
-                const data = await response.json();
+                await response.json();
                 setLastSaved(new Date());
                 toast.success("Canvas saved successfully!");
             } else {
@@ -163,7 +162,7 @@ export default function ExcalidrawWrapper({
             setElements(newElements);
 
             // Create a stable appState without causing re-renders
-            setAppState((prevAppState) => ({
+            setAppState(() => ({
                 ...newAppState,
                 collaborators: new Map(), // Always use empty Map
                 viewModeEnabled: readOnly,

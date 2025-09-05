@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 
 export default function GitHubUsernameModal({ isOpen, onClose }) {

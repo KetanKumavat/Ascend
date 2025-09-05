@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";

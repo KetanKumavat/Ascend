@@ -17,7 +17,7 @@ export default async function UserIssues({ userId }) {
           No issues found
         </h3>
         <p className="text-neutral-600 dark:text-neutral-400">
-          You don't have any issues assigned or reported yet
+          You don&apos;t have any issues assigned or reported yet
         </p>
       </div>
     );

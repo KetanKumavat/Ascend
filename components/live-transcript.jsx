@@ -16,7 +16,6 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
     const [isSupported, setIsSupported] = useState(true);
     const [startTime, setStartTime] = useState(null);
     const [savedStatus, setSavedStatus] = useState("");
-    const [meetingStatus, setMeetingStatus] = useState("SCHEDULED");
     const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
     const [connectionStatus, setConnectionStatus] = useState("connected");
     const [lastSavedAt, setLastSavedAt] = useState(null);
@@ -755,7 +754,7 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                                 <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">System Audio Mode</p>
                                 <p className="text-blue-700 dark:text-blue-300">
                                     This will capture all audio from your system including meeting participants, music, and notifications. 
-                                    You'll need to share your screen/audio when prompted.
+                                    You&apos;ll need to share your screen/audio when prompted.
                                 </p>
                             </div>
                         </div>
