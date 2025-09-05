@@ -10,7 +10,7 @@ const UserAvatar = ({ user }) => {
                     {user ? user.name : "?"}
                 </AvatarFallback>
             </Avatar>
-            <span className="text-xs text-gray-300">
+            <span className="text-xs text-neutral-300">
                 {user ? user.name : "Unassigned"}
             </span>
         </div>

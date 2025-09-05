@@ -40,25 +40,25 @@ body {
         --radius: 0.5rem;
     }
     .dark {
-        --background: 0 0% 3.9%;
-        --foreground: 0 0% 98%;
-        --card: 0 0% 3.9%;
-        --card-foreground: 0 0% 98%;
-        --popover: 0 0% 3.9%;
-        --popover-foreground: 0 0% 98%;
-        --primary: 0 0% 98%;
-        --primary-foreground: 0 0% 9%;
-        --secondary: 0 0% 14.9%;
-        --secondary-foreground: 0 0% 98%;
-        --muted: 0 0% 14.9%;
-        --muted-foreground: 0 0% 63.9%;
-        --accent: 0 0% 14.9%;
-        --accent-foreground: 0 0% 98%;
+        --background: 220 13% 6%;
+        --foreground: 220 13% 98%;
+        --card: 220 13% 9%;
+        --card-foreground: 220 13% 98%;
+        --popover: 220 13% 9%;
+        --popover-foreground: 220 13% 98%;
+        --primary: 220 13% 98%;
+        --primary-foreground: 220 13% 9%;
+        --secondary: 220 13% 13%;
+        --secondary-foreground: 220 13% 98%;
+        --muted: 220 13% 13%;
+        --muted-foreground: 220 13% 65%;
+        --accent: 220 13% 13%;
+        --accent-foreground: 220 13% 98%;
         --destructive: 0 62.8% 30.6%;
         --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 14.9%;
-        --input: 0 0% 14.9%;
-        --ring: 0 0% 83.1%;
+        --border: 220 13% 18%;
+        --input: 220 13% 18%;
+        --ring: 220 13% 83%;
         --chart-1: 220 70% 50%;
         --chart-2: 160 60% 45%;
         --chart-3: 30 80% 55%;
@@ -76,9 +76,10 @@ body {
     }
 }
 
+/* Vercel-inspired scrollbar */
 ::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -86,18 +87,36 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #000000;
-    border-radius: 50px;
+    background: hsl(220 13% 25%);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: transparent;
+    background: hsl(220 13% 35%);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: hsl(220 13% 25%);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(220 13% 35%);
 }
 
 html {
     scrollbar-width: thin;
-    scrollbar-color: #ffffff5d transparent;
+    scrollbar-color: hsl(220 13% 25%) transparent;
     scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for horizontal navigation */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }
 
 body {

@@ -124,6 +124,7 @@ import {
   getCachedProjects, 
   getCachedOrganizationUsers 
 } from "@/lib/cache";
+import { getCachedUser } from "@/lib/user-utils";
 
 export async function getOrganization(slug) {
   const auth_result = await auth();
@@ -132,9 +133,8 @@ export async function getOrganization(slug) {
     throw new Error("Unauthorized");
   }
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  // Use cached user lookup
+  const user = await getCachedUser(userId);
 
   if (!user) {
     throw new Error("User not found");
@@ -163,9 +163,8 @@ export async function getUserIssues(userId) {
     throw new Error("No user id or organization id found");
   }
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  // Use cached user lookup
+  const user = await getCachedUser(userId);
 
   if (!user) {
     throw new Error("User not found");
@@ -178,10 +177,39 @@ export async function getUserIssues(userId) {
         organizationId: orgId,
       },
     },
-    include: {
-      project: true,
-      assignee: true,
-      reporter: true,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      projectId: true,
+      sprintId: true,
+      assigneeId: true,
+      reporterId: true,
+      createdAt: true,
+      updatedAt: true,
+      project: {
+        select: {
+          id: true,
+          name: true,
+          key: true
+        }
+      },
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      },
+      reporter: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      },
     },
     orderBy: { updatedAt: "desc" },
   });

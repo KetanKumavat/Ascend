@@ -63,7 +63,7 @@ export default function IssueCard({
         <CardFooter className="flex flex-col items-start space-y-3">
           <UserAvatar user={issue.assignee} />
 
-          <div className="text-xs text-gray-400 w-full">Created {created}</div>
+          <div className="text-xs text-neutral-400 w-full">Created {created}</div>
         </CardFooter>
       </Card>
 

@@ -2,6 +2,8 @@
 
 import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
+import { getCachedProjects } from "@/lib/cache";
 
 export async function createProject(data) {
   const auth_result = await auth();
@@ -53,32 +55,36 @@ export async function getProject(projectId) {
     throw new Error("Unauthorized");
   }
 
-  // Find user to verify existence
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  // Use cached user lookup
+  const user = await getCachedUser(userId);
 
   if (!user) {
     throw new Error("User not found");
   }
 
-  // Get project with sprints and organization
-  const project = await db.project.findUnique({
-    where: { id: projectId },
+  // Get project with sprints and organization - optimized query
+  const project = await db.project.findFirst({
+    where: { 
+      id: projectId,
+      organizationId: orgId // Include org check in query
+    },
     include: {
       sprints: {
         orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          createdAt: true
+        }
       },
     },
   });
 
   if (!project) {
-    throw new Error("Project not found");
-  }
-
-  // Verify project belongs to the organization
-  if (project.organizationId !== orgId) {
-    return null;
+    throw new Error("Project not found or access denied");
   }
 
   return project;
@@ -162,14 +168,6 @@ export async function getProjects(orgId) {
     throw new Error("Unauthorized");
   }
 
-  const projects = await db.project.findMany({
-    where: {
-      organizationId: orgId,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return projects;
+  // Use cached projects data
+  return await getCachedProjects(orgId, userId);
 }

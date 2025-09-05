@@ -2,6 +2,8 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
+import { timeQuery } from "@/lib/performance";
 
 export async function getMessagesForProject(projectId) {
   const auth_result = await auth();
@@ -11,11 +13,29 @@ export async function getMessagesForProject(projectId) {
     throw new Error("Unauthorized");
   }
 
-  const messages = await db.message.findMany({
-    where: { projectId },
-    include: { user: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const messages = await timeQuery(
+    'getMessagesForProject',
+    () => db.message.findMany({
+      where: { projectId },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        projectId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    { projectId }
+  );
 
   return messages;
 }
@@ -28,32 +48,47 @@ export async function createMessage(projectId, data) {
     throw new Error("Unauthorized");
   }
 
-  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  // Use cached user lookup
+  const user = await getCachedUser(userId);
 
   if (!user) {
     throw new Error("User not found");
   }
 
-  const newMessage = await db.message.create({
-    data: {
-      content: data.content,
-      userId: user.id,
-      projectId,
-    },
-  });
+  const newMessage = await timeQuery(
+    'createMessage',
+    () => db.message.create({
+      data: {
+        content: data.content,
+        userId: user.id,
+        projectId,
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        updatedAt: true,
+        userId: true,
+        projectId: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    }),
+    { projectId, userId: user.id }
+  );
 
   return newMessage;
 }
 
 export async function getUserByClerkId(clerkUserId) {
   try {
-    const user = await db.user.findUnique({
-      where: {
-        clerkUserId: clerkUserId,
-      },
-    });
-
-    return user;
+    // Use cached user lookup
+    return await getCachedUser(clerkUserId);
   } catch (error) {
     console.error("Error fetching user by Clerk ID:", error);
     throw new Error("Failed to fetch user");

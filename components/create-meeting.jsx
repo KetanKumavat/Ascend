@@ -123,7 +123,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                         Schedule New Meeting
                     </DialogTitle>
                     <DialogDescription>
-                        Create a FREE video meeting session with unlimited
+                        Create a free video meeting session with unlimited
                         participants, live transcription, and AI-powered
                         insights.
                     </DialogDescription>
@@ -274,7 +274,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                                             value={project.id}
                                         >
                                             <div className="flex items-center gap-2">
-                                                <span className="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1 rounded">
+                                                <span className="font-mono text-xs bg-neutral-100 dark:bg-neutral-800 px-1 rounded">
                                                     {project.key}
                                                 </span>
                                                 {project.name}

@@ -22,6 +22,9 @@ model User {
   createdCanvases Canvas[] @relation("CanvasCreator")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([clerkUserId], name: "idx_user_clerk_user_id")
+  @@index([email], name: "idx_user_email")
 }
 
 model Project {
@@ -40,6 +43,9 @@ model Project {
   updatedAt      DateTime @updatedAt
 
   @@unique([organizationId, key])
+  @@index([organizationId], name: "idx_project_organization_id")
+  @@index([name], name: "idx_project_name")
+  @@index([createdAt], name: "idx_project_created_at")
 }
 
 model Sprint {
@@ -53,6 +59,11 @@ model Sprint {
   issues    Issue[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([projectId], name: "idx_sprint_project_id")
+  @@index([status], name: "idx_sprint_status")
+  @@index([startDate], name: "idx_sprint_start_date")
+  @@index([endDate], name: "idx_sprint_end_date")
 }
 
 model Issue {
@@ -74,6 +85,15 @@ model Issue {
   updatedAt   DateTime   @updatedAt
 
   @@index([status, order])
+  @@index([projectId], name: "idx_issue_project_id")
+  @@index([sprintId], name: "idx_issue_sprint_id")
+  @@index([assigneeId], name: "idx_issue_assignee_id")
+  @@index([reporterId], name: "idx_issue_reporter_id")
+  @@index([status], name: "idx_issue_status")
+  @@index([priority], name: "idx_issue_priority")
+  @@index([projectId, status], name: "idx_issue_project_status")
+  @@index([assigneeId, projectId, status], name: "idx_issue_assignee_project_status")
+  @@index([reporterId, projectId, status], name: "idx_issue_reporter_project_status")
 }
 
 model Message {
@@ -84,6 +104,10 @@ model Message {
   userId     String
   user       User     @relation(fields: [userId], references: [id], name: "UserMessages")
   project    Project  @relation(fields: [projectId], references: [id], name: "ProjectMessages")
+
+  @@index([projectId], name: "idx_message_project_id")
+  @@index([userId], name: "idx_message_user_id")
+  @@index([createdAt], name: "idx_message_created_at")
 }
 
 enum SprintStatus {
@@ -112,6 +136,7 @@ model Meeting {
   description    String?
   meetingId      String?  @unique  // Google Meet meeting ID
   meetingUrl     String?  // Join URL
+  googleEventId  String?  // Google Calendar event ID
   scheduledAt    DateTime
   duration       Int?     // in minutes
   status         MeetingStatus @default(SCHEDULED)
@@ -124,18 +149,30 @@ model Meeting {
   transcript     MeetingTranscript?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([organizationId], name: "idx_meeting_organization_id")
+  @@index([projectId], name: "idx_meeting_project_id")
+  @@index([status], name: "idx_meeting_status")
+  @@index([scheduledAt], name: "idx_meeting_scheduled_at")
+  @@index([createdById], name: "idx_meeting_created_by")
+  @@index([organizationId, projectId], name: "idx_meeting_org_project")
+  @@index([organizationId, status, scheduledAt], name: "idx_meeting_org_status_scheduled")
 }
 
 model MeetingParticipant {
   id        String  @id @default(cuid())
   meetingId String
   userId    String
+  status    ParticipantStatus @default(INVITED)
   joinedAt  DateTime?
   leftAt    DateTime?
   meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   user      User    @relation(fields: [userId], references: [id])
   
   @@unique([meetingId, userId])
+  @@index([meetingId], name: "idx_meeting_participant_meeting_id")
+  @@index([userId], name: "idx_meeting_participant_user_id")
+  @@index([status], name: "idx_meeting_participant_status")
 }
 
 model MeetingTranscript {
@@ -144,7 +181,11 @@ model MeetingTranscript {
   content     String   // Full transcript
   highlights  String?  // AI-generated highlights/summary
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId], name: "idx_transcript_meeting_id")
+  @@index([createdAt], name: "idx_transcript_created_at")
 }
 
 enum MeetingStatus {
@@ -152,6 +193,13 @@ enum MeetingStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum ParticipantStatus {
+  INVITED
+  JOINED
+  LEFT
+  DECLINED
 }
 
 model Canvas {
@@ -170,4 +218,9 @@ model Canvas {
   project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
   @@unique([organizationId, projectId, isDefault]) // Ensure only one default canvas per org/project
+  @@index([organizationId], name: "idx_canvas_organization_id")
+  @@index([projectId], name: "idx_canvas_project_id")
+  @@index([createdById], name: "idx_canvas_created_by")
+  @@index([isDefault], name: "idx_canvas_is_default")
+  @@index([organizationId, projectId, isDefault], name: "idx_canvas_org_project_default")
 }

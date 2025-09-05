@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
+import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
 
 export async function GET(request) {
   try {
@@ -27,13 +28,21 @@ export async function GET(request) {
     let canvas;
 
     if (canvasId) {
-      // Get specific canvas
-      canvas = await db.canvas.findUnique({
+      // Get specific canvas with org check in query
+      canvas = await db.canvas.findFirst({
         where: { 
           id: canvasId,
           organizationId: organizationId
         },
-        include: {
+        select: {
+          id: true,
+          title: true,
+          elements: true,
+          appState: true,
+          organizationId: true,
+          projectId: true,
+          createdAt: true,
+          updatedAt: true,
           createdBy: {
             select: { id: true, name: true, email: true }
           },
@@ -52,7 +61,15 @@ export async function GET(request) {
 
       canvas = await db.canvas.findFirst({
         where: whereClause,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          elements: true,
+          appState: true,
+          organizationId: true,
+          projectId: true,
+          createdAt: true,
+          updatedAt: true,
           createdBy: {
             select: { id: true, name: true, email: true }
           },
@@ -64,9 +81,7 @@ export async function GET(request) {
 
       // Create default canvas if it doesn't exist
       if (!canvas) {
-        const user = await db.user.findUnique({
-          where: { clerkUserId: userId }
-        });
+        const user = await getCachedUser(userId);
 
         if (!user) {
           return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -82,7 +97,15 @@ export async function GET(request) {
             createdById: user.id,
             isDefault: true
           },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            elements: true,
+            appState: true,
+            organizationId: true,
+            projectId: true,
+            createdAt: true,
+            updatedAt: true,
             createdBy: {
               select: { id: true, name: true, email: true }
             },
@@ -98,9 +121,23 @@ export async function GET(request) {
       return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
     }
 
-    // Parse JSON data
-    const elements = canvas.elements ? JSON.parse(canvas.elements) : [];
-    const appState = canvas.appState ? JSON.parse(canvas.appState) : {};
+    // Parse JSON data with error handling
+    let elements = [];
+    let appState = {};
+    
+    try {
+      elements = canvas.elements ? JSON.parse(canvas.elements) : [];
+    } catch (error) {
+      console.warn('Invalid JSON in canvas elements:', error);
+      elements = [];
+    }
+    
+    try {
+      appState = canvas.appState ? JSON.parse(canvas.appState) : {};
+    } catch (error) {
+      console.warn('Invalid JSON in canvas appState:', error);
+      appState = {};
+    }
 
     // Get active collaborators (mock data for now - in real app you'd track this)
     const collaborators = [

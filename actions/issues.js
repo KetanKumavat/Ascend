@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
 
 export async function getIssuesForSprint(sprintId) {
   const auth_result = await auth();
@@ -14,9 +15,33 @@ export async function getIssuesForSprint(sprintId) {
   const issues = await db.issue.findMany({
     where: { sprintId: sprintId },
     orderBy: [{ status: "asc" }, { order: "asc" }],
-    include: {
-      assignee: true,
-      reporter: true,
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      order: true,
+      projectId: true,
+      sprintId: true,
+      assigneeId: true,
+      reporterId: true,
+      createdAt: true,
+      updatedAt: true,
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      },
+      reporter: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      },
     },
   });
 
@@ -31,10 +56,16 @@ export async function createIssue(projectId, data) {
     throw new Error("Unauthorized");
   }
 
-  let user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  // Use cached user lookup
+  const user = await getCachedUser(userId);
 
+  // Optimize order calculation with more specific query
   const lastIssue = await db.issue.findFirst({
-    where: { projectId, status: data.status },
+    where: { 
+      projectId, 
+      status: data.status 
+    },
+    select: { order: true },
     orderBy: { order: "desc" },
   });
 

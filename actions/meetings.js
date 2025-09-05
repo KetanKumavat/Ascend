@@ -2,157 +2,15 @@
 
 import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { GoogleAuth } from "google-auth-library";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { google } from "googleapis";
 import { getCachedMeetings, getCachedMeeting } from "@/lib/cache";
-
-// Initialize Google Auth
-const googleAuth = new GoogleAuth({
-    scopes: [
-        "https://www.googleapis.com/auth/calendar",
-        "https://www.googleapis.com/auth/calendar.events",
-    ],
-    credentials: {
-        client_email: process.env.NEXT_GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.NEXT_GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    },
-});
+import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
 
 // Initialize Gemini AI for transcript processing
 const gemini = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY);
 
-// Function to create actual Google Meet meeting using Calendar API
-async function createGoogleMeetEvent(meetingData) {
-    try {
-        const authClient = await googleAuth.getClient();
-        const calendar = google.calendar({ version: "v3", auth: authClient });
-
-        const startDateTime = new Date(meetingData.scheduledAt);
-        const endDateTime = new Date(
-            startDateTime.getTime() + meetingData.duration * 60 * 1000
-        );
-
-        const event = {
-            summary: meetingData.title,
-            description: meetingData.description || "",
-            start: {
-                dateTime: startDateTime.toISOString(),
-                timeZone: "UTC",
-            },
-            end: {
-                dateTime: endDateTime.toISOString(),
-                timeZone: "UTC",
-            },
-            conferenceData: {
-                createRequest: {
-                    requestId: `meet-${Date.now()}`,
-                    conferenceSolutionKey: {
-                        type: "hangoutsMeet",
-                    },
-                },
-            },
-            attendees: [], // Will be populated later with participants
-        };
-
-        console.log("Creating Google Calendar event with Meet link...");
-
-        let response;
-        let calendarId;
-
-        // Strategy 1: Try primary calendar (works with domain-wide delegation)
-        try {
-            console.log("Attempting to create event in primary calendar...");
-            response = await calendar.events.insert({
-                calendarId: "primary",
-                resource: event,
-                conferenceDataVersion: 1,
-            });
-            calendarId = "primary";
-            console.log("✅ Event created in primary calendar");
-        } catch (primaryError) {
-            console.log("❌ Primary calendar failed:", primaryError.message);
-
-            // Strategy 2: Try service account's own calendar
-            try {
-                console.log(
-                    "Attempting to create event in service account calendar..."
-                );
-                const serviceAccountEmail =
-                    process.env.NEXT_GOOGLE_CLIENT_EMAIL;
-                response = await calendar.events.insert({
-                    calendarId: serviceAccountEmail,
-                    resource: event,
-                    conferenceDataVersion: 1,
-                });
-                calendarId = serviceAccountEmail;
-                console.log("✅ Event created in service account calendar");
-            } catch (serviceError) {
-                console.log(
-                    "❌ Service account calendar failed:",
-                    serviceError.message
-                );
-
-                // If both fail, throw the original error with helpful context
-                throw new Error(
-                    `Google Calendar API access failed. ${primaryError.message}. This usually means domain-wide delegation is not enabled or the service account lacks permissions.`
-                );
-            }
-        }
-
-        console.log("Google Calendar event created:", response.data.id);
-
-        if (
-            response.data.conferenceData &&
-            response.data.conferenceData.entryPoints
-        ) {
-            const meetLink = response.data.conferenceData.entryPoints.find(
-                (entry) => entry.entryPointType === "video"
-            );
-
-            return {
-                meetingUrl: meetLink ? meetLink.uri : null,
-                googleEventId: response.data.id,
-                conferenceData: response.data.conferenceData,
-            };
-        }
-
-        throw new Error("Failed to create Google Meet link");
-    } catch (error) {
-        console.error("Error creating Google Meet event:", error);
-        throw new Error(`Failed to create Google Meet: ${error.message}`);
-    }
-}
-
 // Helper function to generate Google Meet-style codes (fallback only)
-function generateMeetCode() {
-    const chars = "abcdefghijklmnopqrstuvwxyz";
-    const segments = [];
-
-    // Generate 3 segments like Google Meet: xxx-yyyy-zzz
-    // First segment: 3 letters
-    let segment1 = "";
-    for (let j = 0; j < 3; j++) {
-        segment1 += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    segments.push(segment1);
-
-    // Second segment: 4 letters
-    let segment2 = "";
-    for (let j = 0; j < 4; j++) {
-        segment2 += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    segments.push(segment2);
-
-    // Third segment: 3 letters
-    let segment3 = "";
-    for (let j = 0; j < 3; j++) {
-        segment3 += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    segments.push(segment3);
-
-    return segments.join("-");
-}
 
 export async function createMeeting(data) {
     const auth_result = await auth();
@@ -180,22 +38,29 @@ export async function createMeeting(data) {
         throw new Error("Insufficient permissions to create meetings");
     }
 
-    // Find user in database
-    const user = await db.user.findUnique({
-        where: { clerkUserId: userId },
-    });
+    // Get or create user in database using cached utility
+    const user = await getOrCreateUser(userId);
 
     if (!user) {
         throw new Error("User not found");
     }
 
-    // Validate project if specified
+    // Validate project if specified with optimized query
+    let project = null;
     if (data.projectId) {
-        const project = await db.project.findUnique({
-            where: { id: data.projectId },
+        project = await db.project.findFirst({
+            where: {
+                id: data.projectId,
+                organizationId: orgId, // Include org check in query
+            },
+            select: {
+                id: true,
+                name: true,
+                organizationId: true,
+            },
         });
 
-        if (!project || project.organizationId !== orgId) {
+        if (!project) {
             throw new Error("Project not found or access denied");
         }
     }
@@ -347,54 +212,47 @@ export async function joinMeeting(meetingId) {
         throw new Error("Unauthorized");
     }
 
-    const user = await db.user.findUnique({
-        where: { clerkUserId: userId },
-    });
+    // Use cached user lookup
+    const user = await getCachedUser(userId);
 
     if (!user) {
         throw new Error("User not found");
     }
 
-    const meeting = await db.meeting.findUnique({
-        where: { id: meetingId },
+    // Optimized meeting lookup with org check in query
+    const meeting = await db.meeting.findFirst({
+        where: {
+            id: meetingId,
+            organizationId: orgId, // Include org check in query
+        },
+        select: {
+            id: true,
+            organizationId: true,
+            status: true,
+        },
     });
 
-    if (!meeting || meeting.organizationId !== orgId) {
+    if (!meeting) {
         throw new Error("Meeting not found or access denied");
     }
 
-    // Add user as participant if not already added
-    const existingParticipant = await db.meetingParticipant.findUnique({
+    // Add user as participant if not already added - use upsert for efficiency
+    await db.meetingParticipant.upsert({
         where: {
             meetingId_userId: {
                 meetingId: meetingId,
                 userId: user.id,
             },
         },
+        update: {
+            status: "JOINED",
+        },
+        create: {
+            meetingId: meetingId,
+            userId: user.id,
+            status: "JOINED",
+        },
     });
-
-    if (!existingParticipant) {
-        await db.meetingParticipant.create({
-            data: {
-                meetingId: meetingId,
-                userId: user.id,
-                joinedAt: new Date(),
-            },
-        });
-    } else if (!existingParticipant.joinedAt) {
-        await db.meetingParticipant.update({
-            where: {
-                meetingId_userId: {
-                    meetingId: meetingId,
-                    userId: user.id,
-                },
-            },
-            data: {
-                joinedAt: new Date(),
-            },
-        });
-    }
-
     return {
         meetingUrl: meeting.meetingUrl,
         meetingId: meeting.meetingId,
@@ -409,19 +267,32 @@ export async function updateMeetingStatus(meetingId, status) {
         throw new Error("Unauthorized");
     }
 
-    const user = await db.user.findUnique({
-        where: { clerkUserId: userId },
-    });
+    // Use cached user lookup
+    const user = await getCachedUser(userId);
 
     if (!user) {
         throw new Error("User not found");
     }
 
-    const meeting = await db.meeting.findUnique({
-        where: { id: meetingId },
+    // Optimized meeting lookup with permission check in query
+    const meeting = await db.meeting.findFirst({
+        where: {
+            id: meetingId,
+            organizationId: orgId,
+            OR: [
+                { createdById: user.id }, // User is creator
+                // Admin check will be done after if needed
+            ],
+        },
+        select: {
+            id: true,
+            organizationId: true,
+            createdById: true,
+            status: true,
+        },
     });
 
-    if (!meeting || meeting.organizationId !== orgId) {
+    if (!meeting) {
         throw new Error("Meeting not found or access denied");
     }
 

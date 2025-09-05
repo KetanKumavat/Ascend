@@ -14,6 +14,7 @@ import {
     SparklesIcon,
     MessageSquareTextIcon,
     ExternalLinkIcon,
+    Mic,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ export function MeetingsDashboard({ projects = [] }) {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
+    const [realTimeUpdates, setRealTimeUpdates] = useState(true);
     const params = useParams();
 
     // Auto-select project if only one is available
@@ -51,7 +53,7 @@ export function MeetingsDashboard({ projects = [] }) {
         }
     }, [projects, selectedProjectId]);
 
-    // Fetch meetings with better caching
+    // Fetch meetings with better caching and real-time updates
     useEffect(() => {
         let isMounted = true;
 
@@ -87,10 +89,19 @@ export function MeetingsDashboard({ projects = [] }) {
 
         fetchMeetings();
 
+        // Set up real-time polling for live meetings
+        let interval;
+        if (realTimeUpdates) {
+            interval = setInterval(() => {
+                fetchMeetings();
+            }, 30000); // Poll every 30 seconds for transcript status updates
+        }
+
         return () => {
             isMounted = false;
+            if (interval) clearInterval(interval);
         };
-    }, [selectedProjectId]);
+    }, [selectedProjectId, realTimeUpdates]);
 
     // Memoize meeting categorization for performance
     const categorizedMeetings = useMemo(() => {
@@ -156,11 +167,11 @@ export function MeetingsDashboard({ projects = [] }) {
         );
 
         if (scheduledTime <= now && endTime > now) {
-            return { status: "live", label: "🔴 Live", variant: "destructive" };
+            return { status: "live", label: "Live", variant: "destructive" };
         } else if (endTime <= now) {
-            return { status: "ended", label: "✅ Ended", variant: "secondary" };
+            return { status: "ended", label: "Ended", variant: "secondary" };
         } else if (isToday(scheduledTime)) {
-            return { status: "today", label: "📅 Today", variant: "default" };
+            return { status: "today", label: "Today", variant: "default" };
         } else if (isTomorrow(scheduledTime)) {
             return {
                 status: "tomorrow",
@@ -179,6 +190,19 @@ export function MeetingsDashboard({ projects = [] }) {
     const MeetingCard = ({ meeting }) => {
         const status = getMeetingStatus(meeting);
         const hasTranscript = meeting.transcript && meeting.transcript.content;
+        
+        // Safely parse highlights JSON with error handling
+        let hasPartialTranscript = false;
+        if (meeting.transcript && meeting.transcript.highlights) {
+            try {
+                const highlights = JSON.parse(meeting.transcript.highlights);
+                hasPartialTranscript = highlights.isPartial === true;
+            } catch (error) {
+                // If highlights is not valid JSON (e.g., markdown), assume it's not partial
+                console.warn('Invalid JSON in transcript highlights:', error);
+                hasPartialTranscript = false;
+            }
+        }
 
         return (
             <Card className="hover:shadow-lg transition-all duration-200 bg-card/50 backdrop-blur-sm">
@@ -196,7 +220,13 @@ export function MeetingsDashboard({ projects = [] }) {
                             <Badge variant={status.variant}>
                                 {status.label}
                             </Badge>
-                            {hasTranscript && (
+                            {hasPartialTranscript && status.status === "live" && (
+                                <Badge variant="default" className="text-xs bg-blue-600 animate-pulse">
+                                    <Mic className="w-3 h-3 mr-1" />
+                                    Recording
+                                </Badge>
+                            )}
+                            {hasTranscript && !hasPartialTranscript && (
                                 <Badge variant="outline" className="text-xs">
                                     <FileTextIcon className="w-3 h-3 mr-1" />
                                     Transcript
@@ -272,7 +302,9 @@ export function MeetingsDashboard({ projects = [] }) {
                         >
                             <Button variant="outline" className="w-full">
                                 <FileTextIcon className="w-4 h-4 mr-2" />
-                                {hasTranscript
+                                {hasPartialTranscript && status.status === "live"
+                                    ? "Join Transcript"
+                                    : hasTranscript
                                     ? "View Transcript"
                                     : "Live Transcript"}
                             </Button>

@@ -236,13 +236,13 @@ export function TranscriptViewer({ meetingId, meeting }) {
                   showFullTranscript ? "max-h-none" : "max-h-96 overflow-hidden"
                 }`}
               >
-                <div className="whitespace-pre-wrap font-mono text-sm bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border">
+                <div className="whitespace-pre-wrap font-mono text-sm bg-neutral-50 dark:bg-neutral-900 p-4 rounded-lg border">
                   {transcript.content}
                 </div>
               </div>
               
               {!showFullTranscript && (
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-gray-950 to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-neutral-950 to-transparent pointer-events-none" />
               )}
             </CardContent>
           </Card>

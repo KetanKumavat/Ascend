@@ -1,25 +1,13 @@
 "use client";
 
-import {
-    Excalidraw,
-    convertToExcalidrawElements,
-} from "@excalidraw/excalidraw";
+import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-    Save,
-    Users,
-    RefreshCw,
-    ArrowLeft,
-    Home,
-    FolderIcon,
-} from "lucide-react";
+import { Save, Users, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function ExcalidrawWrapper({
     organizationId,
@@ -28,7 +16,6 @@ export default function ExcalidrawWrapper({
     readOnly = false,
     title = "Team Canvas",
 }) {
-    const router = useRouter();
     const [excalidrawAPI, setExcalidrawAPI] = useState(null);
     const [elements, setElements] = useState([]);
     const [appState, setAppState] = useState({
@@ -108,7 +95,7 @@ export default function ExcalidrawWrapper({
         loadCanvasData();
     }, [canvasId, organizationId, projectId]);
 
-    // Keyboard navigation shortcuts
+    // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (event) => {
             // Only handle if not in an input field
@@ -117,16 +104,6 @@ export default function ExcalidrawWrapper({
                 event.target.tagName === "TEXTAREA"
             ) {
                 return;
-            }
-
-            // Escape key - go back
-            if (event.key === "Escape") {
-                event.preventDefault();
-                router.push(
-                    projectId
-                        ? `/project/${projectId}`
-                        : `/organization/${organizationId}`
-                );
             }
 
             // Ctrl/Cmd + S - save
@@ -140,7 +117,7 @@ export default function ExcalidrawWrapper({
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [router, projectId, organizationId, readOnly, handleSave]);
+    }, [readOnly, handleSave]);
 
     const loadCanvasData = async () => {
         try {
@@ -212,86 +189,32 @@ export default function ExcalidrawWrapper({
 
     return (
         <div className="w-full space-y-4">
-            {/* Navigation Breadcrumb */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Link
-                    href={`/organization/${organizationId}`}
-                    className="flex items-center gap-1 hover:text-foreground transition-colors"
-                >
-                    <Home className="w-4 h-4" />
-                    Organization
-                </Link>
-                {projectId && (
-                    <>
-                        <span>/</span>
-                        <Link
-                            href={`/project/${projectId}`}
-                            className="flex items-center gap-1 hover:text-foreground transition-colors"
-                        >
-                            <FolderIcon className="w-4 h-4" />
-                            Project
-                        </Link>
-                        <span>/</span>
-                        <span className="text-foreground">Canvas</span>
-                    </>
-                )}
-                {!projectId && (
-                    <>
-                        <span>/</span>
-                        <span className="text-foreground">Canvas</span>
-                    </>
-                )}
-            </div>
-
-            {/* Canvas Header */}
+            {/* Canvas Header (no navigation, only status and actions) */}
             <Card>
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 ">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            {/* Back Button */}
-                            <Link
-                                href={
-                                    projectId
-                                        ? `/project/${projectId}`
-                                        : `/organization/${organizationId}`
-                                }
-                            >
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-2"
-                                >
-                                    <ArrowLeft className="w-4 h-4" />
-                                    Back
-                                </Button>
-                            </Link>
-
-                            <div className="flex items-center gap-3">
-                                <CardTitle className="flex items-center gap-2">
-                                    {title}
-                                </CardTitle>
-                                <Badge variant="outline">
-                                    {readOnly ? "View Only" : "Collaborative"}
-                                </Badge>
-                            </div>
+                            <CardTitle className="flex items-center gap-2">
+                                {title}
+                            </CardTitle>
+                            <Badge variant="outline">
+                                {readOnly ? "View Only" : "Collaborative"}
+                            </Badge>
                         </div>
-
                         <div className="flex items-center gap-3">
                             {collaborators.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <Users className="w-4 h-4" />
-                                    <span className="text-sm text-muted-foreground">
+                                    <span className="text-sm text-neutral-400 dark:text-neutral-400">
                                         {collaborators.length} online
                                     </span>
                                 </div>
                             )}
-
                             {lastSaved && (
-                                <span className="text-xs text-muted-foreground">
+                                <span className="text-xs text-neutral-400 dark:text-neutral-400">
                                     Last saved: {lastSaved.toLocaleTimeString()}
                                 </span>
                             )}
-
                             {!readOnly && (
                                 <Button
                                     onClick={handleSave}
@@ -348,7 +271,7 @@ export default function ExcalidrawWrapper({
             {/* Canvas Instructions */}
             <Card>
                 <CardContent className="pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-neutral-400 dark:text-neutral-400">
                         <div>
                             <h4 className="font-medium text-foreground mb-2">
                                 Canvas Features:

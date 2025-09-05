@@ -97,7 +97,7 @@ const CreateProject = () => {
       {errors.form && <div className="text-red-500 mb-4">{errors.form}</div>}
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl mx-auto bg-neutral-800/50 border-2 border-gray-900/50 shadow-neutral-700/40 p-12 rounded-lg shadow-lg">
+        className="max-w-2xl mx-auto bg-neutral-800/50 border-2 border-neutral-900/50 shadow-neutral-700/40 p-12 rounded-lg shadow-lg">
         <div className="mb-6">
           <label
             htmlFor="name"

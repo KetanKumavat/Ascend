@@ -1,52 +1,81 @@
 import ClientExcalidrawWrapper from "../../../../../components/client-excalidraw-wrapper";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Home } from "lucide-react";
-import Link from "next/link";
+import PageHeader from "@/components/ui/page-header";
+import { BaseNavigation } from "@/components/ui/base-navigation";
+import { VideoIcon, FolderIcon, Book, BarChart3 } from "lucide-react";
 
 export default async function OrganizationCanvasPage({ params }) {
-  const { orgId } = await params;
+    const { orgId } = await params;
 
-  if (!orgId) {
-    return <div>Organization not found</div>;
-  }
+    if (!orgId) {
+        return <div>Organization not found</div>;
+    }
 
-  return (
-    <div className="container mx-auto py-6 space-y-6 mt-36 mb-24">
-      {/* Navigation Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link 
-          href={`/organization/${orgId}`}
-          className="flex items-center gap-1 hover:text-foreground transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          Organization
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">Canvas</span>
-      </div>
+    const navigationItems = [
+        {
+            key: "projects",
+            label: "Projects",
+            href: `/organization/${orgId}`,
+            icon: "FolderIcon",
+        },
+        {
+            key: "meetings",
+            label: "Meetings",
+            fullLabel: "Organization Meetings",
+            href: `/organization/${orgId}/meetings`,
+            icon: "VideoIcon",
+        },
+        {
+            key: "canvas",
+            label: "Canvas",
+            fullLabel: "Organization Canvas",
+            icon: "Book",
+        },
+    ];
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link href={`/organization/${orgId}`}>
-            <Button variant="outline" size="sm" className="gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Organization
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">Organization Canvas</h1>
-            <p className="text-muted-foreground mt-2">
-              Collaborate with your team on visual planning and brainstorming
-            </p>
-          </div>
+    return (
+        <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pointer-events-none" />
+            
+            {/* Subtle grid pattern */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(163_163_163/0.15)_1px,transparent_0)] [background-size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(115_115_115/0.15)_1px,transparent_0)] pointer-events-none" />
+
+            <div className="relative">
+                <PageHeader
+                    title="Organization Canvas"
+                    subtitle="Organization-wide visual collaboration, planning, and brainstorming"
+                    backHref={`/organization/${orgId}`}
+                    breadcrumb={[
+                        {
+                            label: "Organization",
+                            href: `/organization/${orgId}`,
+                            icon: "Home",
+                        },
+                        { label: "Canvas" },
+                    ]}
+                />
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Organization-level Navigation */}
+                    <BaseNavigation
+                        items={navigationItems}
+                        activeItem="canvas"
+                        contextLabel="Organization-level view"
+                        contextIcon="BarChart3"
+                        contextDescription="Strategic planning and cross-project visualization"
+                    />
+
+                    <main className="py-6">
+                        <div className="bg-white dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+                            <ClientExcalidrawWrapper
+                                organizationId={orgId}
+                                title="Organization Canvas"
+                                readOnly={false}
+                            />
+                        </div>
+                    </main>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <ClientExcalidrawWrapper
-        organizationId={orgId}
-        title="Organization Canvas"
-        readOnly={false}
-      />
-    </div>
-  );
+    );
 }

@@ -163,25 +163,28 @@ const Home = () => {
                 <div className="relative mx-auto flex flex-col items-center max-w-xl md:max-w-3xl">
                     <div className="w-1 h-full bg-gradient-to-b from-lime-400 via-lime-600 to-lime-800 absolute left-1/2 transform -translate-x-1/2"></div>
 
-                    {processSteps.map((step, index) => (
-                        <div
-                            key={index}
-                            className={`flex items-center mb-8 w-full ${
-                                index % 2 === 0
-                                    ? "flex-row"
-                                    : "flex-row-reverse"
-                            }`}
-                        >
-                            <div className="w-1/2 p-2 flex justify-center">
-                                <div className="bg-neutral-800/50 text-white rounded-lg p-4 shadow-lg flex items-center gap-4 border-2 border-neutral-900">
-                                    <step.icon className="text-lime-500 w-8 h-8" />
-                                    <h3 className="text-lg font-semibold">
-                                        {step.title}
-                                    </h3>
+                    {processSteps.map((step, index) => {
+                        const StepIcon = step.icon;
+                        return (
+                            <div
+                                key={index}
+                                className={`flex items-center mb-8 w-full ${
+                                    index % 2 === 0
+                                        ? "flex-row"
+                                        : "flex-row-reverse"
+                                }`}
+                            >
+                                <div className="w-1/2 p-2 flex justify-center">
+                                    <div className="bg-neutral-800/50 text-white rounded-lg p-4 shadow-lg flex items-center gap-4 border-2 border-neutral-900">
+                                        <StepIcon className="text-lime-500 w-8 h-8" />
+                                        <h3 className="text-lg font-semibold">
+                                            {step.title}
+                                        </h3>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </section>
 
@@ -196,26 +199,29 @@ const Home = () => {
                         </span>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
-                        {features.map((feature, index) => (
-                            <div
-                                key={index}
-                                className={`bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8 hover:scale-105 hover:border-lime-500 transition-all duration-300 group cursor-default ${
-                                    index === 3
-                                        ? "md:col-start-2 md:row-start-2"
-                                        : ""
-                                }`}
-                            >
-                                <div className="flex items-center gap-4 mb-6">
-                                    <feature.icon className="h-10 w-10 text-lime-500 group-hover:text-lime-400" />
-                                    <h3 className="text-xl font-semibold text-white">
-                                        {feature.title}
-                                    </h3>
+                        {features.map((feature, index) => {
+                            const FeatureIcon = feature.icon;
+                            return (
+                                <div
+                                    key={index}
+                                    className={`bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-8 hover:scale-105 hover:border-lime-500 transition-all duration-300 group cursor-default ${
+                                        index === 3
+                                            ? "md:col-start-2 md:row-start-2"
+                                            : ""
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <FeatureIcon className="h-10 w-10 text-lime-500 group-hover:text-lime-400" />
+                                        <h3 className="text-xl font-semibold text-white">
+                                            {feature.title}
+                                        </h3>
+                                    </div>
+                                    <p className="text-neutral-400 leading-relaxed">
+                                        {feature.description}
+                                    </p>
                                 </div>
-                                <p className="text-neutral-400 leading-relaxed">
-                                    {feature.description}
-                                </p>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </section>
