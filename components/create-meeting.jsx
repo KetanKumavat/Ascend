@@ -81,7 +81,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
 
             const meeting = await response.json();
             toast.success(
-                "🎉 FREE meeting created successfully! Room ready for unlimited participants."
+                "Meeting created successfully! Room ready for unlimited participants."
             );
 
             setOpen(false);

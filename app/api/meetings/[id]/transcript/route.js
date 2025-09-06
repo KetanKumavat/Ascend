@@ -5,6 +5,7 @@ import { db } from "@/lib/prisma";
 
 export async function POST(request, { params }) {
   try {
+    const resolvedParams = await params;
     const { transcript } = await request.json();
     
     if (!transcript) {
@@ -14,7 +15,7 @@ export async function POST(request, { params }) {
       );
     }
 
-    const result = await addMeetingTranscript(params.id, transcript);
+    const result = await addMeetingTranscript(resolvedParams.id, transcript);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("Add transcript error:", error);
@@ -27,27 +28,53 @@ export async function POST(request, { params }) {
 
 export async function GET(request, { params }) {
   try {
+    const resolvedParams = await params;
     const { userId, orgId } = await auth();
 
     if (!userId || !orgId) {
       throw new Error("Unauthorized");
     }
 
+    const meetingId = resolvedParams.id;
+
+    // Get the meeting and transcript with segments
     const meeting = await db.meeting.findUnique({
-      where: { id: params.id },
+      where: { id: meetingId },
       include: {
-        transcript: true,
+        transcript: {
+          include: {
+            segments: {
+              orderBy: {
+                timestamp: 'asc',
+              },
+            },
+          },
+        },
       },
     });
 
-    if (!meeting || meeting.organizationId !== orgId) {
+    if (!meeting) {
+      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+    }
+
+    // Verify user has access to this meeting/organization
+    if (meeting.organizationId !== orgId) {
       return NextResponse.json(
-        { error: "Meeting not found or access denied" },
-        { status: 404 }
+        { error: "Access denied" },
+        { status: 403 }
       );
     }
 
-    return NextResponse.json(meeting.transcript);
+    // Return transcript data or empty structure if no transcript exists yet
+    const transcriptData = meeting.transcript || {
+      meetingId,
+      content: "",
+      segments: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    return NextResponse.json(transcriptData);
   } catch (error) {
     console.error("Get transcript error:", error);
     return NextResponse.json(

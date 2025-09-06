@@ -1,156 +1,47 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Video, Mic, Users } from "lucide-react";
-import { GoogleMeetCodeDisplay } from "@/components/google-meet-code-display";
+import { ExternalLinkIcon, AlertCircle } from "lucide-react";
 
+// External meeting component - no transcription provided
 export function GoogleMeetCodeCapture({ meetingId }) {
-    const [meetCode, setMeetCode] = useState("");
-    const [isRecording, setIsRecording] = useState(false);
-
-    const handleJoinGoogleMeet = () => {
-        if (!meetCode) {
-            alert("Please enter a Google Meet code");
-            return;
-        }
-
-        // Open Google Meet with the code
-        const meetUrl = `https://meet.google.com/${meetCode}`;
-        window.open(meetUrl, "_blank");
-
-        // Start our own transcript capture
-        startLocalTranscript();
-    };
-
-    const startLocalTranscript = () => {
-        // Use browser speech recognition to capture audio
-        if (
-            "webkitSpeechRecognition" in window ||
-            "SpeechRecognition" in window
-        ) {
-            setIsRecording(true);
-            // Implementation similar to our Jitsi transcript component
-        } else {
-            alert("Speech recognition not supported. Use Chrome or Edge.");
-        }
-    };
-
     return (
-        <div className="space-y-4">
-            {/* If there's a meetingId, show the admin-shared Google Meet code */}
-            {meetingId && <GoogleMeetCodeDisplay meetingId={meetingId} />}
+        <Card className="w-full max-w-2xl">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <ExternalLinkIcon className="w-5 h-5" />
+                    External Meeting
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <AlertCircle className="w-5 h-5 text-amber-600" />
+                    <div>
+                        <p className="text-sm font-medium text-amber-800">
+                            No Transcription Available
+                        </p>
+                        <p className="text-xs text-amber-700">
+                            This is an external meeting. For AI transcription and meeting insights, use our LiveKit meeting room.
+                        </p>
+                    </div>
+                </div>
 
-            {/* Manual Google Meet joining */}
-            <Card className="w-full max-w-2xl">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Video className="w-5 h-5" />
-                        Join External Google Meet + Transcript
-                    </CardTitle>
-                </CardHeader>
+                <div className="flex gap-2">
+                    <Button 
+                        onClick={() => window.location.href = `/meeting/${meetingId}/room`}
+                        className="flex-1"
+                    >
+                        <ExternalLinkIcon className="w-4 h-4 mr-2" />
+                        Switch to LiveKit Meeting
+                    </Button>
+                </div>
 
-                <CardContent>
-                    <Tabs defaultValue="join" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger
-                                value="join"
-                                className="flex items-center gap-2"
-                            >
-                                <Video className="w-4 h-4" />
-                                Join Meeting
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="how"
-                                className="flex items-center gap-2"
-                            >
-                                <Users className="w-4 h-4" />
-                                How It Works
-                            </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="join" className="space-y-4 mt-4">
-                            <div className="flex gap-2">
-                                <Input
-                                    placeholder="Enter Google Meet code (e.g., abc-defg-hij)"
-                                    value={meetCode}
-                                    onChange={(e) =>
-                                        setMeetCode(e.target.value)
-                                    }
-                                    className="flex-1"
-                                />
-                                <Button onClick={handleJoinGoogleMeet}>
-                                    <Video className="w-4 h-4 mr-2" />
-                                    Join & Transcript
-                                </Button>
-                            </div>
-
-                            {isRecording && (
-                                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <Mic className="w-5 h-5 text-red-600" />
-                                        <Badge
-                                            variant="destructive"
-                                            className="animate-pulse"
-                                        >
-                                            🔴 Recording Transcript
-                                        </Badge>
-                                    </div>
-                                    <p className="text-sm text-red-700 mt-2">
-                                        Capturing audio from your microphone and
-                                        generating live transcript...
-                                    </p>
-                                </div>
-                            )}
-                        </TabsContent>
-
-                        <TabsContent value="how" className="space-y-4 mt-4">
-                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <h4 className="font-semibold text-blue-800 mb-2">
-                                    💡 How this works (100% FREE):
-                                </h4>
-                                <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-                                    <li>
-                                        Enter any Google Meet code from your
-                                        team
-                                    </li>
-                                    <li>
-                                        Click &quot;Join & Transcript&quot; -
-                                        opens Google Meet
-                                    </li>
-                                    <li>
-                                        Our app captures audio using browser
-                                        speech recognition
-                                    </li>
-                                    <li>
-                                        Generates transcript with AI insights
-                                        (FREE)
-                                    </li>
-                                    <li>Saves to your project database</li>
-                                </ol>
-                            </div>
-
-                            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                                <h4 className="font-semibold text-green-800 mb-2">
-                                    ✅ What you get for FREE:
-                                </h4>
-                                <div className="grid grid-cols-2 gap-2 text-sm text-green-700">
-                                    <div>🎤 Live speech-to-text</div>
-                                    <div>📝 Full transcript capture</div>
-                                    <div>🤖 AI-powered insights</div>
-                                    <div>📊 Action items extraction</div>
-                                    <div>💾 Database storage</div>
-                                    <div>📱 Works with any meeting</div>
-                                </div>
-                            </div>
-                        </TabsContent>
-                    </Tabs>
-                </CardContent>
-            </Card>
-        </div>
+                <div className="text-xs text-muted-foreground text-center">
+                    For the best meeting experience with AI transcription, recording, and insights, 
+                    use our built-in LiveKit meeting room instead.
+                </div>
+            </CardContent>
+        </Card>
     );
 }

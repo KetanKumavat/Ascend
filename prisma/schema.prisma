@@ -134,9 +134,14 @@ model Meeting {
   id             String   @id @default(cuid())
   title          String
   description    String?
-  meetingId      String?  @unique  // Google Meet meeting ID
-  meetingUrl     String?  // Join URL
+  meetingId      String?  @unique  // LiveKit room name (null for external meetings)
+  meetingUrl     String?  // Meeting room page URL
   googleEventId  String?  // Google Calendar event ID
+  isExternal     Boolean  @default(false) // True for external meetings (no transcription)
+  externalUrl    String?  // External meeting URL (Google Meet, Zoom, etc.)
+  externalPlatform String? // Platform name (Google Meet, Zoom, Teams, etc.)
+  isPublic       Boolean  @default(false) // True for publicly shareable meetings
+  publicToken    String?  @unique // Unique token for public access
   scheduledAt    DateTime
   duration       Int?     // in minutes
   status         MeetingStatus @default(SCHEDULED)
@@ -155,6 +160,7 @@ model Meeting {
   @@index([status], name: "idx_meeting_status")
   @@index([scheduledAt], name: "idx_meeting_scheduled_at")
   @@index([createdById], name: "idx_meeting_created_by")
+  @@index([isExternal], name: "idx_meeting_is_external")
   @@index([organizationId, projectId], name: "idx_meeting_org_project")
   @@index([organizationId, status, scheduledAt], name: "idx_meeting_org_status_scheduled")
 }
@@ -178,14 +184,37 @@ model MeetingParticipant {
 model MeetingTranscript {
   id          String   @id @default(cuid())
   meetingId   String   @unique
-  content     String   // Full transcript
-  highlights  String?  // AI-generated highlights/summary
+  content     String   // Full transcript text
+  summary     String?  // AI-generated summary
+  highlights  String?  // JSON array of key highlights
+  actionItems String?  // JSON array of action items
+  speakers    String?  // JSON array of identified speakers
+  duration    Int?     // Meeting duration in minutes
+  audioPath   String?  // Path to stored audio file (optional)
+  processing  Boolean  @default(false) // Whether AI processing is in progress
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  segments    TranscriptSegment[]
 
   @@index([meetingId], name: "idx_transcript_meeting_id")
   @@index([createdAt], name: "idx_transcript_created_at")
+  @@index([processing], name: "idx_transcript_processing")
+}
+
+model TranscriptSegment {
+  id            String   @id @default(cuid())
+  meetingId     String
+  participantId String?  // LiveKit participant ID
+  text          String   // Segment text
+  isFinal       Boolean  @default(false) // Whether this is a final transcript
+  language      String   @default("en")
+  timestamp     DateTime @default(now())
+  transcript    MeetingTranscript @relation(fields: [meetingId], references: [meetingId], onDelete: Cascade)
+
+  @@index([meetingId], name: "idx_segment_meeting_id")
+  @@index([timestamp], name: "idx_segment_timestamp")
+  @@index([isFinal], name: "idx_segment_is_final")
 }
 
 enum MeetingStatus {

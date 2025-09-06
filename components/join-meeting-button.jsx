@@ -1,12 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { PlayIcon } from "lucide-react";
+import { Video } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-export function JoinMeetingButton({ meetingUrl, className, size = "lg" }) {
+export function JoinMeetingButton({ meetingId, className, size = "lg" }) {
+  const router = useRouter();
+
   const handleJoinMeeting = () => {
-    if (meetingUrl) {
-      window.open(meetingUrl, "_blank");
+    if (meetingId) {
+      router.push(`/meeting/${meetingId}/room`);
     }
   };
 
@@ -16,7 +19,7 @@ export function JoinMeetingButton({ meetingUrl, className, size = "lg" }) {
       className={className}
       onClick={handleJoinMeeting}
     >
-      <PlayIcon className="w-5 h-5 mr-2" />
+      <Video className="w-5 h-5 mr-2" />
       Join Meeting
     </Button>
   );

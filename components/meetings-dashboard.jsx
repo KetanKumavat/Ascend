@@ -32,17 +32,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { CreateMeetingDialog } from "@/components/create-meeting";
-import { JoinExternalMeetDialog } from "@/components/join-external-meet-dialog";
+import { JoinExternalMeetDialog } from "@/components/join-external-meeting-dialog";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 
 export function MeetingsDashboard({ projects = [] }) {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
-    const [realTimeUpdates, setRealTimeUpdates] = useState(true);
-    const params = useParams();
 
     // Auto-select project if only one is available
     useEffect(() => {
@@ -87,19 +84,33 @@ export function MeetingsDashboard({ projects = [] }) {
 
         fetchMeetings();
 
-        // Set up real-time polling for live meetings
-        let interval;
-        if (realTimeUpdates) {
-            interval = setInterval(() => {
-                fetchMeetings();
-            }, 30000); // Poll every 30 seconds for transcript status updates
-        }
-
         return () => {
             isMounted = false;
-            if (interval) clearInterval(interval);
         };
-    }, [selectedProjectId, realTimeUpdates]);
+    }, [selectedProjectId]);
+
+    // Function to refresh meetings after creation
+    const refreshMeetings = async () => {
+        try {
+            const url =
+                selectedProjectId && selectedProjectId !== "all"
+                    ? `/api/meetings?projectId=${selectedProjectId}`
+                    : "/api/meetings";
+
+            const response = await fetch(url, {
+                headers: {
+                    "Cache-Control": "no-cache", // Force fresh data
+                },
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch meetings");
+
+            const data = await response.json();
+            setMeetings(data);
+        } catch (error) {
+            console.error("Error refreshing meetings:", error);
+        }
+    };
 
     // Memoize meeting categorization for performance
     const categorizedMeetings = useMemo(() => {
@@ -133,30 +144,15 @@ export function MeetingsDashboard({ projects = [] }) {
         return { upcoming, ongoing, past };
     }, [meetings]);
 
-    const handleJoinMeeting = async (meetingId, meetingUrl) => {
+    const handleJoinMeeting = async (meetingId) => {
         try {
-            // Optimistic UI - open meeting immediately
-            if (meetingUrl) {
-                window.open(meetingUrl, "_blank");
-                toast.success("Opening meeting...");
-                return;
-            }
-
-            const response = await fetch(`/api/meetings/${meetingId}/join`, {
-                method: "POST",
-            });
-
-            if (!response.ok) throw new Error("Failed to join meeting");
-
-            const { meetingUrl: url } = await response.json();
-            window.open(url, "_blank");
-            toast.success("Joining meeting...");
+            toast.success("Opening meeting...");
+            window.location.href = `/meeting/${meetingId}/room`;
         } catch (error) {
             console.error("Error joining meeting:", error);
             toast.error("Failed to join meeting");
         }
     };
-
     const getMeetingStatus = (meeting) => {
         const now = new Date();
         const scheduledTime = new Date(meeting.scheduledAt);
@@ -218,6 +214,17 @@ export function MeetingsDashboard({ projects = [] }) {
                             <Badge variant={status.variant}>
                                 {status.label}
                             </Badge>
+                            {meeting.isExternal ? (
+                                <Badge variant="secondary" className="text-xs">
+                                    <ExternalLinkIcon className="w-3 h-3 mr-1" />
+                                    {meeting.externalPlatform || "External"}
+                                </Badge>
+                            ) : (
+                                <Badge variant="outline" className="text-xs">
+                                    <VideoIcon className="w-3 h-3 mr-1" />
+                                    LiveKit
+                                </Badge>
+                            )}
                             {hasPartialTranscript &&
                                 status.status === "live" && (
                                     <Badge
@@ -231,7 +238,7 @@ export function MeetingsDashboard({ projects = [] }) {
                             {hasTranscript && !hasPartialTranscript && (
                                 <Badge variant="outline" className="text-xs">
                                     <FileTextIcon className="w-3 h-3 mr-1" />
-                                    Transcript
+                                    Recording
                                 </Badge>
                             )}
                         </div>
@@ -269,12 +276,7 @@ export function MeetingsDashboard({ projects = [] }) {
                     <div className="flex flex-wrap gap-2">
                         {status.status === "live" && (
                             <Button
-                                onClick={() =>
-                                    handleJoinMeeting(
-                                        meeting.id,
-                                        meeting.meetingUrl
-                                    )
-                                }
+                                onClick={() => handleJoinMeeting(meeting.id)}
                                 className="bg-red-600 hover:bg-red-700 text-white flex-1 sm:flex-none"
                             >
                                 <PlayIcon className="w-4 h-4 mr-2" />
@@ -282,36 +284,75 @@ export function MeetingsDashboard({ projects = [] }) {
                             </Button>
                         )}
 
-                        {status.status !== "live" && meeting.meetingUrl && (
-                            <Button
-                                onClick={() =>
-                                    handleJoinMeeting(
-                                        meeting.id,
-                                        meeting.meetingUrl
-                                    )
-                                }
-                                variant="outline"
+                        {status.status !== "live" &&
+                            (meeting.isExternal ? (
+                                <Button
+                                    onClick={() => {
+                                        if (meeting.externalUrl) {
+                                            window.open(
+                                                meeting.externalUrl,
+                                                "_blank"
+                                            );
+                                            toast.success(
+                                                `Opening ${
+                                                    meeting.externalPlatform ||
+                                                    "external"
+                                                } meeting`
+                                            );
+                                        } else {
+                                            toast.error(
+                                                "External meeting URL not found"
+                                            );
+                                        }
+                                    }}
+                                    variant="outline"
+                                    className="flex-1 sm:flex-none"
+                                >
+                                    <ExternalLinkIcon className="w-4 h-4 mr-2" />
+                                    Join External Meeting
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={() =>
+                                        handleJoinMeeting(meeting.id)
+                                    }
+                                    variant="outline"
+                                    className="flex-1 sm:flex-none"
+                                >
+                                    <VideoIcon className="w-4 h-4 mr-2" />
+                                    Join Meeting
+                                </Button>
+                            ))}
+
+                        {!meeting.isExternal && (
+                            <Link
+                                href={`/meeting/${meeting.id}/transcript`}
                                 className="flex-1 sm:flex-none"
                             >
-                                <VideoIcon className="w-4 h-4 mr-2" />
-                                Join Meeting
-                            </Button>
+                                <Button variant="outline" className="w-full">
+                                    <FileTextIcon className="w-4 h-4 mr-2" />
+                                    {hasPartialTranscript &&
+                                    status.status === "live"
+                                        ? "Join Recording"
+                                        : hasTranscript
+                                        ? "View Recording"
+                                        : "Start Recording"}
+                                </Button>
+                            </Link>
                         )}
 
-                        <Link
-                            href={`/meeting/${meeting.id}/transcript`}
-                            className="flex-1 sm:flex-none"
-                        >
-                            <Button variant="outline" className="w-full">
-                                <FileTextIcon className="w-4 h-4 mr-2" />
-                                {hasPartialTranscript &&
-                                status.status === "live"
-                                    ? "Join Transcript"
-                                    : hasTranscript
-                                    ? "View Transcript"
-                                    : "Live Transcript"}
-                            </Button>
-                        </Link>
+                        {meeting.isExternal && (
+                            <div className="flex-1 sm:flex-none">
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    disabled
+                                >
+                                    <FileTextIcon className="w-4 h-4 mr-2" />
+                                    No Transcript Available
+                                </Button>
+                            </div>
+                        )}
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -326,21 +367,18 @@ export function MeetingsDashboard({ projects = [] }) {
                                         View Details
                                     </Link>
                                 </DropdownMenuItem>
-                                {meeting.meetingUrl && (
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(
-                                                meeting.meetingUrl
-                                            );
-                                            toast.success(
-                                                "Meeting link copied!"
-                                            );
-                                        }}
-                                    >
-                                        <ExternalLinkIcon className="w-4 h-4 mr-2" />
-                                        Copy Link
-                                    </DropdownMenuItem>
-                                )}
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        const meetingLink = `${window.location.origin}/meeting/${meeting.id}/room`;
+                                        navigator.clipboard.writeText(
+                                            meetingLink
+                                        );
+                                        toast.success("Meeting link copied!");
+                                    }}
+                                >
+                                    <ExternalLinkIcon className="w-4 h-4 mr-2" />
+                                    Copy Link
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -400,7 +438,10 @@ export function MeetingsDashboard({ projects = [] }) {
                 </div>
 
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <CreateMeetingDialog projects={projects}>
+                    <CreateMeetingDialog 
+                        projects={projects}
+                        onMeetingCreated={refreshMeetings}
+                    >
                         <Button className="flex-1 sm:flex-none">
                             <VideoIcon className="w-4 h-4 mr-2" />
                             Create Meeting
@@ -472,7 +513,10 @@ export function MeetingsDashboard({ projects = [] }) {
                                 <p className="text-muted-foreground mb-4">
                                     Create your first meeting to get started
                                 </p>
-                                <CreateMeetingDialog projects={projects}>
+                                <CreateMeetingDialog 
+                                    projects={projects}
+                                    onMeetingCreated={refreshMeetings}
+                                >
                                     <Button>
                                         <VideoIcon className="w-4 h-4 mr-2" />
                                         Create Meeting

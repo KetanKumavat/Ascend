@@ -11,7 +11,6 @@ import {
     VideoIcon,
     Book,
     ChevronRight,
-    Target,
 } from "lucide-react";
 
 const iconMap = {

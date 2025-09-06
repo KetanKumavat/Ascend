@@ -1,10 +1,6 @@
-const {
-    default: flattenColorPalette,
-} = require("tailwindcss/lib/util/flattenColorPalette");
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    darkMode: ["class"],
+    darkMode: "class", // Keep this for dark: classes to work
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,6 +8,7 @@ module.exports = {
     ],
     theme: {
         extend: {
+            // Keep all the color variables - your components depend on these
             colors: {
                 background: "hsl(var(--background))",
                 foreground: "hsl(var(--foreground))",
@@ -91,16 +88,5 @@ module.exports = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate"), addVariablesForColors],
+    plugins: [require("tailwindcss-animate")], // Removed the color variables plugin since you have them in CSS
 };
-
-function addVariablesForColors({ addBase, theme }) {
-    let allColors = flattenColorPalette(theme("colors"));
-    let newVars = Object.fromEntries(
-        Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-    );
-
-    addBase({
-        ":root": newVars,
-    });
-}

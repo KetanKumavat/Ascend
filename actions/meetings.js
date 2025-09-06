@@ -89,26 +89,25 @@ export async function createMeeting(data) {
             },
         });
 
-        // Create meeting with REAL Google Meet integration
+        // Create LiveKit meeting room
         let meetingUrl = null;
         let googleEventId = null;
-        let googleMeetId = null;
+        let livekitRoomName = null;
 
         try {
-            console.log("Creating FREE meeting room...");
+            console.log("Creating LiveKit meeting room...");
 
-            // Create meeting room (completely free, no API key needed)
-            const roomName = `ascend-${meeting.id}-${Date.now()}-${Math.random()
-                .toString(36)
-                .substring(7)}`;
-            meetingUrl = `https://meet.jit.si/${roomName}`;
-            googleMeetId = roomName; // Use roomName as meeting ID
+            // Create LiveKit room name
+            livekitRoomName = `ascend-${meeting.id}-${Date.now()}`;
 
-            console.log("✅ FREE meeting room created:", {
+            // LiveKit meeting URL will be our meeting room page
+            meetingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/meeting/${meeting.id}/room`;
+
+            console.log("✅ LiveKit meeting room configured:", {
+                roomName: livekitRoomName,
                 meetingUrl,
-                roomName,
                 features:
-                    "Video, Audio, Screen Share, Chat, Recording, Live Transcription (all FREE)",
+                    "HD Video, Audio, Screen Share, Chat, AI Transcription",
             });
 
             // Optional: Try Google Calendar integration if credentials available
@@ -117,7 +116,7 @@ export async function createMeeting(data) {
                     title: meeting.title,
                     description: `${
                         meeting.description
-                    }\n\n🎥 Join Meeting: ${meetingUrl}\n\n📝 Live Transcript: ${
+                    }\n\n🎥 Join Meeting: ${meetingUrl}\n\n📝 AI Transcript: ${
                         process.env.NEXT_PUBLIC_APP_URL ||
                         "http://localhost:3001"
                     }/meeting/${meeting.id}/transcript`,
@@ -150,12 +149,12 @@ export async function createMeeting(data) {
             console.log("Using simple meeting room:", meetingUrl);
         }
 
-        // Update meeting with Google Meet details
+        // Update meeting with LiveKit room details
         const updatedMeeting = await db.meeting.update({
             where: { id: meeting.id },
             data: {
                 meetingUrl: meetingUrl,
-                meetingId: googleMeetId,
+                meetingId: livekitRoomName,
                 // Store Google Calendar event ID for future reference
                 description:
                     meeting.description +
@@ -520,4 +519,128 @@ async function generateTranscriptInsights(transcriptContent) {
             generatedAt: new Date().toISOString(),
         };
     }
+}
+
+// Generate public sharing token for a meeting
+export async function generatePublicToken(meetingId) {
+    const { userId, orgId } = await auth();
+
+    if (!userId || !orgId) {
+        throw new Error("Unauthorized");
+    }
+
+    // Verify user has access to this meeting
+    const meeting = await db.meeting.findUnique({
+        where: { id: meetingId },
+        select: {
+            id: true,
+            organizationId: true,
+            createdById: true,
+            isPublic: true,
+            publicToken: true,
+        },
+    });
+
+    if (!meeting) {
+        throw new Error("Meeting not found");
+    }
+
+    if (meeting.organizationId !== orgId) {
+        throw new Error("Access denied");
+    }
+
+    // Generate a secure random token
+    const publicToken = `meet_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 16)}`;
+
+    // Update meeting with public access
+    const updatedMeeting = await db.meeting.update({
+        where: { id: meetingId },
+        data: {
+            isPublic: true,
+            publicToken,
+        },
+        select: {
+            publicToken: true,
+        },
+    });
+
+    return updatedMeeting.publicToken;
+}
+
+// Revoke public access for a meeting
+export async function revokePublicAccess(meetingId) {
+    const { userId, orgId } = await auth();
+
+    if (!userId || !orgId) {
+        throw new Error("Unauthorized");
+    }
+
+    // Verify user has access to this meeting
+    const meeting = await db.meeting.findUnique({
+        where: { id: meetingId },
+        select: {
+            id: true,
+            organizationId: true,
+            createdById: true,
+        },
+    });
+
+    if (!meeting) {
+        throw new Error("Meeting not found");
+    }
+
+    if (meeting.organizationId !== orgId) {
+        throw new Error("Access denied");
+    }
+
+    // Remove public access
+    await db.meeting.update({
+        where: { id: meetingId },
+        data: {
+            isPublic: false,
+            publicToken: null,
+        },
+    });
+
+    return { success: true };
+}
+
+// Get public meeting info (for sharing)
+export async function getPublicMeetingInfo(meetingId) {
+    const { userId, orgId } = await auth();
+
+    if (!userId || !orgId) {
+        throw new Error("Unauthorized");
+    }
+
+    const meeting = await db.meeting.findUnique({
+        where: { id: meetingId },
+        select: {
+            id: true,
+            title: true,
+            organizationId: true,
+            isPublic: true,
+            publicToken: true,
+        },
+    });
+
+    if (!meeting) {
+        throw new Error("Meeting not found");
+    }
+
+    if (meeting.organizationId !== orgId) {
+        throw new Error("Access denied");
+    }
+
+    return {
+        isPublic: meeting.isPublic,
+        publicToken: meeting.publicToken,
+        publicUrl: meeting.publicToken
+            ? `${
+                  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+              }/join/${meeting.publicToken}`
+            : null,
+    };
 }

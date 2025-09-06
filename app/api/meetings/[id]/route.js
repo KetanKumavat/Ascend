@@ -3,7 +3,8 @@ import { getMeeting, updateMeetingStatus, deleteMeeting } from "@/actions/meetin
 
 export async function GET(request, { params }) {
   try {
-    const meeting = await getMeeting(params.id);
+    const resolvedParams = await params;
+    const meeting = await getMeeting(resolvedParams.id);
     return NextResponse.json(meeting);
   } catch (error) {
     console.error("Get meeting error:", error);
@@ -16,6 +17,7 @@ export async function GET(request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
+    const resolvedParams = await params;
     const { status } = await request.json();
     
     if (!status) {
@@ -25,7 +27,7 @@ export async function PATCH(request, { params }) {
       );
     }
 
-    const meeting = await updateMeetingStatus(params.id, status);
+    const meeting = await updateMeetingStatus(resolvedParams.id, status);
     return NextResponse.json(meeting);
   } catch (error) {
     console.error("Update meeting error:", error);
@@ -38,7 +40,8 @@ export async function PATCH(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
-    const result = await deleteMeeting(params.id);
+    const resolvedParams = await params;
+    const result = await deleteMeeting(resolvedParams.id);
     return NextResponse.json(result);
   } catch (error) {
     console.error("Delete meeting error:", error);

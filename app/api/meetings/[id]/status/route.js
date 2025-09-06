@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 
 export async function PATCH(request, { params }) {
   try {
+    const resolvedParams = await params;
     const { userId, orgId } = await auth();
 
     if (!userId || !orgId) {
@@ -24,7 +25,7 @@ export async function PATCH(request, { params }) {
 
     // Verify meeting access
     const meeting = await db.meeting.findUnique({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
     });
 
     if (!meeting || meeting.organizationId !== orgId) {
@@ -36,7 +37,7 @@ export async function PATCH(request, { params }) {
 
     // Update meeting status
     const updatedMeeting = await db.meeting.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: { 
         status: status,
         // Update timestamp when status changes

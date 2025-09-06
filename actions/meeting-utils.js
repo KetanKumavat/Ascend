@@ -1,44 +1,45 @@
-// Enhanced Meeting Integration with Transcript Support
+// Enhanced Meeting Integration with LiveKit and AI Transcript Support
 "use server";
 
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini AI for transcript processing
-const gemini = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY);
+const gemini = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export async function createMeetingRoom(meetingData) {
+export async function createLiveKitRoom(meetingData) {
     try {
-        // Generate unique room name
+        // Generate unique LiveKit room name
         const roomName = `ascend-${meetingData.id || Date.now()}-${Math.random()
             .toString(36)
             .substring(7)}`;
-        const meetingUrl = `https://meet.jit.si/${roomName}`;
+        
+        // Meeting URL points to our LiveKit room page
+        const meetingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/meeting/${meetingData.id}/room`;
 
-        console.log("FREE meeting room created:", {
-            meetingUrl,
+        console.log("LiveKit meeting room configured:", {
             roomName,
-            features:
-                "Video, Audio, Screen Share, Chat, Recording, Live Transcription",
+            meetingUrl,
+            features: "HD Video, Audio, Screen Share, Chat, AI Transcription",
         });
 
         return {
             meetingUrl,
             roomName,
-            platform: "video-meeting",
+            platform: "livekit",
             features: {
                 videoCall: true,
                 screenShare: true,
-                recording: true, // Local recording available
+                recording: true,
                 chat: true,
-                transcription: true, // We'll implement this
+                transcription: true, // AI-powered via LiveKit agents
                 participants: "unlimited",
                 timeLimit: "none",
-                cost: "FREE",
+                cost: "Enterprise-grade",
             },
         };
     } catch (error) {
-        console.error("Meeting room creation failed:", error);
+        console.error("LiveKit room configuration failed:", error);
         throw error;
     }
 }
@@ -61,7 +62,7 @@ export async function saveTranscript(meetingId, transcriptData) {
                 startTime: transcriptData.startTime,
                 endTime: transcriptData.endTime,
                 language: transcriptData.language || "en",
-                source: "jitsi-browser",
+                source: "livekit-agent",
             },
             generatedAt: new Date().toISOString(),
         });
@@ -140,12 +141,12 @@ async function generateTranscriptInsights(transcriptContent) {
     }
 }
 
-export async function getJitsiMeetingWithTranscript(meetingId) {
+export async function getLiveKitMeetingWithTranscript(meetingId) {
     try {
         const meeting = await db.meeting.findUnique({
-            where: { id: parseInt(meetingId) },
+            where: { id: meetingId },
             include: {
-                transcript: true, // singular, as per schema
+                transcript: true,
                 participants: {
                     include: { user: true },
                 },

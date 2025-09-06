@@ -5,7 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mic, MicOff, Save, Download, Copy, User, Clock, Wifi, WifiOff, AlertCircle } from "lucide-react";
+import {
+    Mic,
+    MicOff,
+    Save,
+    Download,
+    Copy,
+    User,
+    Clock,
+    Wifi,
+    WifiOff,
+    AlertCircle,
+    MonitorSmartphone,
+} from "lucide-react";
 import { saveTranscript } from "@/actions/meetings";
 import { toast } from "sonner";
 
@@ -37,21 +49,29 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         try {
             setConnectionStatus("saving");
             const transcriptContent = transcript
-                .filter(entry => entry.isFinal)
-                .map(entry => `[${entry.timestamp.toLocaleTimeString()}] ${entry.speaker}: ${entry.text}`)
-                .join('\n');
+                .filter((entry) => entry.isFinal)
+                .map(
+                    (entry) =>
+                        `[${entry.timestamp.toLocaleTimeString()}] ${
+                            entry.speaker
+                        }: ${entry.text}`
+                )
+                .join("\n");
 
             if (transcriptContent.trim()) {
-                const response = await fetch(`/api/meetings/${meetingId}/transcript/autosave`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        content: transcriptContent,
-                        isPartial: true,
-                        timestamp: new Date().toISOString(),
-                        chunkId: Date.now()
-                    })
-                });
+                const response = await fetch(
+                    `/api/meetings/${meetingId}/transcript/autosave`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            content: transcriptContent,
+                            isPartial: true,
+                            timestamp: new Date().toISOString(),
+                            chunkId: Date.now(),
+                        }),
+                    }
+                );
 
                 if (response.ok) {
                     setLastSavedAt(new Date());
@@ -59,14 +79,14 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                     setSavedStatus("Auto-saved");
                     setTimeout(() => setSavedStatus(""), 2000);
                 } else {
-                    throw new Error('Auto-save failed');
+                    throw new Error("Auto-save failed");
                 }
             }
         } catch (error) {
-            console.error('Auto-save error:', error);
+            console.error("Auto-save error:", error);
             setConnectionStatus("error");
             setSavedStatus("Auto-save failed");
-            
+
             // Retry in 10 seconds
             if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
             retryTimeoutRef.current = setTimeout(autoSaveTranscript, 10000);
@@ -74,25 +94,31 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
     }, [isRecording, transcript, meetingId]);
 
     // Update meeting status when transcript starts/stops
-    const updateMeetingStatus = useCallback(async (status) => {
-        try {
-            await fetch(`/api/meetings/${meetingId}/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
-            });
-            setMeetingStatus(status);
-        } catch (error) {
-            console.error('Failed to update meeting status:', error);
-        }
-    }, [meetingId]);
+    const updateMeetingStatus = useCallback(
+        async (status) => {
+            try {
+                await fetch(`/api/meetings/${meetingId}/status`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status }),
+                });
+                setMeetingStatus(status);
+            } catch (error) {
+                console.error("Failed to update meeting status:", error);
+            }
+        },
+        [meetingId]
+    );
 
     // Check system audio capture support
     useEffect(() => {
         const checkSystemAudioSupport = async () => {
             try {
                 // Check if getDisplayMedia is available and supports audio
-                if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                if (
+                    navigator.mediaDevices &&
+                    navigator.mediaDevices.getDisplayMedia
+                ) {
                     setSystemAudioSupported(true);
                 } else {
                     setSystemAudioSupported(false);
@@ -118,14 +144,15 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                     autoGainControl: false,
                     channelCount: 2,
                     sampleRate: 44100,
-                    sampleSize: 16
-                }
+                    sampleSize: 16,
+                },
             });
 
             mediaStreamRef.current = stream;
 
             // Create audio context for processing
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
             audioContextRef.current = audioContext;
 
             // Create source node from the stream
@@ -141,32 +168,43 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                 recognitionRef.current.stop();
             }
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
-            
+
             recognition.continuous = true;
             recognition.interimResults = true;
             recognition.lang = "en-US";
 
             // Connect system audio to speech recognition
-            setupSpeechRecognitionWithSystemAudio(recognition, destination.stream);
+            setupSpeechRecognitionWithSystemAudio(
+                recognition,
+                destination.stream
+            );
 
             recognitionRef.current = recognition;
 
-            toast.success("System audio capture enabled! All meeting audio will be transcribed.");
+            toast.success(
+                "System audio capture enabled! All meeting audio will be transcribed."
+            );
             return true;
-
         } catch (error) {
             console.error("System audio capture failed:", error);
-            
-            if (error.name === 'NotAllowedError') {
-                toast.error("System audio permission denied. Please allow screen sharing with audio.");
-            } else if (error.name === 'NotSupportedError') {
-                toast.error("System audio capture not supported in this browser. Try Chrome or Edge.");
+
+            if (error.name === "NotAllowedError") {
+                toast.error(
+                    "System audio permission denied. Please allow screen sharing with audio."
+                );
+            } else if (error.name === "NotSupportedError") {
+                toast.error(
+                    "System audio capture not supported in this browser. Try Chrome or Edge."
+                );
             } else {
-                toast.error("Failed to setup system audio capture. Falling back to microphone.");
+                toast.error(
+                    "Failed to setup system audio capture. Falling back to microphone."
+                );
             }
-            
+
             setAudioSource("microphone");
             return false;
         }
@@ -175,12 +213,15 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
     // Setup microphone capture (original method)
     const setupMicrophoneCapture = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+            });
             mediaStreamRef.current = stream;
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
-            
+
             recognition.continuous = true;
             recognition.interimResults = true;
             recognition.lang = "en-US";
@@ -191,13 +232,18 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
             return true;
         } catch (error) {
             console.error("Microphone access failed:", error);
-            toast.error("Microphone access denied. Please allow microphone permissions.");
+            toast.error(
+                "Microphone access denied. Please allow microphone permissions."
+            );
             return false;
         }
     };
 
     // Setup speech recognition with system audio stream
-    const setupSpeechRecognitionWithSystemAudio = (recognition, audioStream) => {
+    const setupSpeechRecognitionWithSystemAudio = (
+        recognition,
+        audioStream
+    ) => {
         recognition.onstart = () => {
             console.log("🎤 System audio transcription started");
             setStartTime(new Date());
@@ -226,7 +272,7 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                     text: finalTranscript.trim(),
                     timestamp: new Date(),
                     isFinal: true,
-                    source: audioSource
+                    source: audioSource,
                 };
 
                 setTranscript((prev) => [...prev, newEntry]);
@@ -240,9 +286,11 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         recognition.onerror = (event) => {
             console.error("Speech recognition error:", event.error);
             setConnectionStatus("error");
-            
+
             if (event.error === "not-allowed") {
-                toast.error("Microphone access denied. Please allow microphone access.");
+                toast.error(
+                    "Microphone access denied. Please allow microphone access."
+                );
             } else if (event.error === "network") {
                 toast.error("Network error. Check your internet connection.");
                 setConnectionStatus("disconnected");
@@ -297,11 +345,12 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
             if (finalTranscript) {
                 const newEntry = {
                     id: Date.now(),
-                    speaker: currentSpeaker || `Speaker ${transcript.length + 1}`,
+                    speaker:
+                        currentSpeaker || `Speaker ${transcript.length + 1}`,
                     text: finalTranscript.trim(),
                     timestamp: new Date(),
                     isFinal: true,
-                    source: audioSource
+                    source: audioSource,
                 };
 
                 setTranscript((prev) => [...prev, newEntry]);
@@ -315,9 +364,11 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         recognition.onerror = (event) => {
             console.error("Speech recognition error:", event.error);
             setConnectionStatus("error");
-            
+
             if (event.error === "not-allowed") {
-                toast.error("Microphone access denied. Please allow microphone access and try again.");
+                toast.error(
+                    "Microphone access denied. Please allow microphone access and try again."
+                );
             } else if (event.error === "network") {
                 toast.error("Network error. Check your internet connection.");
                 setConnectionStatus("disconnected");
@@ -381,7 +432,8 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
             if (finalTranscript) {
                 const newEntry = {
                     id: Date.now(),
-                    speaker: currentSpeaker || `Speaker ${transcript.length + 1}`,
+                    speaker:
+                        currentSpeaker || `Speaker ${transcript.length + 1}`,
                     text: finalTranscript.trim(),
                     timestamp: new Date(),
                     isFinal: true,
@@ -399,9 +451,11 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         recognition.onerror = (event) => {
             console.error("Speech recognition error:", event.error);
             setConnectionStatus("error");
-            
+
             if (event.error === "not-allowed") {
-                toast.error("Microphone access denied. Please allow microphone access and try again.");
+                toast.error(
+                    "Microphone access denied. Please allow microphone access and try again."
+                );
             } else if (event.error === "network") {
                 toast.error("Network error. Check your internet connection.");
                 setConnectionStatus("disconnected");
@@ -440,7 +494,10 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
     // Set up auto-save interval
     useEffect(() => {
         if (isRecording && autoSaveEnabled) {
-            autoSaveIntervalRef.current = setInterval(autoSaveTranscript, 30000); // Every 30 seconds
+            autoSaveIntervalRef.current = setInterval(
+                autoSaveTranscript,
+                30000
+            ); // Every 30 seconds
             return () => {
                 if (autoSaveIntervalRef.current) {
                     clearInterval(autoSaveIntervalRef.current);
@@ -451,15 +508,17 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
 
     const startRecording = async () => {
         if (!isSupported) {
-            toast.error("Speech recognition is not supported in your browser. Please use Chrome or Edge.");
+            toast.error(
+                "Speech recognition is not supported in your browser. Please use Chrome or Edge."
+            );
             return;
         }
 
         try {
             setConnectionStatus("connecting");
-            
+
             let success = false;
-            
+
             if (audioSource === "system") {
                 success = await setupSystemAudioCapture();
             } else {
@@ -472,7 +531,9 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                 recognitionRef.current.start();
             } else {
                 setConnectionStatus("error");
-                toast.error("Failed to start recording. Please check your permissions.");
+                toast.error(
+                    "Failed to start recording. Please check your permissions."
+                );
             }
         } catch (error) {
             console.error("Failed to start recording:", error);
@@ -485,26 +546,26 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
         }
-        
+
         // Stop media streams
         if (mediaStreamRef.current) {
-            mediaStreamRef.current.getTracks().forEach(track => track.stop());
+            mediaStreamRef.current.getTracks().forEach((track) => track.stop());
             mediaStreamRef.current = null;
         }
-        
+
         // Close audio context
         if (audioContextRef.current) {
             await audioContextRef.current.close();
             audioContextRef.current = null;
         }
-        
+
         setIsRecording(false);
-        
+
         // Final save when stopping
         if (transcript.length > 0) {
             await saveFinalTranscript();
         }
-        
+
         await updateMeetingStatus("COMPLETED");
     };
 
@@ -515,13 +576,20 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         }
 
         setSavedStatus("Saving final transcript...");
-        
+
         try {
-            const speakers = [...new Set(transcript.map(entry => entry.speaker))];
+            const speakers = [
+                ...new Set(transcript.map((entry) => entry.speaker)),
+            ];
             const transcriptContent = transcript
-                .filter(entry => entry.isFinal)
-                .map(entry => `[${entry.timestamp.toLocaleTimeString()}] ${entry.speaker}: ${entry.text}`)
-                .join('\n');
+                .filter((entry) => entry.isFinal)
+                .map(
+                    (entry) =>
+                        `[${entry.timestamp.toLocaleTimeString()}] ${
+                            entry.speaker
+                        }: ${entry.text}`
+                )
+                .join("\n");
 
             const transcriptData = {
                 content: transcriptContent,
@@ -529,13 +597,13 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                 startTime: startTime?.toISOString(),
                 endTime: new Date().toISOString(),
                 language: "en",
-                source: "browser-transcript"
+                source: "browser-transcript",
             };
 
             await saveTranscript(meetingId, transcriptData);
             setSavedStatus("✅ Transcript saved successfully!");
             toast.success("Meeting transcript saved successfully!");
-            
+
             setTimeout(() => setSavedStatus(""), 3000);
         } catch (error) {
             console.error("Save error:", error);
@@ -551,15 +619,22 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         }
 
         const content = transcript
-            .filter(entry => entry.isFinal)
-            .map(entry => `[${entry.timestamp.toLocaleTimeString()}] ${entry.speaker}: ${entry.text}`)
-            .join('\n');
+            .filter((entry) => entry.isFinal)
+            .map(
+                (entry) =>
+                    `[${entry.timestamp.toLocaleTimeString()}] ${
+                        entry.speaker
+                    }: ${entry.text}`
+            )
+            .join("\n");
 
         const blob = new Blob([content], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${meetingTitle}-transcript-${new Date().toISOString().split('T')[0]}.txt`;
+        a.download = `${meetingTitle}-transcript-${
+            new Date().toISOString().split("T")[0]
+        }.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -569,10 +644,15 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
 
     const copyToClipboard = () => {
         const content = transcript
-            .filter(entry => entry.isFinal)
-            .map(entry => `[${entry.timestamp.toLocaleTimeString()}] ${entry.speaker}: ${entry.text}`)
-            .join('\n');
-        
+            .filter((entry) => entry.isFinal)
+            .map(
+                (entry) =>
+                    `[${entry.timestamp.toLocaleTimeString()}] ${
+                        entry.speaker
+                    }: ${entry.text}`
+            )
+            .join("\n");
+
         navigator.clipboard.writeText(content);
         toast.success("Transcript copied to clipboard!");
     };
@@ -582,24 +662,32 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
         const duration = new Date() - start;
         const minutes = Math.floor(duration / 60000);
         const seconds = Math.floor((duration % 60000) / 1000);
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        return `${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`;
     };
 
     const getConnectionIcon = () => {
         switch (connectionStatus) {
-            case "saving": return <Clock className="w-4 h-4 animate-spin" />;
-            case "error": 
-            case "disconnected": return <WifiOff className="w-4 h-4" />;
-            default: return <Wifi className="w-4 h-4" />;
+            case "saving":
+                return <Clock className="w-4 h-4 animate-spin" />;
+            case "error":
+            case "disconnected":
+                return <WifiOff className="w-4 h-4" />;
+            default:
+                return <Wifi className="w-4 h-4" />;
         }
     };
 
     const getConnectionColor = () => {
         switch (connectionStatus) {
-            case "saving": return "text-blue-600";
-            case "error": 
-            case "disconnected": return "text-red-600";
-            default: return "text-green-600";
+            case "saving":
+                return "text-blue-600";
+            case "error":
+            case "disconnected":
+                return "text-red-600";
+            default:
+                return "text-green-600";
         }
     };
 
@@ -608,9 +696,12 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
             <Card className="w-full">
                 <CardContent className="flex flex-col items-center justify-center py-12">
                     <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Speech Recognition Not Supported</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                        Speech Recognition Not Supported
+                    </h3>
                     <p className="text-muted-foreground text-center">
-                        Please use Chrome, Edge, or Safari to enable live transcription.
+                        Please use Chrome, Edge, or Safari to enable live
+                        transcription.
                     </p>
                 </CardContent>
             </Card>
@@ -625,31 +716,41 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                         <Mic className="w-5 h-5" />
                         Live Transcript
                         {isRecording && (
-                            <Badge variant="destructive" className="animate-pulse">
+                            <Badge
+                                variant="destructive"
+                                className="animate-pulse"
+                            >
                                 RECORDING
                             </Badge>
                         )}
                     </CardTitle>
                     <div className="flex items-center gap-3">
-                        <div className={`flex items-center gap-1 text-sm ${getConnectionColor()}`}>
+                        <div
+                            className={`flex items-center gap-1 text-sm ${getConnectionColor()}`}
+                        >
                             {getConnectionIcon()}
-                            <span className="capitalize">{connectionStatus}</span>
+                            <span className="capitalize">
+                                {connectionStatus}
+                            </span>
                         </div>
                         {isRecording && startTime && (
-                            <Badge variant="outline" className="flex items-center gap-1">
+                            <Badge
+                                variant="outline"
+                                className="flex items-center gap-1"
+                            >
                                 <Clock className="w-3 h-3" />
                                 {formatDuration(startTime)}
                             </Badge>
                         )}
                     </div>
                 </div>
-                
+
                 {savedStatus && (
                     <div className="text-sm text-muted-foreground">
                         {savedStatus}
                     </div>
                 )}
-                
+
                 {lastSavedAt && autoSaveEnabled && (
                     <div className="text-xs text-muted-foreground">
                         Last auto-saved: {lastSavedAt.toLocaleTimeString()}
@@ -661,14 +762,17 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                 {/* Controls */}
                 <div className="flex flex-wrap gap-2">
                     {!isRecording ? (
-                        <Button onClick={startRecording} className="flex items-center gap-2">
+                        <Button
+                            onClick={startRecording}
+                            className="flex items-center gap-2"
+                        >
                             <Mic className="w-4 h-4" />
                             Start Recording
                         </Button>
                     ) : (
-                        <Button 
-                            onClick={stopRecording} 
-                            variant="destructive" 
+                        <Button
+                            onClick={stopRecording}
+                            variant="destructive"
                             className="flex items-center gap-2"
                         >
                             <MicOff className="w-4 h-4" />
@@ -724,8 +828,13 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                             <Mic className="w-4 h-4" />
                             <span className="text-sm">Microphone Only</span>
                         </label>
-                        
-                        <label className={`flex items-center gap-2 cursor-pointer ${!systemAudioSupported && 'opacity-50 cursor-not-allowed'}`}>
+
+                        <label
+                            className={`flex items-center gap-2 cursor-pointer ${
+                                !systemAudioSupported &&
+                                "opacity-50 cursor-not-allowed"
+                            }`}
+                        >
                             <input
                                 type="radio"
                                 name="audioSource"
@@ -735,12 +844,14 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                                 disabled={isRecording || !systemAudioSupported}
                                 className="text-blue-600"
                             />
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            <span className="text-sm">System Audio (All Speakers)</span>
+                            <MonitorSmartphone className="w-4 h-4" />
+                            <span className="text-sm">
+                                System Audio (All Speakers)
+                            </span>
                             {!systemAudioSupported && (
-                                <span className="text-xs text-red-500">(Not Supported)</span>
+                                <span className="text-xs text-red-500">
+                                    (Not Supported)
+                                </span>
                             )}
                         </label>
                     </div>
@@ -751,10 +862,14 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                         <div className="flex items-start gap-2">
                             <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
                             <div className="text-sm">
-                                <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">System Audio Mode</p>
+                                <p className="font-medium text-blue-800 dark:text-blue-200 mb-1">
+                                    System Audio Mode
+                                </p>
                                 <p className="text-blue-700 dark:text-blue-300">
-                                    This will capture all audio from your system including meeting participants, music, and notifications. 
-                                    You&apos;ll need to share your screen/audio when prompted.
+                                    This will capture all audio from your system
+                                    including meeting participants, music, and
+                                    notifications. You&apos;ll need to share
+                                    your screen/audio when prompted.
                                 </p>
                             </div>
                         </div>
@@ -779,7 +894,9 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                         <input
                             type="checkbox"
                             checked={autoSaveEnabled}
-                            onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                            onChange={(e) =>
+                                setAutoSaveEnabled(e.target.checked)
+                            }
                             className="rounded"
                         />
                         Enable auto-save every 30 seconds
@@ -790,46 +907,63 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                 <ScrollArea className="h-96 w-full border rounded-md p-4">
                     {transcript.length === 0 ? (
                         <div className="text-center text-muted-foreground py-8">
-                            {isRecording 
-                                ? "Listening... Start speaking to see the transcript." 
-                                : "Click 'Start Recording' to begin transcription."
-                            }
+                            {isRecording
+                                ? "Listening... Start speaking to see the transcript."
+                                : "Click 'Start Recording' to begin transcription."}
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {transcript
-                                .filter(entry => entry.isFinal)
+                                .filter((entry) => entry.isFinal)
                                 .map((entry) => (
-                                <div key={entry.id} className="flex gap-3 p-3 bg-muted rounded-lg">
-                                    <div className="flex-shrink-0 space-y-1">
-                                        <Badge variant="outline" className="text-xs">
-                                            {entry.speaker}
-                                        </Badge>
-                                        {entry.source && (
-                                            <Badge variant="secondary" className="text-xs">
-                                                {entry.source === "system" ? "🔊 System" : "🎤 Mic"}
+                                    <div
+                                        key={entry.id}
+                                        className="flex gap-3 p-3 bg-muted rounded-lg"
+                                    >
+                                        <div className="flex-shrink-0 space-y-1">
+                                            <Badge
+                                                variant="outline"
+                                                className="text-xs"
+                                            >
+                                                {entry.speaker}
                                             </Badge>
-                                        )}
+                                            {entry.source && (
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="text-xs"
+                                                >
+                                                    {entry.source === "system"
+                                                        ? "🔊 System"
+                                                        : "🎤 Mic"}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm">
+                                                {entry.text}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {entry.timestamp.toLocaleTimeString()}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm">{entry.text}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {entry.timestamp.toLocaleTimeString()}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                            
+                                ))}
+
                             {/* Show interim results */}
                             {interimResultRef.current && (
                                 <div className="flex gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-lg opacity-70">
                                     <div className="flex-shrink-0">
-                                        <Badge variant="outline" className="text-xs">
+                                        <Badge
+                                            variant="outline"
+                                            className="text-xs"
+                                        >
                                             {currentSpeaker || "Current"}
                                         </Badge>
                                     </div>
                                     <div className="flex-1">
-                                        <p className="text-sm italic">{interimResultRef.current}</p>
+                                        <p className="text-sm italic">
+                                            {interimResultRef.current}
+                                        </p>
                                         <p className="text-xs text-muted-foreground">
                                             Typing...
                                         </p>
@@ -843,8 +977,17 @@ export function LiveTranscript({ meetingId, meetingTitle }) {
                 {/* Stats */}
                 {transcript.length > 0 && (
                     <div className="flex gap-4 text-sm text-muted-foreground">
-                        <span>Total entries: {transcript.filter(e => e.isFinal).length}</span>
-                        <span>Speakers: {[...new Set(transcript.map(e => e.speaker))].length}</span>
+                        <span>
+                            Total entries:{" "}
+                            {transcript.filter((e) => e.isFinal).length}
+                        </span>
+                        <span>
+                            Speakers:{" "}
+                            {
+                                [...new Set(transcript.map((e) => e.speaker))]
+                                    .length
+                            }
+                        </span>
                         {startTime && (
                             <span>Duration: {formatDuration(startTime)}</span>
                         )}

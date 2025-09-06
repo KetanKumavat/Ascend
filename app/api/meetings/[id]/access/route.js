@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 
 export async function GET(request, { params }) {
     try {
+        const resolvedParams = await params;
         const { userId } = await auth();
         if (!userId) {
             return NextResponse.json(
@@ -12,7 +13,7 @@ export async function GET(request, { params }) {
             );
         }
 
-        const meetingId = params.id;
+        const meetingId = resolvedParams.id;
 
         // Get the meeting with project and organization info
         const meeting = await db.meeting.findFirst({
@@ -98,6 +99,7 @@ export async function GET(request, { params }) {
 
 export async function POST(request, { params }) {
     try {
+        const resolvedParams = await params;
         const { userId } = await auth();
         if (!userId) {
             return NextResponse.json(
@@ -106,7 +108,7 @@ export async function POST(request, { params }) {
             );
         }
 
-        const meetingId = params.id;
+        const meetingId = resolvedParams.id;
 
         // Get the meeting
         const meeting = await db.meeting.findFirst({
