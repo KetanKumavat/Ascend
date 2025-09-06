@@ -4,7 +4,8 @@ import { AccessToken } from "livekit-server-sdk";
 
 export async function POST(request, { params }) {
   try {
-    const { token } = await params;
+    const resolvedParams = await params;
+    const { token } = resolvedParams;
     const { participantName } = await request.json();
 
     if (!token) {

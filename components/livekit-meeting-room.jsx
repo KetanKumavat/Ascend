@@ -32,8 +32,9 @@ export function LiveKitMeetingRoom({
         ConnectionState.Disconnected
     );
     const [participants, setParticipants] = useState([]);
-    const [isTranscribing, setIsTranscribing] = useState(false);
+    const [isTranscribing, setIsTranscribing] = useState(true); // Auto-enabled
     const [startTime, setStartTime] = useState(null);
+    const [transcriptionStarted, setTranscriptionStarted] = useState(false);
 
     // Helper function to get human-readable disconnect reason
     const getDisconnectReasonText = (reason) => {
@@ -78,6 +79,15 @@ export function LiveKitMeetingRoom({
                     "wss://ascend-live-meet-7t8xf5bg.singapore.livekit.cloud",
                 ],
             },
+            // Prevent disconnection when other participants join/leave
+            autoSubscribe: true,
+            // Keep connection stable
+            reconnectPolicy: {
+                maxReconnectAttempts: 10,
+                initialDelay: 1000,
+                maxDelay: 30000,
+                backoffFactor: 2,
+            },
         });
 
         // Set up room event listeners
@@ -90,6 +100,13 @@ export function LiveKitMeetingRoom({
 
             // Update meeting status to IN_PROGRESS
             updateMeetingStatus("IN_PROGRESS");
+
+            // Auto-start transcription after a short delay
+            setTimeout(() => {
+                if (!transcriptionStarted) {
+                    startTranscription();
+                }
+            }, 2000);
         });
 
         room.on(RoomEvent.Reconnecting, () => {
@@ -111,32 +128,40 @@ export function LiveKitMeetingRoom({
             console.log("Disconnected from LiveKit room, reason:", reason);
             setConnectionState(ConnectionState.Disconnected);
 
-            // Only show toast and call onMeetingEnd if it wasn't a cleanup disconnect
+            // Only handle unexpected disconnections
             if (reason !== DisconnectReason.CLIENT_INITIATED) {
                 const reasonText = getDisconnectReasonText(reason);
-                toast.info(`Disconnected from meeting: ${reasonText}`);
+                console.log(`Unexpected disconnection: ${reasonText}`);
 
-                // Only call onMeetingEnd for unexpected disconnections
+                // Don't end meeting for temporary network issues
                 if (
                     reason === DisconnectReason.UNKNOWN_REASON ||
-                    reason === DisconnectReason.SERVER_SHUTDOWN
+                    reason === DisconnectReason.SERVER_SHUTDOWN ||
+                    reason === DisconnectReason.ROOM_DELETED
                 ) {
+                    toast.error(`Meeting ended: ${reasonText}`);
                     if (onMeetingEnd) {
                         onMeetingEnd();
                     }
+                    updateMeetingStatus("COMPLETED");
+                } else {
+                    // For network issues, just show info and let LiveKit auto-reconnect
+                    toast.info(
+                        `Connection lost: ${reasonText}. Attempting to reconnect...`
+                    );
                 }
-            }
-
-            // Update meeting status to COMPLETED only if not cleanup
-            if (reason !== DisconnectReason.CLIENT_INITIATED) {
-                updateMeetingStatus("COMPLETED");
             }
         });
 
         room.on(RoomEvent.ParticipantConnected, (participant) => {
             if (!isMounted) return;
             console.log("Participant connected:", participant.name);
-            setParticipants((prev) => [...prev, participant]);
+            setParticipants((prev) => {
+                // Avoid duplicates
+                const exists = prev.find((p) => p.sid === participant.sid);
+                if (exists) return prev;
+                return [...prev, participant];
+            });
             toast.success(
                 `${participant.name || "Someone"} joined the meeting`
             );
@@ -229,14 +254,7 @@ export function LiveKitMeetingRoom({
                 room.disconnect();
             }
         };
-    }, [
-        token,
-        serverUrl,
-        meetingId,
-        onMeetingEnd,
-        onTranscriptUpdate,
-        updateMeetingStatus,
-    ]);
+    }, [token, serverUrl, meetingId, onMeetingEnd, onTranscriptUpdate]);
 
     // Update meeting status
     const updateMeetingStatus = async (status) => {
@@ -253,10 +271,10 @@ export function LiveKitMeetingRoom({
 
     // Start transcription with LiveKit agent
     const startTranscription = async () => {
-        if (!room || isTranscribing) return;
+        if (!room || transcriptionStarted) return;
 
         try {
-            setIsTranscribing(true);
+            setTranscriptionStarted(true);
 
             // Send command to start transcription agent
             const data = {
@@ -270,17 +288,16 @@ export function LiveKitMeetingRoom({
                 true // reliable
             );
 
-            toast.success("Transcription started");
+            console.log("Transcription started automatically");
         } catch (error) {
             console.error("Failed to start transcription:", error);
-            toast.error("Failed to start transcription");
-            setIsTranscribing(false);
+            setTranscriptionStarted(false);
         }
     };
 
     // Stop transcription
     const stopTranscription = async () => {
-        if (!room || !isTranscribing) return;
+        if (!room || !transcriptionStarted) return;
 
         try {
             // Send command to stop transcription agent
@@ -294,11 +311,11 @@ export function LiveKitMeetingRoom({
                 true
             );
 
+            setTranscriptionStarted(false);
             setIsTranscribing(false);
-            toast.success("Transcription stopped");
+            console.log("Transcription stopped");
         } catch (error) {
             console.error("Failed to stop transcription:", error);
-            toast.error("Failed to stop transcription");
         }
     };
 
@@ -367,93 +384,82 @@ export function LiveKitMeetingRoom({
     }
 
     return (
-        <div className="space-y-4">
-            {/* Meeting Header */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                            {meetingTitle}
-                        </CardTitle>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Users className="w-4 h-4" />
-                                <span>
-                                    {participants.length + 1} participant
-                                    {participants.length !== 0 ? "s" : ""}
-                                </span>
+        <div className="fixed inset-0 bg-black z-50">
+            {/* Meeting Header - Floating overlay */}
+            <div className="absolute top-4 left-4 right-4 z-10">
+                <Card className="bg-black/50 backdrop-blur-sm border-gray-600">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                                    <h1 className="text-lg font-semibold text-white">
+                                        {meetingTitle}
+                                    </h1>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm text-gray-300">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="w-4 h-4" />
+                                        <span>
+                                            {participants.length + 1}{" "}
+                                            participant
+                                            {participants.length !== 0
+                                                ? "s"
+                                                : ""}
+                                        </span>
+                                    </div>
+                                    {startTime && (
+                                        <Badge
+                                            variant="outline"
+                                            className="flex items-center gap-1 bg-black/30 border-gray-600 text-white"
+                                        >
+                                            <Clock className="w-3 h-3" />
+                                            {formatDuration(startTime)}
+                                        </Badge>
+                                    )}
+                                    <Badge
+                                        variant="secondary"
+                                        className="flex items-center gap-1 bg-green-500/20 border-green-500 text-green-400"
+                                    >
+                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                        AI Transcribing
+                                    </Badge>
+                                </div>
                             </div>
-                            {startTime && (
-                                <Badge
-                                    variant="outline"
-                                    className="flex items-center gap-1"
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={leaveMeeting}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="bg-red-600 hover:bg-red-700"
                                 >
-                                    <Clock className="w-3 h-3" />
-                                    {formatDuration(startTime)}
-                                </Badge>
-                            )}
-                            {isTranscribing && (
-                                <Badge
-                                    variant="secondary"
-                                    className="flex items-center gap-1"
-                                >
-                                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                                    Transcribing
-                                </Badge>
-                            )}
+                                    Leave Meeting
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-2">
-                        {!isTranscribing ? (
-                            <Button
-                                onClick={startTranscription}
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-1"
-                            >
-                                Start Transcription
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={stopTranscription}
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-1"
-                            >
-                                Stop Transcription
-                            </Button>
-                        )}
-                        <Button
-                            onClick={leaveMeeting}
-                            variant="destructive"
-                            size="sm"
-                        >
-                            Leave Meeting
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
 
-            {/* LiveKit Video Conference */}
-            <Card className="overflow-hidden">
-                <CardContent className="p-0">
-                    <LiveKitRoom
-                        video={true}
-                        audio={true}
-                        token={token}
-                        serverUrl={serverUrl}
-                        data-lk-theme="default"
-                        style={{ height: "70vh" }}
-                        room={room}
-                    >
-                        <VideoConference />
-                        <RoomAudioRenderer />
-                    </LiveKitRoom>
-                </CardContent>
-            </Card>
+            {/* LiveKit Video Conference - Fullscreen */}
+            <div className="w-full h-full">
+                <LiveKitRoom
+                    video={true}
+                    audio={true}
+                    token={token}
+                    serverUrl={serverUrl}
+                    data-lk-theme="default"
+                    style={{
+                        height: "100vh",
+                        width: "100vw",
+                        backgroundColor: "#000",
+                    }}
+                    room={room}
+                >
+                    <VideoConference />
+                    <RoomAudioRenderer />
+                </LiveKitRoom>
+            </div>
         </div>
     );
 }

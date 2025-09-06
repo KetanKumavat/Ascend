@@ -130,23 +130,13 @@ export default function PublicMeetingJoin() {
 
     if (hasJoined && livekitToken && serverUrl) {
         return (
-            <div className="min-h-screen bg-background">
-                <div className="container mx-auto px-4 py-6">
-                    <div className="mb-6">
-                        <h1 className="text-2xl font-bold">{meeting.title}</h1>
-                        <p className="text-muted-foreground">
-                            Public meeting • Joined as {participantName}
-                        </p>
-                    </div>
-                    <LiveKitMeetingRoom
-                        meetingId={meeting.id}
-                        meetingTitle={meeting.title}
-                        token={livekitToken}
-                        serverUrl={serverUrl}
-                        onMeetingEnd={handleMeetingEnd}
-                    />
-                </div>
-            </div>
+            <LiveKitMeetingRoom
+                meetingId={meeting.id}
+                meetingTitle={meeting.title}
+                token={livekitToken}
+                serverUrl={serverUrl}
+                onMeetingEnd={handleMeetingEnd}
+            />
         );
     }
 
