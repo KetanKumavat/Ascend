@@ -11,11 +11,6 @@ import {
     RoomEvent,
     ConnectionState,
     DisconnectReason,
-    LocalTrack,
-    Track,
-    Participant,
-    ParticipantEvent,
-    TrackEvent,
 } from "livekit-client";
 import "@livekit/components-styles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,8 +74,8 @@ export function LiveKitMeetingRoom({
             // enable regional url fallback
             regionUrlProvider: {
                 fallbackUrls: [
-                    'wss://ascend-live-meet-7t8xf5bg.mumbai.livekit.cloud',
-                    'wss://ascend-live-meet-7t8xf5bg.singapore.livekit.cloud',
+                    "wss://ascend-live-meet-7t8xf5bg.mumbai.livekit.cloud",
+                    "wss://ascend-live-meet-7t8xf5bg.singapore.livekit.cloud",
                 ],
             },
         });
@@ -115,15 +110,17 @@ export function LiveKitMeetingRoom({
             if (!isMounted) return;
             console.log("Disconnected from LiveKit room, reason:", reason);
             setConnectionState(ConnectionState.Disconnected);
-            
+
             // Only show toast and call onMeetingEnd if it wasn't a cleanup disconnect
             if (reason !== DisconnectReason.CLIENT_INITIATED) {
                 const reasonText = getDisconnectReasonText(reason);
                 toast.info(`Disconnected from meeting: ${reasonText}`);
-                
+
                 // Only call onMeetingEnd for unexpected disconnections
-                if (reason === DisconnectReason.UNKNOWN_REASON || 
-                    reason === DisconnectReason.SERVER_SHUTDOWN) {
+                if (
+                    reason === DisconnectReason.UNKNOWN_REASON ||
+                    reason === DisconnectReason.SERVER_SHUTDOWN
+                ) {
                     if (onMeetingEnd) {
                         onMeetingEnd();
                     }
@@ -170,53 +167,76 @@ export function LiveKitMeetingRoom({
         setRoom(room);
 
         // Connect to room with detailed error logging and retry
-        console.log('Attempting to connect to LiveKit:', {
+        console.log("Attempting to connect to LiveKit:", {
             serverUrl,
             tokenLength: token?.length,
-            meetingId
+            meetingId,
         });
 
         // Prevent double connection in React Strict Mode
         if (!isConnecting) {
             isConnecting = true;
             setConnectionState(ConnectionState.Connecting);
-            
+
             const connectWithRetry = async (retryCount = 0) => {
                 try {
                     await room.connect(serverUrl, token);
                 } catch (error) {
                     if (!isMounted) return;
-                    
+
                     console.error("Failed to connect to room:", error);
-                    console.error("Connection details:", { serverUrl, meetingId, retryCount });
-                    
+                    console.error("Connection details:", {
+                        serverUrl,
+                        meetingId,
+                        retryCount,
+                    });
+
                     // Retry connection up to 3 times for network errors
-                    if (retryCount < 3 && (
-                        error.message.includes('network') || 
-                        error.message.includes('timeout') ||
-                        error.message.includes('connection')
-                    )) {
-                        console.log(`Retrying connection (attempt ${retryCount + 1}/3)...`);
-                        toast.info(`Retrying connection (${retryCount + 1}/3)...`);
-                        setTimeout(() => connectWithRetry(retryCount + 1), 2000);
+                    if (
+                        retryCount < 3 &&
+                        (error.message.includes("network") ||
+                            error.message.includes("timeout") ||
+                            error.message.includes("connection"))
+                    ) {
+                        console.log(
+                            `Retrying connection (attempt ${
+                                retryCount + 1
+                            }/3)...`
+                        );
+                        toast.info(
+                            `Retrying connection (${retryCount + 1}/3)...`
+                        );
+                        setTimeout(
+                            () => connectWithRetry(retryCount + 1),
+                            2000
+                        );
                     } else {
-                        toast.error(`Failed to connect to meeting: ${error.message}`);
+                        toast.error(
+                            `Failed to connect to meeting: ${error.message}`
+                        );
                         setConnectionState(ConnectionState.Disconnected);
                     }
                 }
             };
-            
+
             connectWithRetry();
         }
 
         // Cleanup on unmount
         return () => {
             isMounted = false;
-            if (room && room.state !== 'disconnected') {
+            if (room && room.state !== "disconnected") {
                 room.disconnect();
             }
         };
-    }, [token, serverUrl, meetingId, onMeetingEnd, onTranscriptUpdate]);
+    }, [
+        token,
+        serverUrl,
+        meetingId,
+        onMeetingEnd,
+        onTranscriptUpdate,
+        updateMeetingStatus,
+    ]);
 
     // Update meeting status
     const updateMeetingStatus = async (status) => {
@@ -319,7 +339,10 @@ export function LiveKitMeetingRoom({
         );
     }
 
-    if (connectionState === ConnectionState.Connecting || connectionState === ConnectionState.Reconnecting) {
+    if (
+        connectionState === ConnectionState.Connecting ||
+        connectionState === ConnectionState.Reconnecting
+    ) {
         const isReconnecting = connectionState === ConnectionState.Reconnecting;
         return (
             <Card>
@@ -327,10 +350,15 @@ export function LiveKitMeetingRoom({
                     <div className="text-center">
                         <Loader2 className="w-8 h-8 animate-spin mb-4 mx-auto" />
                         <h3 className="text-lg font-semibold mb-2">
-                            {isReconnecting ? "Reconnecting to Meeting..." : "Connecting to Meeting..."}
+                            {isReconnecting
+                                ? "Reconnecting to Meeting..."
+                                : "Connecting to Meeting..."}
                         </h3>
                         <p className="text-muted-foreground">
-                            {isReconnecting ? "Re-establishing connection to" : "Establishing connection to"} {meetingTitle}
+                            {isReconnecting
+                                ? "Re-establishing connection to"
+                                : "Establishing connection to"}{" "}
+                            {meetingTitle}
                         </p>
                     </div>
                 </CardContent>

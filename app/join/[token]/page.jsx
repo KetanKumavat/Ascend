@@ -159,7 +159,7 @@ export default function PublicMeetingJoin() {
                     </div>
                     <CardTitle className="text-2xl">{meeting.title}</CardTitle>
                     <p className="text-muted-foreground">
-                        You're invited to join this meeting
+                        You&apos;re invited to join this meeting
                     </p>
                 </CardHeader>
                 <CardContent className="space-y-6">
