@@ -13,7 +13,7 @@ import {
     DisconnectReason,
 } from "livekit-client";
 import "@livekit/components-styles";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Loader2, Users, Clock } from "lucide-react";
@@ -35,6 +35,97 @@ export function LiveKitMeetingRoom({
     const [isTranscribing, setIsTranscribing] = useState(true); // Auto-enabled
     const [startTime, setStartTime] = useState(null);
     const [transcriptionStarted, setTranscriptionStarted] = useState(false);
+    const [recognition, setRecognition] = useState(null);
+    const [transcript, setTranscript] = useState("");
+
+    const formatDuration = (start) => {
+        if (!start) return "00:00";
+        const duration = new Date() - start;
+        const minutes = Math.floor(duration / 60000);
+        const seconds = Math.floor((duration % 60000) / 1000);
+        return `${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`;
+    };
+
+    const [currentTime, setCurrentTime] = useState(formatDuration(startTime));
+
+    // Update timer every second
+    useEffect(() => {
+        if (!startTime) return;
+
+        const interval = setInterval(() => {
+            setCurrentTime(formatDuration(startTime));
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [startTime]);
+
+    // Initialize speech recognition for transcription
+    useEffect(() => {
+        if (
+            typeof window !== "undefined" &&
+            ("webkitSpeechRecognition" in window ||
+                "SpeechRecognition" in window)
+        ) {
+            const SpeechRecognition =
+                window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognitionInstance = new SpeechRecognition();
+
+            recognitionInstance.continuous = true;
+            recognitionInstance.interimResults = true;
+            recognitionInstance.lang = "en-US";
+
+            recognitionInstance.onresult = (event) => {
+                let finalTranscript = "";
+                let interimTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                if (finalTranscript) {
+                    setTranscript((prev) => prev + " " + finalTranscript);
+                    // Save transcript to backend
+                    saveTranscriptSegment(finalTranscript);
+                }
+            };
+
+            recognitionInstance.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                if (event.error === "not-allowed") {
+                    toast.error(
+                        "Microphone access denied. Transcription disabled."
+                    );
+                    setIsTranscribing(false);
+                }
+            };
+
+            setRecognition(recognitionInstance);
+        } else {
+            console.warn("Speech recognition not supported in this browser");
+            setIsTranscribing(false);
+        }
+    }, []);
+
+    // Hide main website header when in meeting
+    useEffect(() => {
+        const header = document.querySelector("header");
+        if (header) {
+            header.style.display = "none";
+        }
+
+        return () => {
+            if (header) {
+                header.style.display = "flex";
+            }
+        };
+    }, []);
 
     // Helper function to get human-readable disconnect reason
     const getDisconnectReasonText = (reason) => {
@@ -42,7 +133,7 @@ export function LiveKitMeetingRoom({
             case DisconnectReason.CLIENT_INITIATED:
                 return "You left the meeting";
             case DisconnectReason.DUPLICATE_IDENTITY:
-                return "Another user joined with the same identity";
+                return "Connection conflict detected - reconnecting...";
             case DisconnectReason.SERVER_SHUTDOWN:
                 return "Server maintenance";
             case DisconnectReason.PARTICIPANT_REMOVED:
@@ -50,11 +141,11 @@ export function LiveKitMeetingRoom({
             case DisconnectReason.ROOM_DELETED:
                 return "Meeting was ended";
             case DisconnectReason.STATE_MISMATCH:
-                return "Connection state error";
+                return "Connection state error - reconnecting...";
             case DisconnectReason.JOIN_FAILURE:
                 return "Failed to join meeting";
             default:
-                return "Connection lost";
+                return "Connection lost - reconnecting...";
         }
     };
 
@@ -71,22 +162,29 @@ export function LiveKitMeetingRoom({
             // optimize publishing bandwidth and CPU for mobile
             dynacast: true,
             // configure connection timeouts
-            connectionTimeout: 30000,
-            // enable regional url fallback
-            regionUrlProvider: {
-                fallbackUrls: [
-                    "wss://ascend-live-meet-7t8xf5bg.mumbai.livekit.cloud",
-                    "wss://ascend-live-meet-7t8xf5bg.singapore.livekit.cloud",
-                ],
-            },
+            connectionTimeout: 8000,
             // Prevent disconnection when other participants join/leave
             autoSubscribe: true,
             // Keep connection stable
             reconnectPolicy: {
-                maxReconnectAttempts: 10,
+                maxReconnectAttempts: 3,
                 initialDelay: 1000,
-                maxDelay: 30000,
-                backoffFactor: 2,
+                maxDelay: 8000,
+                backoffFactor: 1.5,
+            },
+            // Improve connection reliability
+            publishDefaults: {
+                videoSimulcastLayers: [
+                    {
+                        resolution: { width: 320, height: 240 },
+                        encoding: { maxBitrate: 150_000 },
+                    },
+                    {
+                        resolution: { width: 640, height: 480 },
+                        encoding: { maxBitrate: 400_000 },
+                    },
+                ],
+                audioBitrate: 64_000,
             },
         });
 
@@ -103,7 +201,7 @@ export function LiveKitMeetingRoom({
 
             // Auto-start transcription after a short delay
             setTimeout(() => {
-                if (!transcriptionStarted) {
+                if (!transcriptionStarted && recognition) {
                     startTranscription();
                 }
             }, 2000);
@@ -128,28 +226,35 @@ export function LiveKitMeetingRoom({
             console.log("Disconnected from LiveKit room, reason:", reason);
             setConnectionState(ConnectionState.Disconnected);
 
-            // Only handle unexpected disconnections
-            if (reason !== DisconnectReason.CLIENT_INITIATED) {
+            // Handle different disconnect reasons
+            if (reason === DisconnectReason.CLIENT_INITIATED) {
+                // User initiated disconnect - don't reconnect
+                return;
+            } else if (
+                reason === DisconnectReason.DUPLICATE_IDENTITY ||
+                reason === DisconnectReason.STATE_MISMATCH
+            ) {
+                // Identity conflict or state mismatch - let LiveKit auto-reconnect
                 const reasonText = getDisconnectReasonText(reason);
-                console.log(`Unexpected disconnection: ${reasonText}`);
-
-                // Don't end meeting for temporary network issues
-                if (
-                    reason === DisconnectReason.UNKNOWN_REASON ||
-                    reason === DisconnectReason.SERVER_SHUTDOWN ||
-                    reason === DisconnectReason.ROOM_DELETED
-                ) {
-                    toast.error(`Meeting ended: ${reasonText}`);
-                    if (onMeetingEnd) {
-                        onMeetingEnd();
-                    }
-                    updateMeetingStatus("COMPLETED");
-                } else {
-                    // For network issues, just show info and let LiveKit auto-reconnect
-                    toast.info(
-                        `Connection lost: ${reasonText}. Attempting to reconnect...`
-                    );
+                console.log(`Temporary disconnection: ${reasonText}`);
+                toast.info(reasonText);
+                // Don't end the meeting, just let it reconnect
+            } else if (
+                reason === DisconnectReason.ROOM_DELETED ||
+                reason === DisconnectReason.PARTICIPANT_REMOVED
+            ) {
+                // Meeting actually ended
+                const reasonText = getDisconnectReasonText(reason);
+                console.log(`Meeting ended: ${reasonText}`);
+                toast.error(`Meeting ended: ${reasonText}`);
+                if (onMeetingEnd) {
+                    onMeetingEnd();
                 }
+                updateMeetingStatus("COMPLETED");
+            } else {
+                // Other network issues - show info and let auto-reconnect
+                const reasonText = getDisconnectReasonText(reason);
+                toast.info(reasonText);
             }
         });
 
@@ -191,13 +296,6 @@ export function LiveKitMeetingRoom({
 
         setRoom(room);
 
-        // Connect to room with detailed error logging and retry
-        console.log("Attempting to connect to LiveKit:", {
-            serverUrl,
-            tokenLength: token?.length,
-            meetingId,
-        });
-
         // Prevent double connection in React Strict Mode
         if (!isConnecting) {
             isConnecting = true;
@@ -205,40 +303,32 @@ export function LiveKitMeetingRoom({
 
             const connectWithRetry = async (retryCount = 0) => {
                 try {
+                    console.log("Attempting to connect to LiveKit:", {
+                        serverUrl,
+                        tokenLength: token?.length,
+                        meetingId,
+                        attempt: retryCount + 1,
+                    });
+                    
                     await room.connect(serverUrl, token);
                 } catch (error) {
                     if (!isMounted) return;
 
                     console.error("Failed to connect to room:", error);
-                    console.error("Connection details:", {
-                        serverUrl,
-                        meetingId,
-                        retryCount,
-                    });
 
-                    // Retry connection up to 3 times for network errors
-                    if (
-                        retryCount < 3 &&
-                        (error.message.includes("network") ||
-                            error.message.includes("timeout") ||
-                            error.message.includes("connection"))
-                    ) {
-                        console.log(
-                            `Retrying connection (attempt ${
-                                retryCount + 1
-                            }/3)...`
-                        );
-                        toast.info(
-                            `Retrying connection (${retryCount + 1}/3)...`
-                        );
-                        setTimeout(
-                            () => connectWithRetry(retryCount + 1),
-                            2000
-                        );
+                    // Only retry for specific errors and limit retries
+                    if (retryCount < 2 && (
+                        error.message.includes("network") ||
+                        error.message.includes("timeout") ||
+                        error.message.includes("connection") ||
+                        error.message.includes("WebSocket")
+                    )) {
+                        console.log(`Retrying connection (attempt ${retryCount + 2}/3)...`);
+                        toast.info(`Retrying connection (${retryCount + 2}/3)...`);
+                        setTimeout(() => connectWithRetry(retryCount + 1), 1500);
                     } else {
-                        toast.error(
-                            `Failed to connect to meeting: ${error.message}`
-                        );
+                        console.error("Connection failed permanently:", error.message);
+                        toast.error(`Failed to connect to meeting: ${error.message}`);
                         setConnectionState(ConnectionState.Disconnected);
                     }
                 }
@@ -250,11 +340,37 @@ export function LiveKitMeetingRoom({
         // Cleanup on unmount
         return () => {
             isMounted = false;
-            if (room && room.state !== "disconnected") {
-                room.disconnect();
+            isConnecting = false;
+            
+            // Properly cleanup room connection
+            if (room) {
+                try {
+                    if (room.state === "connected" || room.state === "connecting") {
+                        room.disconnect(true); // Force disconnect
+                    }
+                } catch (error) {
+                    console.warn("Error during room cleanup:", error);
+                }
+            }
+            
+            // Cleanup transcription
+            if (recognition && transcriptionStarted) {
+                try {
+                    recognition.stop();
+                } catch (error) {
+                    console.warn("Error stopping transcription:", error);
+                }
             }
         };
-    }, [token, serverUrl, meetingId, onMeetingEnd, onTranscriptUpdate]);
+    }, [
+        token,
+        serverUrl,
+        meetingId,
+        onMeetingEnd,
+        onTranscriptUpdate,
+        recognition,
+        transcriptionStarted,
+    ]);
 
     // Update meeting status
     const updateMeetingStatus = async (status) => {
@@ -269,48 +385,28 @@ export function LiveKitMeetingRoom({
         }
     };
 
-    // Start transcription with LiveKit agent
+    // Start transcription with browser Speech Recognition API
     const startTranscription = async () => {
-        if (!room || transcriptionStarted) return;
+        if (!recognition || transcriptionStarted) return;
 
         try {
             setTranscriptionStarted(true);
-
-            // Send command to start transcription agent
-            const data = {
-                type: "start_transcription",
-                meetingId,
-                language: "en-US",
-            };
-
-            await room.localParticipant.publishData(
-                new TextEncoder().encode(JSON.stringify(data)),
-                true // reliable
-            );
-
+            recognition.start();
             console.log("Transcription started automatically");
+            toast.success("AI transcription enabled");
         } catch (error) {
             console.error("Failed to start transcription:", error);
             setTranscriptionStarted(false);
+            setIsTranscribing(false);
         }
     };
 
     // Stop transcription
     const stopTranscription = async () => {
-        if (!room || !transcriptionStarted) return;
+        if (!recognition || !transcriptionStarted) return;
 
         try {
-            // Send command to stop transcription agent
-            const data = {
-                type: "stop_transcription",
-                meetingId,
-            };
-
-            await room.localParticipant.publishData(
-                new TextEncoder().encode(JSON.stringify(data)),
-                true
-            );
-
+            recognition.stop();
             setTranscriptionStarted(false);
             setIsTranscribing(false);
             console.log("Transcription stopped");
@@ -319,21 +415,45 @@ export function LiveKitMeetingRoom({
         }
     };
 
-    // Format duration
-    const formatDuration = (start) => {
-        if (!start) return "00:00";
-        const duration = new Date() - start;
-        const minutes = Math.floor(duration / 60000);
-        const seconds = Math.floor((duration % 60000) / 1000);
-        return `${minutes.toString().padStart(2, "0")}:${seconds
-            .toString()
-            .padStart(2, "0")}`;
+    // Save transcript segment to backend
+    const saveTranscriptSegment = async (text) => {
+        if (!text.trim()) return;
+
+        try {
+            await fetch(`/api/meetings/${meetingId}/transcript/autosave`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    content: text,
+                    timestamp: new Date().toISOString(),
+                    speaker: "participant", // Could be enhanced to identify speakers
+                }),
+            });
+        } catch (error) {
+            console.error("Failed to save transcript:", error);
+        }
     };
 
     // Leave meeting
-    const leaveMeeting = () => {
-        if (room) {
-            room.disconnect();
+    const leaveMeeting = async () => {
+        try {
+            if (room) {
+                await room.disconnect();
+            }
+            // Update meeting status
+            await updateMeetingStatus("COMPLETED");
+            toast.info("Left meeting");
+
+            // Redirect to meeting details page
+            if (onMeetingEnd) {
+                onMeetingEnd();
+            } else {
+                window.location.href = `/meeting/${meetingId}`;
+            }
+        } catch (error) {
+            console.error("Error leaving meeting:", error);
+            // Force redirect even if there's an error
+            window.location.href = `/meeting/${meetingId}`;
         }
     };
 
@@ -383,82 +503,110 @@ export function LiveKitMeetingRoom({
         );
     }
 
+    // Main meeting room render
+
     return (
-        <div className="fixed inset-0 bg-black z-50">
-            {/* Meeting Header - Floating overlay */}
+        <div className="fixed inset-0 bg-black z-[9999]">
+            {/* Meeting Header - Compact floating overlay */}
             <div className="absolute top-4 left-4 right-4 z-10">
-                <Card className="bg-black/50 backdrop-blur-sm border-gray-600">
+                <Card className="bg-black/80 backdrop-blur-md border-gray-600">
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                                    <h1 className="text-lg font-semibold text-white">
+                                    <h1 className="text-sm font-semibold text-white truncate max-w-64">
                                         {meetingTitle}
                                     </h1>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm text-gray-300">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
                                         <Users className="w-4 h-4" />
-                                        <span>
-                                            {participants.length + 1}{" "}
-                                            participant
-                                            {participants.length !== 0
-                                                ? "s"
-                                                : ""}
-                                        </span>
+                                        <span>{participants.length + 1}</span>
                                     </div>
                                     {startTime && (
                                         <Badge
                                             variant="outline"
-                                            className="flex items-center gap-1 bg-black/30 border-gray-600 text-white"
+                                            className="flex items-center gap-1.5 bg-black/40 border-gray-500 text-white text-sm px-3 py-1"
                                         >
-                                            <Clock className="w-3 h-3" />
-                                            {formatDuration(startTime)}
+                                            <Clock className="w-4 h-4" />
+                                            {currentTime}
                                         </Badge>
                                     )}
-                                    <Badge
-                                        variant="secondary"
-                                        className="flex items-center gap-1 bg-green-500/20 border-green-500 text-green-400"
-                                    >
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                        AI Transcribing
-                                    </Badge>
+                                    {isTranscribing && (
+                                        <Badge
+                                            variant="secondary"
+                                            className="flex items-center gap-1.5 bg-green-500/20 border-green-500 text-green-400 text-sm px-3 py-1"
+                                        >
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            AI Transcription
+                                        </Badge>
+                                    )}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    onClick={leaveMeeting}
-                                    variant="destructive"
-                                    size="sm"
-                                    className="bg-red-600 hover:bg-red-700"
-                                >
-                                    Leave Meeting
-                                </Button>
-                            </div>
+                            <Button
+                                onClick={leaveMeeting}
+                                variant="destructive"
+                                size="sm"
+                                className="bg-red-600 hover:bg-red-700 text-sm px-4 py-2"
+                            >
+                                Leave Meeting
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* LiveKit Video Conference - Fullscreen */}
-            <div className="w-full h-full">
-                <LiveKitRoom
-                    video={true}
-                    audio={true}
-                    token={token}
-                    serverUrl={serverUrl}
-                    data-lk-theme="default"
-                    style={{
-                        height: "100vh",
-                        width: "100vw",
-                        backgroundColor: "#000",
-                    }}
-                    room={room}
-                >
-                    <VideoConference />
-                    <RoomAudioRenderer />
-                </LiveKitRoom>
+            {/* LiveKit Video Conference - Fullscreen with proper spacing */}
+            <div className="w-full h-full pt-20 pb-4 px-4">
+                <div className="w-full h-full max-w-7xl mx-auto">
+                    <LiveKitRoom
+                        video={true}
+                        audio={true}
+                        token={token}
+                        serverUrl={serverUrl}
+                        data-lk-theme="default"
+                        className="h-full w-full rounded-lg overflow-hidden"
+                        style={{
+                            height: "100%",
+                            width: "100%",
+                            backgroundColor: "#000",
+                        }}
+                        room={room}
+                        options={{
+                            publishDefaults: {
+                                videoSimulcastLayers: [
+                                    {
+                                        resolution: { width: 640, height: 360 },
+                                        encoding: {
+                                            maxBitrate: 600_000,
+                                            maxFramerate: 20,
+                                        },
+                                    },
+                                    {
+                                        resolution: {
+                                            width: 1280,
+                                            height: 720,
+                                        },
+                                        encoding: {
+                                            maxBitrate: 2_000_000,
+                                            maxFramerate: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                        }}
+                    >
+                        <VideoConference
+                            chatMessageFormatter={(msg) =>
+                                `${msg.from?.name || "Anonymous"}: ${
+                                    msg.message
+                                }`
+                            }
+                        />
+                        <RoomAudioRenderer />
+                    </LiveKitRoom>
+                </div>
             </div>
         </div>
     );

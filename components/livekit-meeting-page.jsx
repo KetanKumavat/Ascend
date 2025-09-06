@@ -35,10 +35,13 @@ export function LiveKitMeetingPage({
                 headers: {
                     "Content-Type": "application/json",
                 },
+                body: JSON.stringify({}),
             });
 
             if (!response.ok) {
-                throw new Error("Failed to get meeting access");
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(`Failed to get meeting access: ${errorMessage}`);
             }
 
             const data = await response.json();

@@ -12,22 +12,43 @@ export async function POST(request, { params }) {
         }
 
         const meetingId = resolvedParams.id;
-        const { participantName } = await request.json();
+        
+        // Parse request body safely
+        let participantName = null;
+        try {
+            const body = await request.json();
+            participantName = body.participantName;
+        } catch (e) {
+            // No JSON body or parsing error - continue with default
+            console.log("No JSON body provided or parsing error:", e.message);
+        }
 
-        // Verify meeting exists and user has access
-        const meeting = await db.meeting.findFirst({
-            where: {
-                id: meetingId,
-                organizationId: orgId,
-            },
+        // First check if meeting exists at all
+        const meetingExists = await db.meeting.findUnique({
+            where: { id: meetingId },
+            select: { id: true, organizationId: true, isPublic: true }
+        });
+
+        console.log("Meeting exists check:", meetingExists ? "Yes" : "No");
+        if (!meetingExists) {
+            return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+        }
+
+        // Check if user has access (either same org or public meeting)
+        const hasAccess = meetingExists.organizationId === orgId || meetingExists.isPublic;
+        console.log("User has access:", hasAccess, { userOrgId: orgId, meetingOrgId: meetingExists.organizationId, isPublic: meetingExists.isPublic });
+
+        if (!hasAccess) {
+            return NextResponse.json({ error: "Access denied" }, { status: 403 });
+        }
+
+        // Get full meeting details
+        const meeting = await db.meeting.findUnique({
+            where: { id: meetingId },
             include: {
                 project: true,
             },
         });
-
-        if (!meeting) {
-            return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
-        }
 
         // Get user info for participant name
         const user = await db.user.findFirst({
@@ -36,12 +57,20 @@ export async function POST(request, { params }) {
 
         const participantDisplayName = participantName || user?.name || "Anonymous";
 
-        // Create LiveKit access token
+        // Check if LiveKit environment variables are set
+        if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
+            console.error("Missing LiveKit environment variables");
+            return NextResponse.json({ error: "LiveKit not configured" }, { status: 500 });
+        }
+
+        // Create LiveKit access token with unique identity
+        const uniqueIdentity = `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        console.log("Creating LiveKit token for user:", { userId, participantDisplayName, uniqueIdentity });
         const token = new AccessToken(
             process.env.LIVEKIT_API_KEY,
             process.env.LIVEKIT_API_SECRET,
             {
-                identity: userId,
+                identity: uniqueIdentity, // Use unique identity to prevent conflicts
                 name: participantDisplayName,
                 ttl: '2h', // Token valid for 2 hours
             }

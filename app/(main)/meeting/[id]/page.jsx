@@ -279,12 +279,12 @@ export default async function MeetingDetailsPage({ params }) {
                                         {meeting.participants.map(
                                             (participant) => (
                                                 <div
-                                                    key={participant.id}
+                                                    key={participant?.id}
                                                     className="flex items-center gap-3 p-3 border rounded-lg dark:border-gray-700"
                                                 >
                                                     <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                                                         <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                                                            {participant.user.name?.charAt(
+                                                            {participant?.user?.name?.charAt(
                                                                 0
                                                             ) || "U"}
                                                         </span>
@@ -292,12 +292,12 @@ export default async function MeetingDetailsPage({ params }) {
                                                     <div>
                                                         <p className="text-sm font-medium">
                                                             {
-                                                                participant.user
-                                                                    .name
+                                                                participant
+                                                                    ?.user?.name
                                                             }
                                                         </p>
                                                         <p className="text-xs text-muted-foreground capitalize">
-                                                            {participant.role.toLowerCase()}
+                                                            {participant?.role?.toLowerCase()}
                                                         </p>
                                                     </div>
                                                 </div>
