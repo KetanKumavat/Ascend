@@ -13,6 +13,29 @@ body {
 
 @layer base {
     :root {
+        /* Core Brand Colors */
+        --void: 0 0% 2%;
+        --deep: 0 0% 6%;
+        --surface: 0 0% 12%;
+        --muted-surface: 0 0% 18%;
+        
+        --neutral-50: 0 0% 98%;
+        --neutral-100: 0 0% 96%;
+        --neutral-200: 0 0% 88%;
+        --neutral-300: 0 0% 76%;
+        --neutral-400: 0 0% 64%;
+        --neutral-500: 0 0% 52%;
+        --neutral-600: 0 0% 40%;
+        --neutral-700: 0 0% 28%;
+        --neutral-800: 0 0% 16%;
+        --neutral-900: 0 0% 8%;
+        
+        /* Lime Accent System - Minimal Usage */
+        --lime: 82 77% 43%;
+        --lime-glow: 82 77% 55%;
+        --lime-soft: 82 35% 65%;
+        --lime-muted: 82 20% 85%;
+        
         /* Use dark mode values as default */
         --background: 220 13% 6%;
         --foreground: 220 13% 98%;
@@ -93,4 +116,184 @@ body {
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     opacity: 1;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground antialiased;
+        overflow-x: hidden;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+@layer components {
+    .aurora-bg {
+        background: var(--aurora-gradient);
+        background-size: 200% 200%;
+        animation: aurora-flow 8s ease-in-out infinite;
+    }
+
+    .glow-lime {
+        box-shadow: var(--glow-lime);
+    }
+
+    .glow-soft {
+        box-shadow: var(--glow-soft);
+    }
+
+    .text-glow {
+        text-shadow: 0 0 20px hsl(var(--lime) / 0.5);
+    }
+
+    .glassmorphic {
+        background: hsl(var(--surface) / 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid hsl(var(--neutral-700) / 0.3);
+    }
+
+    .beam-effect {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .beam-effect::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: var(--beam-gradient);
+        animation: beam-sweep 3s infinite;
+    }
+
+    .typing-cursor::after {
+        content: "|";
+        animation: blink 1s infinite;
+        color: hsl(var(--lime));
+    }
+}
+
+@layer utilities {
+    .section-padding {
+        @apply px-4 md:px-8 lg:px-12 xl:px-16;
+    }
+
+    .container-wide {
+        @apply max-w-7xl mx-auto;
+    }
+
+    .transition-fluid {
+        transition: var(--transition-fluid);
+    }
+
+    .transition-smooth {
+        transition: var(--transition-smooth);
+    }
+
+    .transition-spring {
+        transition: var(--transition-spring);
+    }
+}
+
+@keyframes aurora-flow {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+@keyframes beam-sweep {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes blink {
+    0%,
+    50% {
+        opacity: 1;
+    }
+    51%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes glow-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 20px hsl(var(--lime) / 0.2),
+            0 0 40px hsl(var(--lime) / 0.1);
+    }
+    50% {
+        box-shadow: 0 0 40px hsl(var(--lime) / 0.4),
+            0 0 80px hsl(var(--lime) / 0.2);
+    }
+}
+
+#root {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+}
+.logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logo {
+        animation: logo-spin infinite 20s linear;
+    }
+}
+
+.card {
+    padding: 2em;
+}
+
+.read-the-docs {
+    color: #888;
 }
