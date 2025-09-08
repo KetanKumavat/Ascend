@@ -3,14 +3,17 @@
 import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { google } from "googleapis";
 import { getCachedMeetings, getCachedMeeting } from "@/lib/cache";
 import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
+import { revalidateTag } from "next/cache";
 
-// Initialize Gemini AI for transcript processing
-const gemini = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY);
-
-// Helper function to generate Google Meet-style codes (fallback only)
+let geminiInstance = null;
+function getGeminiInstance() {
+    if (!geminiInstance && process.env.GEMINI_API_KEY) {
+        geminiInstance = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    }
+    return geminiInstance;
+}
 
 export async function createMeeting(data) {
     const auth_result = await auth();
@@ -91,76 +94,29 @@ export async function createMeeting(data) {
 
         // Create LiveKit meeting room
         let meetingUrl = null;
-        let googleEventId = null;
         let livekitRoomName = null;
 
         try {
             console.log("Creating LiveKit meeting room...");
 
-            // Create LiveKit room name
             livekitRoomName = `ascend-${meeting.id}-${Date.now()}`;
-
-            // LiveKit meeting URL will be our meeting room page
             meetingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/meeting/${meeting.id}/room`;
-
-            console.log("✅ LiveKit meeting room configured:", {
-                roomName: livekitRoomName,
-                meetingUrl,
-                features:
-                    "HD Video, Audio, Screen Share, Chat, AI Transcription",
-            });
-
-            // Optional: Try Google Calendar integration if credentials available
-            try {
-                const googleMeetResult = await createGoogleMeetEvent({
-                    title: meeting.title,
-                    description: `${
-                        meeting.description
-                    }\n\n🎥 Join Meeting: ${meetingUrl}\n\n📝 AI Transcript: ${
-                        process.env.NEXT_PUBLIC_APP_URL ||
-                        "http://localhost:3001"
-                    }/meeting/${meeting.id}/transcript`,
-                    scheduledAt: meeting.scheduledAt,
-                    duration: meeting.duration,
-                });
-
-                if (googleMeetResult.googleEventId) {
-                    googleEventId = googleMeetResult.googleEventId;
-                    console.log(
-                        "📅 Also added to Google Calendar:",
-                        googleEventId
-                    );
-                }
-            } catch (calendarError) {
-                console.log(
-                    "📅 Google Calendar integration skipped:",
-                    calendarError.message
-                );
-                // Don't fail - Meeting still works perfectly
-            }
         } catch (error) {
             console.error("Failed to create meeting:", error.message);
 
-            // Even simpler fallback - still use secure meeting room
+            // Fallback to Jitsi Meet
             const simpleRoom = `ascend-${Date.now()}`;
             meetingUrl = `https://meet.jit.si/${simpleRoom}`;
-            googleMeetId = simpleRoom;
+            livekitRoomName = simpleRoom;
 
-            console.log("Using simple meeting room:", meetingUrl);
+            console.log("Using fallback meeting room:", meetingUrl);
         }
 
-        // Update meeting with LiveKit room details
         const updatedMeeting = await db.meeting.update({
             where: { id: meeting.id },
             data: {
                 meetingUrl: meetingUrl,
                 meetingId: livekitRoomName,
-                // Store Google Calendar event ID for future reference
-                description:
-                    meeting.description +
-                    (googleEventId
-                        ? `\n\nGoogle Event ID: ${googleEventId}`
-                        : ""),
             },
             include: {
                 createdBy: true,
@@ -179,7 +135,7 @@ export async function createMeeting(data) {
     }
 }
 
-export async function getMeetings(projectId = null) {
+export async function getMeetings(projectId = null, page = 1, limit = 20) {
     const auth_result = await auth();
     const { userId, orgId } = auth_result;
 
@@ -187,8 +143,11 @@ export async function getMeetings(projectId = null) {
         throw new Error("Unauthorized");
     }
 
-    // Use cached meetings data
-    return await getCachedMeetings(orgId, userId, projectId);
+    // Auto-update expired meeting statuses before fetching
+    await updateExpiredMeetingStatuses(orgId);
+
+    // Use optimized cached meetings with pagination support
+    return await getCachedMeetings(orgId, userId, projectId, page, limit);
 }
 
 export async function getMeeting(meetingId) {
@@ -199,7 +158,7 @@ export async function getMeeting(meetingId) {
         throw new Error("Unauthorized");
     }
 
-    // Use cached meeting data
+    // Use optimized cached meeting with better performance
     return await getCachedMeeting(meetingId, orgId, userId);
 }
 
@@ -235,7 +194,6 @@ export async function joinMeeting(meetingId) {
         throw new Error("Meeting not found or access denied");
     }
 
-    // Add user as participant if not already added - use upsert for efficiency
     await db.meetingParticipant.upsert({
         where: {
             meetingId_userId: {
@@ -273,7 +231,6 @@ export async function updateMeetingStatus(meetingId, status) {
         throw new Error("User not found");
     }
 
-    // Optimized meeting lookup with permission check in query
     const meeting = await db.meeting.findFirst({
         where: {
             id: meetingId,
@@ -354,7 +311,6 @@ export async function deleteMeeting(meetingId) {
     return { success: true };
 }
 
-// Function to add meeting transcript (real Google Meet integration)
 export async function addMeetingTranscript(meetingId, transcriptContent) {
     const auth_result = await auth();
     const { userId, orgId } = auth_result;
@@ -399,7 +355,11 @@ export async function addMeetingTranscript(meetingId, transcriptContent) {
 // Helper function to generate meeting highlights using AI
 async function generateMeetingHighlights(transcriptContent) {
     try {
-        // Use the already initialized Gemini instance for consistency
+        const gemini = getGeminiInstance();
+        if (!gemini) {
+            return "Transcript processing unavailable - missing API configuration";
+        }
+
         const model = gemini.getGenerativeModel({ model: "gemini-pro" });
 
         const prompt = `
@@ -471,6 +431,15 @@ export async function saveTranscript(meetingId, transcriptData) {
 
 async function generateTranscriptInsights(transcriptContent) {
     try {
+        const gemini = getGeminiInstance();
+        if (!gemini) {
+            return {
+                summary: "Transcript analysis unavailable",
+                insights: ["AI processing not configured"],
+                generatedAt: new Date().toISOString(),
+            };
+        }
+
         const model = gemini.getGenerativeModel({ model: "gemini-pro" });
 
         const prompt = `
@@ -643,4 +612,34 @@ export async function getPublicMeetingInfo(meetingId) {
               }/join/${meeting.publicToken}`
             : null,
     };
+}
+
+export async function updateExpiredMeetingStatuses(orgId = null) {
+    try {
+        const now = new Date();
+
+        const whereClause = {
+            status: "ACTIVE", // Updated to match your schema
+            scheduledEndTime: {
+                lte: now, // Meetings that should have ended by now
+            },
+            ...(orgId && { organizationId: orgId }), // Optional org filter
+        };
+                const updateResult = await db.meeting.updateMany({
+                    where: whereClause,
+                    data: {
+                        status: "COMPLETED",
+                        updatedAt: now,
+                    },
+                });
+
+                if (updateResult.count > 0) {
+                revalidateTag("meetings");
+                revalidateTag("meeting");
+            }
+
+            return updateResult.count;
+        } catch (error) {
+            throw error;
+        }
 }

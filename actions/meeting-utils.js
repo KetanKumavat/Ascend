@@ -13,7 +13,7 @@ export async function createLiveKitRoom(meetingData) {
         const roomName = `ascend-${meetingData.id || Date.now()}-${Math.random()
             .toString(36)
             .substring(7)}`;
-        
+
         // Meeting URL points to our LiveKit room page
         const meetingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/meeting/${meetingData.id}/room`;
 
@@ -81,7 +81,6 @@ export async function saveTranscript(meetingId, transcriptData) {
             },
         });
 
-        console.log("📝 Transcript saved with AI insights:", transcript.id);
         return transcript;
     } catch (error) {
         console.error("Failed to save transcript:", error);

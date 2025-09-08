@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Share2, Copy, CheckCircle, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import { generatePublicToken, getPublicMeetingInfo } from '@/actions/meetings';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Share2, CheckCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { generatePublicToken, getPublicMeetingInfo } from "@/actions/meetings";
 
-export function QuickShareButton({ meetingId, variant = "outline", size = "default" }) {
+export function QuickShareButton({
+    meetingId,
+    variant = "outline",
+    size = "default",
+}) {
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -15,7 +19,7 @@ export function QuickShareButton({ meetingId, variant = "outline", size = "defau
         try {
             // Get current public info
             let publicInfo = await getPublicMeetingInfo(meetingId);
-            
+
             // If not public, make it public
             if (!publicInfo.isPublic) {
                 const token = await generatePublicToken(meetingId);
@@ -26,11 +30,11 @@ export function QuickShareButton({ meetingId, variant = "outline", size = "defau
             // Copy to clipboard
             await navigator.clipboard.writeText(publicInfo.publicUrl);
             setCopied(true);
-            toast.success('Meeting link copied to clipboard!');
+            toast.success("Meeting link copied to clipboard!");
             setTimeout(() => setCopied(false), 2000);
         } catch (error) {
-            console.error('Error sharing meeting:', error);
-            toast.error('Failed to generate sharing link');
+            console.error("Error sharing meeting:", error);
+            toast.error("Failed to generate sharing link");
         } finally {
             setLoading(false);
         }
@@ -51,7 +55,7 @@ export function QuickShareButton({ meetingId, variant = "outline", size = "defau
             ) : (
                 <Share2 className="w-4 h-4" />
             )}
-            {loading ? 'Generating...' : copied ? 'Copied!' : 'Share'}
+            {loading ? "Generating..." : copied ? "Copied!" : "Share"}
         </Button>
     );
 }

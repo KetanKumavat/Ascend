@@ -2,97 +2,88 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
-import { timeQuery } from "@/lib/performance";
+import { getCachedUser } from "@/lib/user-utils";
 
 export async function getMessagesForProject(projectId) {
-  const auth_result = await auth();
-  const { userId, orgId } = auth_result;
+    const auth_result = await auth();
+    const { userId, orgId } = auth_result;
 
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized");
-  }
+    if (!userId || !orgId) {
+        throw new Error("Unauthorized");
+    }
 
-  const messages = await timeQuery(
-    'getMessagesForProject',
-    () => db.message.findMany({
-      where: { projectId },
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        userId: true,
-        projectId: true,
-        user: {
-          select: {
+    const messages = await db.message.findMany({
+        where: { projectId },
+        select: {
             id: true,
-            name: true,
-            email: true
-          }
-        }
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-    { projectId }
-  );
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            userId: true,
+            projectId: true,
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+        },
+        orderBy: { createdAt: "asc" },
+    });
 
-  return messages;
+    return messages;
 }
 
 export async function createMessage(projectId, data) {
-  const auth_result = await auth();
-  const { userId, orgId } = auth_result;
+    const auth_result = await auth();
+    const { userId, orgId } = auth_result;
 
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized");
-  }
+    if (!userId || !orgId) {
+        throw new Error("Unauthorized");
+    }
 
-  // Use cached user lookup
-  const user = await getCachedUser(userId);
+    // Use cached user lookup
+    const user = await getCachedUser(userId);
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+    if (!user) {
+        throw new Error("User not found");
+    }
 
-  const newMessage = await timeQuery(
-    'createMessage',
-    () => db.message.create({
-      data: {
-        content: data.content,
-        userId: user.id,
-        projectId,
-      },
-      select: {
-        id: true,
-        content: true,
-        createdAt: true,
-        updatedAt: true,
-        userId: true,
-        projectId: true,
-        user: {
-          select: {
+    const newMessage = await db.message.create({
+        data: {
+            content: data.content,
+            userId: user.id,
+            projectId,
+        },
+        select: {
             id: true,
-            name: true,
-            email: true
-          }
-        }
-      }
-    }),
-    { projectId, userId: user.id }
-  );
+            content: true,
+            createdAt: true,
+            updatedAt: true,
+            userId: true,
+            projectId: true,
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+            },
+        },
+    });
 
-  return newMessage;
+    return newMessage;
 }
 
 export async function getUserByClerkId(clerkUserId) {
-  try {
-    // Use cached user lookup
-    return await getCachedUser(clerkUserId);
-  } catch (error) {
-    console.error("Error fetching user by Clerk ID:", error);
-    throw new Error("Failed to fetch user");
-  }
+    try {
+        // Use cached user lookup
+        return await getCachedUser(clerkUserId);
+    } catch (error) {
+        console.error("Error fetching user by Clerk ID:", error);
+        throw new Error("Failed to fetch user");
+    }
 }
 
 // export async function deleteMessage(messageId) {

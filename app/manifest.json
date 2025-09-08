@@ -1,23 +1,85 @@
 {
-  "id": "3",
-  "name": "Ascend - Your Project Management Tool",
-  "short_name": "Ascend",
-  "description": "Ascend — a collaborative project management app designed to streamline workflows, enhance communication, and drive success. Get things done together, effortlessly!",
-  "icons": [
-    {
-      "src": "/logo2.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/logo2.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "theme_color": "#84cc16",
-  "background_color": "rgb(0 0 0 / 0.7)",
-  "start_url": "/",
-  "display": "standalone",
-  "orientation": "portrait"
+    "name": "Ascend - Your Project Management and Collaboration Tool",
+    "short_name": "Ascend",
+    "description": "Your projects, your team, your knowledge — all connected through live collaboration, transcription, and AI insights. Transform how teams work together.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#171717",
+    "orientation": "portrait-primary",
+    "scope": "/",
+    "lang": "en",
+    "categories": ["productivity", "business", "collaboration"],
+    "icons": [
+        {
+            "src": "/favicon_io/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon_io/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon_io/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "apple-touch-icon"
+        },
+        {
+            "src": "/favicon_io/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon_io/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Start Meeting",
+            "short_name": "Meeting",
+            "description": "Quickly start a new meeting",
+            "url": "/meeting/new",
+            "icons": [
+                {
+                    "src": "/favicon_io/android-chrome-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "Go to project dashboard",
+            "url": "/dashboard",
+            "icons": [
+                {
+                    "src": "/favicon_io/android-chrome-192x192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/meeting-mockup.jpg",
+            "sizes": "1280x720",
+            "type": "image/jpeg",
+            "form_factor": "wide",
+            "label": "Meeting interface with live transcription"
+        },
+        {
+            "src": "/dashboard-mockup.jpg",
+            "sizes": "720x1280",
+            "type": "image/jpeg",
+            "form_factor": "narrow",
+            "label": "Project dashboard"
+        }
+    ]
 }

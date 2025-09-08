@@ -1,14 +1,13 @@
 import { notFound } from "next/navigation";
 import { getMeeting } from "@/actions/meetings";
 import { LiveKitMeetingPage } from "@/components/livekit-meeting-page";
-import PageHeader from "@/components/ui/page-header";
 
 export default async function MeetingRoomPage({ params }) {
     try {
         // Await params to fix Next.js 15 compatibility
         const resolvedParams = await params;
         const pid = resolvedParams.id;
-        
+
         if (!pid) {
             notFound();
         }
@@ -20,7 +19,7 @@ export default async function MeetingRoomPage({ params }) {
         }
 
         return (
-            <LiveKitMeetingPage 
+            <LiveKitMeetingPage
                 meetingId={meeting.id}
                 meetingTitle={meeting.title}
                 meetingDescription={meeting.description}

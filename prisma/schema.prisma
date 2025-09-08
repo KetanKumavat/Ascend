@@ -134,20 +134,20 @@ model Meeting {
   id             String   @id @default(cuid())
   title          String
   description    String?
-  meetingId      String?  @unique  // LiveKit room name (null for external meetings)
-  meetingUrl     String?  // Meeting room page URL
-  googleEventId  String?  // Google Calendar event ID
-  isExternal     Boolean  @default(false) // True for external meetings (no transcription)
-  externalUrl    String?  // External meeting URL (Google Meet, Zoom, etc.)
-  externalPlatform String? // Platform name (Google Meet, Zoom, Teams, etc.)
-  isPublic       Boolean  @default(false) // True for publicly shareable meetings
-  publicToken    String?  @unique // Unique token for public access
+  meetingId      String?  @unique
+  meetingUrl     String?
+  googleEventId  String?
+  isExternal     Boolean  @default(false)
+  externalUrl    String?
+  externalPlatform String?
+  isPublic       Boolean  @default(false)
+  publicToken    String?  @unique
   scheduledAt    DateTime
-  duration       Int?     // in minutes
+  duration       Int?
   status         MeetingStatus @default(SCHEDULED)
   organizationId String
-  projectId      String?  // Optional: meeting can be project-specific
-  createdById    String   // Admin/PM who created
+  projectId      String?
+  createdById    String
   createdBy      User     @relation("MeetingCreator", fields: [createdById], references: [id])
   project        Project? @relation(fields: [projectId], references: [id])
   participants   MeetingParticipant[]
@@ -184,14 +184,14 @@ model MeetingParticipant {
 model MeetingTranscript {
   id          String   @id @default(cuid())
   meetingId   String   @unique
-  content     String   // Full transcript text
-  summary     String?  // AI-generated summary
-  highlights  String?  // JSON array of key highlights
-  actionItems String?  // JSON array of action items
-  speakers    String?  // JSON array of identified speakers
-  duration    Int?     // Meeting duration in minutes
-  audioPath   String?  // Path to stored audio file (optional)
-  processing  Boolean  @default(false) // Whether AI processing is in progress
+  content     String
+  summary     String?
+  highlights  String?
+  actionItems String?
+  speakers    String?
+  duration    Int?
+  audioPath   String?
+  processing  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
@@ -205,9 +205,9 @@ model MeetingTranscript {
 model TranscriptSegment {
   id            String   @id @default(cuid())
   meetingId     String
-  participantId String?  // LiveKit participant ID
-  text          String   // Segment text
-  isFinal       Boolean  @default(false) // Whether this is a final transcript
+  participantId String?
+  text          String
+  isFinal       Boolean  @default(false)
   language      String   @default("en")
   timestamp     DateTime @default(now())
   transcript    MeetingTranscript @relation(fields: [meetingId], references: [meetingId], onDelete: Cascade)
@@ -234,19 +234,19 @@ enum ParticipantStatus {
 model Canvas {
   id             String   @id @default(cuid())
   title          String
-  elements       String   // JSON string of Excalidraw elements
-  appState       String   // JSON string of Excalidraw app state
+  elements       String
+  appState       String
   organizationId String
-  projectId      String?  // Optional - can be organization-wide or project-specific
+  projectId      String?
   createdById    String
-  isDefault      Boolean  @default(false) // Whether this is the default canvas for org/project
+  isDefault      Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   
   createdBy      User     @relation("CanvasCreator", fields: [createdById], references: [id])
   project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
-  @@unique([organizationId, projectId, isDefault]) // Ensure only one default canvas per org/project
+  @@unique([organizationId, projectId, isDefault])
   @@index([organizationId], name: "idx_canvas_organization_id")
   @@index([projectId], name: "idx_canvas_project_id")
   @@index([createdById], name: "idx_canvas_created_by")

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { getUsernameFromRepoUrl } from "@/lib/getUsername";
 import { updateProject } from "@/actions/project";
 import remarkGfm from "remark-gfm";
+import { toast } from "sonner";
 
 const EODReport = ({ repoUrl, projectId }) => {
   const [loading, setLoading] = useState(true);
@@ -31,9 +32,15 @@ const EODReport = ({ repoUrl, projectId }) => {
           `/api/github/summary?username=${username}&repo=${repo}`
         );
         const data = await response.json();
-        if (!data.error) setReport(data.report);
+        
+        if (data.error) {
+          toast.error(`Failed to fetch summary: ${data.error}`);
+        } else {
+          setReport(data.report);
+        }
       } catch (error) {
         console.error("Error fetching summary report:", error);
+        toast.error("Failed to fetch summary report. Please try again");
       } finally {
         setLoading(false);
       }
@@ -51,9 +58,15 @@ const EODReport = ({ repoUrl, projectId }) => {
           `/api/github/commits?username=${username}&repo=${repo}`
         );
         const data = await response.json();
-        if (!data.error) setCommits(data);
+        
+        if (data.error) {
+          toast.error(`Failed to fetch commits: ${data.error}`);
+        } else {
+          setCommits(data);
+        }
       } catch (error) {
         console.error("Error fetching commits:", error);
+        toast.error("Failed to fetch commits. Please try again");
       } finally {
         setLoading(false);
       }
@@ -63,12 +76,37 @@ const EODReport = ({ repoUrl, projectId }) => {
   }, [username, repo]);
 
   const handleAddRepoUrl = async () => {
+    if (!newRepoUrl.trim()) {
+      toast.error("Please enter a valid repository URL");
+      return;
+    }
+
     try {
-      await updateProject({ id: projectId, repoName: newRepoUrl });
+      const result = await updateProject({ id: projectId, repoName: newRepoUrl });
+      
+      // Check if the result contains an error
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
+      
+      toast.success("Repository URL added successfully!");
       setShowModal(false);
+      setNewRepoUrl("");
       window.location.reload();
     } catch (error) {
       console.error("Error updating project:", error);
+      
+      // Handle different types of errors
+      if (error.message.includes("admin") || error.message.includes("permission")) {
+        toast.error("Only admins can add repository URLs");
+      } else if (error.message.includes("invalid") || error.message.includes("url")) {
+        toast.error("Invalid repository URL format");
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        toast.error("Network error. Please check your connection and try again");
+      } else {
+        toast.error(error.message || "Failed to add repository URL. Please try again");
+      }
     }
   };
 
@@ -77,13 +115,23 @@ const EODReport = ({ repoUrl, projectId }) => {
       const response = await fetch(
         `/api/commits/${sha}?username=${username}&repo=${repo}`
       );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.text();
-      if (!data.error) {
+      
+      if (data.includes("error") || data.includes("Error")) {
+        toast.error("Failed to generate commit report");
+      } else {
         setCommitReport(data);
         setShowCommitReport(true);
+        toast.success("Commit report generated successfully!");
       }
     } catch (error) {
       console.error("Error fetching commit report:", error);
+      toast.error("Failed to generate commit report. Please try again");
     }
   };
 

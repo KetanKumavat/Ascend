@@ -200,14 +200,16 @@ export async function getUserIssues(userId) {
         select: {
           id: true,
           name: true,
-          email: true
+          email: true,
+          imageUrl: true
         }
       },
       reporter: {
         select: {
           id: true,
           name: true,
-          email: true
+          email: true,
+          imageUrl: true
         }
       },
     },

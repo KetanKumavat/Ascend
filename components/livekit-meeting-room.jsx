@@ -76,6 +76,10 @@ export function LiveKitMeetingRoom({
             recognitionInstance.interimResults = true;
             recognitionInstance.lang = "en-US";
 
+            recognitionInstance.onstart = () => {
+                console.log("Speech recognition started");
+            };
+
             recognitionInstance.onresult = (event) => {
                 let finalTranscript = "";
                 let interimTranscript = "";
@@ -90,9 +94,11 @@ export function LiveKitMeetingRoom({
                 }
 
                 if (finalTranscript) {
+                    console.log("Final transcript:", finalTranscript);
                     setTranscript((prev) => prev + " " + finalTranscript);
                     // Save transcript to backend
                     saveTranscriptSegment(finalTranscript);
+                    toast.success("Transcribing...", { duration: 1000 });
                 }
             };
 
@@ -100,9 +106,40 @@ export function LiveKitMeetingRoom({
                 console.error("Speech recognition error:", event.error);
                 if (event.error === "not-allowed") {
                     toast.error(
-                        "Microphone access denied. Transcription disabled."
+                        "Microphone access denied. Please allow microphone access for transcription."
                     );
                     setIsTranscribing(false);
+                    setTranscriptionStarted(false);
+                } else if (event.error === "network") {
+                    toast.error("Network error. Transcription paused.");
+                    // Try to restart recognition
+                    setTimeout(() => {
+                        if (transcriptionStarted && recognition) {
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.error("Failed to restart recognition:", e);
+                            }
+                        }
+                    }, 2000);
+                } else if (event.error === "no-speech") {
+                    console.log("No speech detected, continuing...");
+                } else {
+                    console.error("Recognition error:", event.error);
+                }
+            };
+
+            recognitionInstance.onend = () => {
+                console.log("Speech recognition ended");
+                // Restart if we're still supposed to be transcribing
+                if (transcriptionStarted && isTranscribing) {
+                    setTimeout(() => {
+                        try {
+                            recognitionInstance.start();
+                        } catch (e) {
+                            console.error("Failed to restart recognition:", e);
+                        }
+                    }, 100);
                 }
             };
 
@@ -110,6 +147,7 @@ export function LiveKitMeetingRoom({
         } else {
             console.warn("Speech recognition not supported in this browser");
             setIsTranscribing(false);
+            toast.warning("Speech recognition not supported in this browser");
         }
     }, []);
 
@@ -310,6 +348,12 @@ export function LiveKitMeetingRoom({
                         attempt: retryCount + 1,
                     });
                     
+                    // Ensure we're not already connected
+                    if (room.state === "connected") {
+                        console.log("Already connected, skipping connection attempt");
+                        return;
+                    }
+                    
                     await room.connect(serverUrl, token);
                 } catch (error) {
                     if (!isMounted) return;
@@ -390,14 +434,28 @@ export function LiveKitMeetingRoom({
         if (!recognition || transcriptionStarted) return;
 
         try {
+            // Request microphone permissions first
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    await navigator.mediaDevices.getUserMedia({ audio: true });
+                    console.log("Microphone permission granted");
+                } catch (permError) {
+                    console.error("Microphone permission denied:", permError);
+                    toast.error("Microphone access is required for transcription. Please allow microphone access.");
+                    setIsTranscribing(false);
+                    return;
+                }
+            }
+
             setTranscriptionStarted(true);
             recognition.start();
-            console.log("Transcription started automatically");
-            toast.success("AI transcription enabled");
+            console.log("Transcription started successfully");
+            toast.success("AI transcription started - speak to see live text!");
         } catch (error) {
             console.error("Failed to start transcription:", error);
             setTranscriptionStarted(false);
             setIsTranscribing(false);
+            toast.error("Failed to start transcription. Please check microphone permissions.");
         }
     };
 

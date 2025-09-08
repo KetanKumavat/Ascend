@@ -3,7 +3,7 @@ import { getMeeting } from "@/actions/meetings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Users, Video, FileText, Calendar } from "lucide-react";
+import { Clock, Users, Video, FileText, Calendar, PenTool } from "lucide-react";
 import PageHeader from "@/components/ui/page-header";
 import Link from "next/link";
 import { QuickShareButton } from "@/components/quick-share-button";
@@ -23,13 +23,17 @@ export default async function MeetingDetailsPage({ params }) {
             notFound();
         }
 
+        const now = new Date();
+        const scheduledDate = new Date(meeting.scheduledAt);
+        const endTime = new Date(
+            scheduledDate.getTime() + (meeting.duration || 60) * 60 * 1000
+        );
+
         const isLive =
             meeting.status === "SCHEDULED" &&
-            new Date(meeting.scheduledAt) <= new Date();
-        const isPast =
-            meeting.status === "COMPLETED" ||
-            new Date(meeting.scheduledAt) <
-                new Date(Date.now() - (meeting.duration || 60) * 60 * 1000);
+            scheduledDate <= now &&
+            endTime > now;
+        const isPast = meeting.status === "COMPLETED" || endTime <= now;
 
         const getStatusBadge = () => {
             if (isPast) return <Badge variant="secondary">Past</Badge>;
@@ -50,44 +54,50 @@ export default async function MeetingDetailsPage({ params }) {
         };
 
         return (
-            <div className="min-h-screen pt-10 bg-neutral-50 dark:bg-neutral-900">
-                <PageHeader
-                    title={meeting.title}
-                    subtitle="Meeting Details & Actions"
-                    backHref={
-                        meeting.projectId
-                            ? `/project/${meeting.projectId}/meetings`
-                            : `/organization/${meeting.organizationId}/meetings`
-                    }
-                    breadcrumb={[
-                        {
-                            label: "Organization",
-                            href: `/organization/${meeting.organizationId}`,
-                        },
-                        ...(meeting.project
-                            ? [
-                                  {
-                                      label: meeting.project.name,
-                                      href: `/project/${meeting.projectId}`,
-                                  },
-                                  {
-                                      label: "Meetings",
-                                      href: `/project/${meeting.projectId}/meetings`,
-                                  },
-                              ]
-                            : [
-                                  {
-                                      label: "Meetings",
-                                      href: `/organization/${meeting.organizationId}/meetings`,
-                                  },
-                              ]),
-                        {
-                            label: meeting.title,
-                        },
-                    ]}
-                />
+            <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+                <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pointer-events-none" />
 
-                <div className="container mx-auto px-4 py-6 space-y-6">
+                {/* Subtle grid pattern */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(163_163_163/0.15)_1px,transparent_0)] [background-size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(115_115_115/0.15)_1px,transparent_0)] pointer-events-none" />
+                <div className="relative">
+                    <PageHeader
+                        title={meeting.title}
+                        subtitle="Meeting Details & Actions"
+                        backHref={
+                            meeting.projectId
+                                ? `/project/${meeting.projectId}/meetings`
+                                : `/organization/${meeting.organizationId}/meetings`
+                        }
+                        breadcrumb={[
+                            {
+                                label: "Organization",
+                                href: `/organization/${meeting.organizationId}`,
+                            },
+                            ...(meeting.project
+                                ? [
+                                      {
+                                          label: meeting.project.name,
+                                          href: `/project/${meeting.projectId}`,
+                                      },
+                                      {
+                                          label: "Meetings",
+                                          href: `/project/${meeting.projectId}/meetings`,
+                                      },
+                                  ]
+                                : [
+                                      {
+                                          label: "Meetings",
+                                          href: `/organization/${meeting.organizationId}/meetings`,
+                                      },
+                                  ]),
+                            {
+                                label: meeting.title,
+                            },
+                        ]}
+                    />
+                </div>
+
+                <div className="container mx-auto px-4 py-6 space-y-6 z-50 relative">
                     <Card>
                         <CardHeader>
                             <div className="flex items-center justify-between">
@@ -154,7 +164,7 @@ export default async function MeetingDetailsPage({ params }) {
                             <CardTitle>Meeting Actions</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Link href={`/meeting/${meeting.id}/room`}>
                                     <Button
                                         className="w-full h-20 flex-col gap-2"
@@ -186,6 +196,24 @@ export default async function MeetingDetailsPage({ params }) {
                                         </span>
                                         <span className="text-xs text-muted-foreground">
                                             AI-generated meeting notes
+                                        </span>
+                                    </Button>
+                                </Link>
+
+                                <Link
+                                    href={`/project/${meeting.projectId}/canvas`}
+                                >
+                                    <Button
+                                        variant="outline"
+                                        className="w-full h-20 flex-col gap-2"
+                                        disabled={!meeting.projectId}
+                                    >
+                                        <PenTool className="h-6 w-6" />
+                                        <span className="font-medium">
+                                            Open Canvas
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            Collaborative whiteboard
                                         </span>
                                     </Button>
                                 </Link>

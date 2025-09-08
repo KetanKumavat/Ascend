@@ -285,6 +285,7 @@ export function MeetingsDashboard({ projects = [] }) {
                         )}
 
                         {status.status !== "live" &&
+                            status.status !== "ended" &&
                             (meeting.isExternal ? (
                                 <Button
                                     onClick={() => {
@@ -333,10 +334,10 @@ export function MeetingsDashboard({ projects = [] }) {
                                     <FileTextIcon className="w-4 h-4 mr-2" />
                                     {hasPartialTranscript &&
                                     status.status === "live"
-                                        ? "Join Recording"
+                                        ? "Live Transcript"
                                         : hasTranscript
-                                        ? "View Recording"
-                                        : "Start Recording"}
+                                        ? "View Transcript"
+                                        : "Transcript"}
                                 </Button>
                             </Link>
                         )}

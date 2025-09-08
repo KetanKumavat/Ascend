@@ -8,11 +8,14 @@ export async function POST(request, { params }) {
         const resolvedParams = await params;
         const { userId, orgId } = await auth();
         if (!userId || !orgId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
         }
 
         const meetingId = resolvedParams.id;
-        
+
         // Parse request body safely
         let participantName = null;
         try {
@@ -26,20 +29,26 @@ export async function POST(request, { params }) {
         // First check if meeting exists at all
         const meetingExists = await db.meeting.findUnique({
             where: { id: meetingId },
-            select: { id: true, organizationId: true, isPublic: true }
+            select: { id: true, organizationId: true, isPublic: true },
         });
 
         console.log("Meeting exists check:", meetingExists ? "Yes" : "No");
         if (!meetingExists) {
-            return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+            return NextResponse.json(
+                { error: "Meeting not found" },
+                { status: 404 }
+            );
         }
 
         // Check if user has access (either same org or public meeting)
-        const hasAccess = meetingExists.organizationId === orgId || meetingExists.isPublic;
-        console.log("User has access:", hasAccess, { userOrgId: orgId, meetingOrgId: meetingExists.organizationId, isPublic: meetingExists.isPublic });
+        const hasAccess =
+            meetingExists.organizationId === orgId || meetingExists.isPublic;
 
         if (!hasAccess) {
-            return NextResponse.json({ error: "Access denied" }, { status: 403 });
+            return NextResponse.json(
+                { error: "Access denied" },
+                { status: 403 }
+            );
         }
 
         // Get full meeting details
@@ -55,24 +64,29 @@ export async function POST(request, { params }) {
             where: { clerkUserId: userId },
         });
 
-        const participantDisplayName = participantName || user?.name || "Anonymous";
+        const participantDisplayName =
+            participantName || user?.name || "Anonymous";
 
         // Check if LiveKit environment variables are set
         if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
             console.error("Missing LiveKit environment variables");
-            return NextResponse.json({ error: "LiveKit not configured" }, { status: 500 });
+            return NextResponse.json(
+                { error: "LiveKit not configured" },
+                { status: 500 }
+            );
         }
 
         // Create LiveKit access token with unique identity
-        const uniqueIdentity = `${userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        console.log("Creating LiveKit token for user:", { userId, participantDisplayName, uniqueIdentity });
+        const uniqueIdentity = `${userId}_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`;
         const token = new AccessToken(
             process.env.LIVEKIT_API_KEY,
             process.env.LIVEKIT_API_SECRET,
             {
                 identity: uniqueIdentity, // Use unique identity to prevent conflicts
                 name: participantDisplayName,
-                ttl: '2h', // Token valid for 2 hours
+                ttl: "2h", // Token valid for 2 hours
             }
         );
 
@@ -87,13 +101,6 @@ export async function POST(request, { params }) {
         });
 
         const accessToken = await token.toJwt();
-
-        console.log('Generated token for:', {
-            meetingId,
-            userId,
-            participantName: participantDisplayName,
-            wsUrl: process.env.LIVEKIT_WS_URL
-        });
 
         // Record participant joining
         await db.meetingParticipant.upsert({
