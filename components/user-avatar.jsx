@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const UserAvatar = ({ user }) => {
-    console.log("Rendering UserAvatar for user:", user);
+    // console.log("Rendering UserAvatar for user:", user);
     const getInitials = (name) => {
         if (!name) return "?";
         return name
