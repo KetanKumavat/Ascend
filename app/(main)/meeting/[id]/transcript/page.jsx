@@ -39,50 +39,51 @@ export default async function MeetingTranscriptPage({ params }) {
 
                 {/* Subtle grid pattern */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(163_163_163/0.15)_1px,transparent_0)] [background-size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(115_115_115/0.15)_1px,transparent_0)] pointer-events-none" />
-
-                <PageHeader
-                    title={`${meeting.title} - Transcript`}
-                    subtitle="AI-powered meeting transcription and analysis"
-                    backHref={`/project/${meeting.projectId}/meetings`}
-                    breadcrumb={[
-                        {
-                            label: "Organization",
-                            href: `/organization/${meeting.project.organizationId}`,
-                            icon: "Home",
-                        },
-                        {
-                            label: "Project",
-                            href: `/project/${meeting.projectId}`,
-                            icon: "FolderIcon",
-                        },
-                        {
-                            label: "Meetings",
-                            href: `/project/${meeting.projectId}/meetings`,
-                        },
-                        { label: "Transcript", icon: "FileText" },
-                    ]}
-                >
-                    <div className="flex gap-2">
-                        <Badge
-                            variant={
-                                isLive
-                                    ? "destructive"
+                <div className="relative">
+                    <PageHeader
+                        title={`${meeting.title} - Transcript`}
+                        subtitle="AI-powered meeting transcription and analysis"
+                        backHref={`/project/${meeting.projectId}/meetings`}
+                        breadcrumb={[
+                            {
+                                label: "Organization",
+                                href: `/organization/${meeting.project.organizationId}`,
+                                icon: "Home",
+                            },
+                            {
+                                label: "Project",
+                                href: `/project/${meeting.projectId}`,
+                                icon: "FolderIcon",
+                            },
+                            {
+                                label: "Meetings",
+                                href: `/project/${meeting.projectId}/meetings`,
+                            },
+                            { label: "Transcript", icon: "FileText" },
+                        ]}
+                    >
+                        <div className="flex gap-2">
+                            <Badge
+                                variant={
+                                    isLive
+                                        ? "destructive"
+                                        : isPast
+                                        ? "secondary"
+                                        : "outline"
+                                }
+                            >
+                                {isLive
+                                    ? "🔴 Live"
                                     : isPast
-                                    ? "secondary"
-                                    : "outline"
-                            }
-                        >
-                            {isLive
-                                ? "🔴 Live"
-                                : isPast
-                                ? "Ended"
-                                : "Scheduled"}
-                        </Badge>
-                        <Badge variant="outline">LiveKit + AI</Badge>
-                    </div>
-                </PageHeader>
+                                    ? "Ended"
+                                    : "Scheduled"}
+                            </Badge>
+                            <Badge variant="outline">LiveKit + AI</Badge>
+                        </div>
+                    </PageHeader>
+                </div>
 
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+                <main className="max-w-7xl relative w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -151,14 +152,14 @@ export default async function MeetingTranscriptPage({ params }) {
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg">
-                                🎥 LiveKit Video Meetings
+                                LiveKit Video Meetings
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <h4 className="font-semibold mb-2">
-                                        � Video Conference Features:
+                                        Video Conference Features:
                                     </h4>
                                     <ol className="text-sm space-y-1 list-decimal list-inside">
                                         <li>
@@ -173,7 +174,7 @@ export default async function MeetingTranscriptPage({ params }) {
                                 </div>
                                 <div>
                                     <h4 className="font-semibold mb-2">
-                                        🤖 AI Transcription Features:
+                                        AI Transcription Features:
                                     </h4>
                                     <ul className="text-sm space-y-1 list-disc list-inside">
                                         <li>Real-time speech-to-text</li>
@@ -188,7 +189,7 @@ export default async function MeetingTranscriptPage({ params }) {
 
                             <div className="p-3 bg-blue-50 border border-blue-200 rounded">
                                 <p className="text-sm text-blue-700">
-                                    🚀 <strong>Powered by LiveKit:</strong>{" "}
+                                    <strong>Powered by LiveKit:</strong>{" "}
                                     Enterprise-grade video infrastructure with
                                     built-in AI transcription agents. Start your
                                     meeting and transcription will begin

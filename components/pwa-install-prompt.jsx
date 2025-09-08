@@ -9,14 +9,22 @@ export function PWAInstallPrompt() {
     const [showPrompt, setShowPrompt] = useState(false);
 
     useEffect(() => {
+        const hasUserDismissed = localStorage.getItem("pwa-install-dismissed");
+        const hasUserInstalled = localStorage.getItem("pwa-install-completed");
+
+        if (hasUserDismissed || hasUserInstalled) {
+            return;
+        }
+
         if (window.matchMedia("(display-mode: standalone)").matches) {
+            localStorage.setItem("pwa-install-completed", "true");
             return;
         }
 
         const handler = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
-            setShowPrompt(true);
+            setTimeout(() => setShowPrompt(true), 1000);
         };
 
         window.addEventListener("beforeinstallprompt", handler);
@@ -25,7 +33,7 @@ export function PWAInstallPrompt() {
         const isInStandaloneMode = window.navigator.standalone;
 
         if (isIOS && !isInStandaloneMode) {
-            setTimeout(() => setShowPrompt(true), 2000);
+            setTimeout(() => setShowPrompt(true), 3000);
         }
 
         return () => {
@@ -35,7 +43,11 @@ export function PWAInstallPrompt() {
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) {
-            alert();
+            alert(
+                'To install this app on your device:\n\n1. Tap the Share button\n2. Select "Add to Home Screen"\n3. Tap "Add"'
+            );
+            localStorage.setItem("pwa-install-dismissed", "true");
+            setShowPrompt(false);
             return;
         }
 
@@ -44,7 +56,11 @@ export function PWAInstallPrompt() {
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === "accepted") {
+            localStorage.setItem("pwa-install-completed", "true");
+            console.log("User accepted the install prompt");
         } else {
+            localStorage.setItem("pwa-install-dismissed", "true");
+            console.log("User dismissed the install prompt");
         }
 
         setDeferredPrompt(null);
@@ -52,6 +68,7 @@ export function PWAInstallPrompt() {
     };
 
     const handleDismiss = () => {
+        localStorage.setItem("pwa-install-dismissed", "true");
         setShowPrompt(false);
         setDeferredPrompt(null);
     };
@@ -70,6 +87,7 @@ export function PWAInstallPrompt() {
                     </h3>
                     <p className="text-zinc-400 text-xs mt-1">
                         Get quick access to your projects and meetings. Install
+                        our app for the best experience.
                     </p>
                     <div className="flex gap-2 mt-3">
                         <Button

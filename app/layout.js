@@ -95,28 +95,7 @@ const customDarkTheme = {
 export default function RootLayout({ children }) {
     return (
         <ClerkProvider appearance={{ baseTheme: customDarkTheme }}>
-            <html
-                lang="en"
-                className="dark"
-                suppressHydrationWarning={true}
-                data-scroll-behaviour="smooth"
-            >
-                <head>
-                    <meta
-                        name="viewport"
-                        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-                    />
-                    <meta name="theme-color" content="#171717" />
-                    <meta name="apple-mobile-web-app-capable" content="yes" />
-                    <meta
-                        name="apple-mobile-web-app-status-bar-style"
-                        content="black-translucent"
-                    />
-                    <link
-                        rel="apple-touch-icon"
-                        href="/favicon_io/apple-touch-icon.png"
-                    />
-                </head>
+            <html lang="en" className="dark" suppressHydrationWarning={true}>
                 <body
                     className={`${inter.className} antialiased bg-black text-white overflow-x-hidden`}
                 >
