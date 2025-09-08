@@ -1,4 +1,3 @@
-// import ModeToggle from "@/components/theme-toggler";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import { ChartNoAxesCombined, PenBox } from "lucide-react";

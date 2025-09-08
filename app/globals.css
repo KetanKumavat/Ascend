@@ -18,7 +18,7 @@ body {
         --deep: 0 0% 6%;
         --surface: 0 0% 12%;
         --muted-surface: 0 0% 18%;
-        
+
         --neutral-50: 0 0% 98%;
         --neutral-100: 0 0% 96%;
         --neutral-200: 0 0% 88%;
@@ -29,13 +29,13 @@ body {
         --neutral-700: 0 0% 28%;
         --neutral-800: 0 0% 16%;
         --neutral-900: 0 0% 8%;
-        
+
         /* Lime Accent System - Minimal Usage */
         --lime: 82 77% 43%;
         --lime-glow: 82 77% 55%;
         --lime-soft: 82 35% 65%;
         --lime-muted: 82 20% 85%;
-        
+
         /* Use dark mode values as default */
         --background: 220 13% 6%;
         --foreground: 220 13% 98%;
@@ -130,6 +130,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
     html {
         scroll-behavior: smooth;
+        data-scroll-behaviour: smooth;
     }
 }
 

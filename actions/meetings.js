@@ -618,28 +618,56 @@ export async function updateExpiredMeetingStatuses(orgId = null) {
     try {
         const now = new Date();
 
-        const whereClause = {
-            status: "ACTIVE", // Updated to match your schema
-            scheduledEndTime: {
-                lte: now, // Meetings that should have ended by now
+        // First, find meetings that should be marked as completed
+        // We need to calculate end time based on scheduledAt + duration
+        const expiredMeetings = await db.meeting.findMany({
+            where: {
+                status: "IN_PROGRESS",
+                ...(orgId && { organizationId: orgId }),
+                scheduledAt: {
+                    lte: new Date(now.getTime() - 60 * 60 * 1000), // Started more than 1 hour ago
+                },
             },
-            ...(orgId && { organizationId: orgId }), // Optional org filter
-        };
-                const updateResult = await db.meeting.updateMany({
-                    where: whereClause,
-                    data: {
-                        status: "COMPLETED",
-                        updatedAt: now,
-                    },
-                });
+            select: {
+                id: true,
+                scheduledAt: true,
+                duration: true,
+            },
+        });
 
-                if (updateResult.count > 0) {
-                revalidateTag("meetings");
-                revalidateTag("meeting");
-            }
+        // Filter meetings that have actually expired based on duration
+        const expiredMeetingIds = expiredMeetings
+            .filter((meeting) => {
+                const duration = meeting.duration || 60; // Default 60 minutes
+                const endTime = new Date(meeting.scheduledAt.getTime() + duration * 60 * 1000);
+                return now > endTime;
+            })
+            .map((meeting) => meeting.id);
 
-            return updateResult.count;
-        } catch (error) {
-            throw error;
+        if (expiredMeetingIds.length === 0) {
+            return 0;
         }
+
+        // Update the expired meetings
+        const updateResult = await db.meeting.updateMany({
+            where: {
+                id: {
+                    in: expiredMeetingIds,
+                },
+            },
+            data: {
+                status: "COMPLETED",
+                updatedAt: now,
+            },
+        });
+
+        if (updateResult.count > 0) {
+            revalidateTag("meetings");
+            revalidateTag("meeting");
+        }
+
+        return updateResult.count;
+    } catch (error) {
+        throw error;
+    }
 }

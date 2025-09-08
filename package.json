@@ -11,7 +11,7 @@
         "vercel-build": "prisma generate && prisma migrate deploy && next build"
     },
     "dependencies": {
-        "@clerk/nextjs": "^5.7.1",
+        "@clerk/nextjs": "^6.31.9",
         "@clerk/themes": "^2.1.39",
         "@ducanh2912/next-pwa": "^10.2.9",
         "@excalidraw/excalidraw": "^0.18.0",
@@ -43,11 +43,11 @@
         "livekit-client": "^2.15.6",
         "livekit-server-sdk": "^2.13.3",
         "lucide-react": "^0.454.0",
-        "next": "15.0.2",
+        "next": "^15.5.2",
         "next-themes": "^0.3.0",
-        "react": "19.0.0-rc-02c0e824-20241028",
+        "react": "^19.1.1",
         "react-day-picker": "^9.2.1",
-        "react-dom": "19.0.0-rc-02c0e824-20241028",
+        "react-dom": "^19.1.1",
         "react-hook-form": "^7.53.1",
         "react-markdown": "^9.0.1",
         "react-spinners": "^0.17.0",

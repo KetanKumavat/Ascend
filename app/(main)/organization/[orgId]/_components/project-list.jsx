@@ -88,33 +88,35 @@ const ProjectList = ({ orgId }) => {
             {/* Projects Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {projects?.map((project) => (
-                    <div
+                    <Link
+                        href={`/project/${project.id}`}
+                        className="block"
                         key={project.id}
-                        className="group bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200 p-6 hover:shadow-sm"
                     >
-                        <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                {project.name}
-                            </h3>
-                            <DeleteProject
-                                projectId={project.id}
-                                onDelete={handleDeleteProject}
-                            />
-                        </div>
+                        <div className="group bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all duration-200 p-6 hover:shadow-sm">
+                            <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-lime-500 dark:group-hover:text-lime-500 transition-colors">
+                                    {project.name}
+                                </h3>
+                                <DeleteProject
+                                    projectId={project.id}
+                                    onDelete={handleDeleteProject}
+                                />
+                            </div>
 
-                        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 line-clamp-3">
-                            {project.description || "No description provided"}
-                        </p>
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 line-clamp-3">
+                                {project.description ||
+                                    "No description provided"}
+                            </p>
 
-                        <Link href={`/project/${project.id}`} className="block">
                             <Button
                                 variant="ghost"
-                                className="w-full justify-start p-0 h-auto text-left hover:bg-transparent group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm"
+                                className="w-full justify-start p-0 h-auto text-left hover:bg-transparent group-hover:text-lime-500 dark:group-hover:text-lime-500 transition-colors text-sm"
                             >
                                 View Project →
                             </Button>
-                        </Link>
-                    </div>
+                        </div>
+                    </Link>
                 ))}
             </div>
         </div>

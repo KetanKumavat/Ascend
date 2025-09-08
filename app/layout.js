@@ -5,27 +5,36 @@ import Footer from "./../components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
-// const space = Space_Grotesk({ subsets: ["latin"] });
 import PageWrapper from "@/components/landing-wrapper";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
     title: "Ascend | Collaborative Project Management",
-    description: "Streamline workflows, enhance team communication, and drive project success with Ascend's collaborative project management platform.",
+    description:
+        "Streamline workflows, enhance team communication, and drive project success with Ascend's collaborative project management platform.",
     manifest: "/manifest.json",
-    keywords: ["project management", "collaboration", "team productivity", "workflow", "task management"],
+    keywords: [
+        "project management",
+        "collaboration",
+        "team productivity",
+        "workflow",
+        "task management",
+    ],
     authors: [{ name: "Ascend Team" }],
     openGraph: {
         title: "Ascend | Collaborative Project Management",
-        description: "Streamline workflows, enhance team communication, and drive project success.",
+        description:
+            "Streamline workflows, enhance team communication, and drive project success.",
         type: "website",
         siteName: "Ascend",
     },
     twitter: {
         card: "summary_large_image",
         title: "Ascend | Collaborative Project Management",
-        description: "Streamline workflows, enhance team communication, and drive project success.",
+        description:
+            "Streamline workflows, enhance team communication, and drive project success.",
     },
 };
 
@@ -86,7 +95,28 @@ const customDarkTheme = {
 export default function RootLayout({ children }) {
     return (
         <ClerkProvider appearance={{ baseTheme: customDarkTheme }}>
-            <html lang="en" className="dark" suppressHydrationWarning={true}>
+            <html
+                lang="en"
+                className="dark"
+                suppressHydrationWarning={true}
+                data-scroll-behaviour="smooth"
+            >
+                <head>
+                    <meta
+                        name="viewport"
+                        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+                    />
+                    <meta name="theme-color" content="#171717" />
+                    <meta name="apple-mobile-web-app-capable" content="yes" />
+                    <meta
+                        name="apple-mobile-web-app-status-bar-style"
+                        content="black-translucent"
+                    />
+                    <link
+                        rel="apple-touch-icon"
+                        href="/favicon_io/apple-touch-icon.png"
+                    />
+                </head>
                 <body
                     className={`${inter.className} antialiased bg-black text-white overflow-x-hidden`}
                 >
@@ -96,6 +126,7 @@ export default function RootLayout({ children }) {
                     </main>
                     <Footer />
                     <Toaster />
+                    <PWAInstallPrompt />
                     <ServiceWorkerProvider />
                 </body>
             </html>

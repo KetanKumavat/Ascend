@@ -70,7 +70,9 @@ export function MeetingsDashboard({ projects = [] }) {
                 const data = await response.json();
 
                 if (isMounted) {
-                    setMeetings(data);
+                    // Extract meetings array from response object
+                    const meetingsArray = data?.meetings ? data.meetings : (Array.isArray(data) ? data : []);
+                    setMeetings(meetingsArray);
                     setLoading(false);
                 }
             } catch (error) {
@@ -103,10 +105,15 @@ export function MeetingsDashboard({ projects = [] }) {
                 },
             });
 
-            if (!response.ok) throw new Error("Failed to fetch meetings");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || "Failed to fetch meetings");
+            }
 
             const data = await response.json();
-            setMeetings(data);
+            // Extract meetings array from response object
+            const meetingsArray = data?.meetings ? data.meetings : (Array.isArray(data) ? data : []);
+            setMeetings(meetingsArray);
         } catch (error) {
             console.error("Error refreshing meetings:", error);
         }
@@ -116,14 +123,17 @@ export function MeetingsDashboard({ projects = [] }) {
     const categorizedMeetings = useMemo(() => {
         const now = new Date();
 
-        const upcoming = meetings
+        // Ensure meetings is always an array
+        const meetingsArray = Array.isArray(meetings) ? meetings : [];
+
+        const upcoming = meetingsArray
             .filter((meeting) => {
                 const scheduledTime = new Date(meeting.scheduledAt);
                 return scheduledTime > now;
             })
             .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt));
 
-        const ongoing = meetings.filter((meeting) => {
+        const ongoing = meetingsArray.filter((meeting) => {
             const scheduledTime = new Date(meeting.scheduledAt);
             const endTime = new Date(
                 scheduledTime.getTime() + (meeting.duration || 60) * 60000
@@ -131,7 +141,7 @@ export function MeetingsDashboard({ projects = [] }) {
             return scheduledTime <= now && endTime > now;
         });
 
-        const past = meetings
+        const past = meetingsArray
             .filter((meeting) => {
                 const scheduledTime = new Date(meeting.scheduledAt);
                 const endTime = new Date(
@@ -268,7 +278,7 @@ export function MeetingsDashboard({ projects = [] }) {
                         <div className="flex items-center gap-2">
                             <UsersIcon className="w-4 h-4 text-muted-foreground" />
                             <span>
-                                {meeting.participants?.length || 0} participants
+                                {meeting._count?.participants || meeting.participants?.length || 0} participants
                             </span>
                         </div>
                     </div>
@@ -439,7 +449,7 @@ export function MeetingsDashboard({ projects = [] }) {
                 </div>
 
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <CreateMeetingDialog 
+                    <CreateMeetingDialog
                         projects={projects}
                         onMeetingCreated={refreshMeetings}
                     >
@@ -514,7 +524,7 @@ export function MeetingsDashboard({ projects = [] }) {
                                 <p className="text-muted-foreground mb-4">
                                     Create your first meeting to get started
                                 </p>
-                                <CreateMeetingDialog 
+                                <CreateMeetingDialog
                                     projects={projects}
                                     onMeetingCreated={refreshMeetings}
                                 >

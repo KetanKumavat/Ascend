@@ -25,10 +25,10 @@ export async function POST(request) {
         // Enhanced validation with detailed error messages
         const validationErrors = [];
         if (!data.title?.trim()) validationErrors.push("Title is required");
-        if (!data.scheduledStartTime)
-            validationErrors.push("Scheduled start time is required");
-        if (!data.scheduledEndTime)
-            validationErrors.push("Scheduled end time is required");
+        if (!data.scheduledAt)
+            validationErrors.push("Scheduled time is required");
+        if (data.duration && data.duration <= 0)
+            validationErrors.push("Duration must be positive");
 
         if (validationErrors.length > 0) {
             return NextResponse.json(
@@ -40,7 +40,7 @@ export async function POST(request) {
         const meeting = await createMeeting(data);
 
         const duration = performance.now() - startTime;
-        console.log(`✅ Meeting created in ${duration.toFixed(2)}ms`);
+        console.log(`Meeting created in ${duration.toFixed(2)}ms`);
 
         return NextResponse.json(meeting, {
             status: 201,
@@ -48,10 +48,6 @@ export async function POST(request) {
         });
     } catch (error) {
         const duration = performance.now() - startTime;
-        console.error(
-            `❌ Meeting creation failed in ${duration.toFixed(2)}ms:`,
-            error
-        );
 
         // Enhanced error responses
         const statusCode = error.message.includes("Unauthorized")
@@ -87,7 +83,7 @@ export async function GET(request) {
         const meetings = await getMeetings(projectId, page, limit);
 
         const duration = performance.now() - startTime;
-        console.log(`✅ Meetings fetched in ${duration.toFixed(2)}ms`);
+        console.log(`Meetings fetched in ${duration.toFixed(2)}ms`);
 
         return NextResponse.json(meetings, {
             headers: getResponseHeaders(60), // Cache for 1 minute

@@ -7,7 +7,7 @@ import { AlertCircle } from "lucide-react";
 
 export default async function UserIssues({ userId }) {
     const issues = await getUserIssues(userId);
-    console.log("issues", issues);
+    // console.log("issues", issues);
 
     if (issues.length === 0) {
         return (

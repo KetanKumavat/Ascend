@@ -118,114 +118,114 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { 
-  getCachedOrganization, 
-  getCachedProjects, 
-  getCachedOrganizationUsers 
+import { auth } from "@clerk/nextjs/server";
+import {
+    getCachedOrganization,
+    getCachedProjects,
+    getCachedOrganizationUsers,
 } from "@/lib/cache";
 import { getCachedUser } from "@/lib/user-utils";
 
 export async function getOrganization(slug) {
-  const auth_result = await auth();
-  const { userId } = auth_result;
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+    const auth_result = await auth();
+    const { userId } = auth_result;
+    if (!userId) {
+        throw new Error("Unauthorized");
+    }
 
-  // Use cached user lookup
-  const user = await getCachedUser(userId);
+    // Use cached user lookup
+    const user = await getCachedUser(userId);
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+    if (!user) {
+        throw new Error("User not found");
+    }
 
-  // Use cached organization data
-  return await getCachedOrganization(slug, userId);
+    // Use cached organization data
+    return await getCachedOrganization(slug, userId);
 }
 
 export async function getProjects(orgId) {
-  // console.log("orgId", orgId);
-  const auth_result = await auth();
-  const { userId } = auth_result;
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+    // console.log("orgId", orgId);
+    const auth_result = await auth();
+    const { userId } = auth_result;
+    if (!userId) {
+        throw new Error("Unauthorized");
+    }
 
-  // Use cached projects data
-  return await getCachedProjects(orgId, userId);
+    // Use cached projects data
+    return await getCachedProjects(orgId, userId);
 }
 
 export async function getUserIssues(userId) {
-  const { orgId } = await auth();
+    const { orgId } = await auth();
 
-  if (!userId || !orgId) {
-    throw new Error("No user id or organization id found");
-  }
+    if (!userId || !orgId) {
+        throw new Error("No user id or organization id found");
+    }
 
-  // Use cached user lookup
-  const user = await getCachedUser(userId);
+    // Use cached user lookup
+    const user = await getCachedUser(userId);
 
-  if (!user) {
-    throw new Error("User not found");
-  }
+    if (!user) {
+        throw new Error("User not found");
+    }
 
-  const issues = await db.issue.findMany({
-    where: {
-      OR: [{ assigneeId: user.id }, { reporterId: user.id }],
-      project: {
-        organizationId: orgId,
-      },
-    },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      status: true,
-      priority: true,
-      projectId: true,
-      sprintId: true,
-      assigneeId: true,
-      reporterId: true,
-      createdAt: true,
-      updatedAt: true,
-      project: {
+    const issues = await db.issue.findMany({
+        where: {
+            OR: [{ assigneeId: user.id }, { reporterId: user.id }],
+            project: {
+                organizationId: orgId,
+            },
+        },
         select: {
-          id: true,
-          name: true,
-          key: true
-        }
-      },
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          imageUrl: true
-        }
-      },
-      reporter: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          imageUrl: true
-        }
-      },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+            id: true,
+            title: true,
+            description: true,
+            status: true,
+            priority: true,
+            projectId: true,
+            sprintId: true,
+            assigneeId: true,
+            reporterId: true,
+            createdAt: true,
+            updatedAt: true,
+            project: {
+                select: {
+                    id: true,
+                    name: true,
+                    key: true,
+                },
+            },
+            assignee: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    imageUrl: true,
+                },
+            },
+            reporter: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    imageUrl: true,
+                },
+            },
+        },
+        orderBy: { updatedAt: "desc" },
+    });
 
-  return issues;
+    return issues;
 }
 
 export async function getOrganizationUsers(orgId) {
-  const auth_result = await auth();
-  const { userId } = auth_result;
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+    const auth_result = await auth();
+    const { userId } = auth_result;
+    if (!userId) {
+        throw new Error("Unauthorized");
+    }
 
-  // Use cached organization users data
-  return await getCachedOrganizationUsers(orgId, userId);
+    // Use cached organization users data
+    return await getCachedOrganizationUsers(orgId, userId);
 }
