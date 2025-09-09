@@ -24,7 +24,7 @@ const Header = async () => {
                     alt="Ascend Logo"
                     width={30}
                     height={30}
-                    className="rounded-full h-auto"
+                    className="h-auto"
                 />
                 <h1 className="text-xl font-bold">
                     <span className="text-neutral-100">A</span>scend
