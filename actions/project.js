@@ -16,9 +16,9 @@ export async function createProject(data) {
     if (!orgId) {
         throw new Error("No Organization Selected");
     }
-
+    const client = await clerkClient();
     const { data: membershipList } =
-        await clerkClient().organizations.getOrganizationMembershipList({
+        await client.organizations.getOrganizationMembershipList({
             organizationId: orgId,
         });
 

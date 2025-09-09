@@ -339,7 +339,7 @@ export default async function MeetingDetailsPage({ params }) {
             </div>
         );
     } catch (error) {
-        console.error("Meeting page error:", error);
+        // console.error("Meeting page error:", error);
         notFound();
     }
 }

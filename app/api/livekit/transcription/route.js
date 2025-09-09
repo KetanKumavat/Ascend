@@ -67,10 +67,7 @@ async function handleTranscriptionSegment(data) {
             },
         });
 
-        console.log(
-            "Transcript segment stored for meeting:",
-            meetingId
-        );
+        console.log("Transcript segment stored for meeting:", meetingId);
     } catch (error) {
         console.error("Error storing transcript segment:", error);
         // Use fallback create if upsert fails due to schema differences
@@ -86,10 +83,7 @@ async function handleTranscriptionSegment(data) {
                 },
             });
         } catch (fallbackError) {
-            console.error(
-                "Fallback create also failed:",
-                fallbackError
-            );
+            console.error("Fallback create also failed:", fallbackError);
         }
     }
 }
@@ -115,81 +109,75 @@ async function handleTranscriptionComplete(data) {
             db.meeting.findUnique({
                 where: { id: meetingId },
                 select: {
+                    id: true,
+                    title: true,
+                    status: true,
+                    project: {
+                        select: {
                             id: true,
-                            title: true,
-                            status: true,
-                            project: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                },
-                            },
+                            name: true,
                         },
-                    }),
-                    // Generate AI summary in parallel
-                    generateAISummary(
-                        transcript,
-                        room_name.includes("meeting") ? "Meeting" : "Discussion"
-                    ),
-                ]);
+                    },
+                },
+            }),
+            // Generate AI summary in parallel
+            generateAISummary(
+                transcript,
+                room_name.includes("meeting") ? "Meeting" : "Discussion"
+            ),
+        ]);
 
-                if (!meeting) {
-                    console.error("Meeting not found:", meetingId);
-                    return;
-                }
+        if (!meeting) {
+            console.error("Meeting not found:", meetingId);
+            return;
+        }
 
-                // Batch database operations
-                const [savedTranscript] = await Promise.all([
-                    // Save complete transcript to database
-                    db.meetingTranscript.upsert({
-                        where: { meetingId },
-                        update: {
-                            content: transcript,
-                            summary: aiAnalysis.summary,
-                            highlights: JSON.stringify(aiAnalysis.highlights),
-                            actionItems: JSON.stringify(aiAnalysis.actionItems),
-                            speakers: JSON.stringify(aiAnalysis.speakers),
-                            duration: duration,
-                            processing: false,
-                            updatedAt: new Date(),
-                        },
-                        create: {
-                            meetingId,
-                            content: transcript,
-                            summary: aiAnalysis.summary,
-                            highlights: JSON.stringify(aiAnalysis.highlights),
-                            actionItems: JSON.stringify(aiAnalysis.actionItems),
-                            speakers: JSON.stringify(aiAnalysis.speakers),
-                            duration: duration,
-                            processing: false,
-                        },
-                    }),
-                    // Update meeting status to COMPLETED
-                    db.meeting.update({
-                        where: { id: meetingId },
-                        data: {
-                            status: "COMPLETED",
-                            updatedAt: new Date(),
-                        },
-                    }),
-                ]);
+        // Batch database operations
+        const [savedTranscript] = await Promise.all([
+            // Save complete transcript to database
+            db.meetingTranscript.upsert({
+                where: { meetingId },
+                update: {
+                    content: transcript,
+                    summary: aiAnalysis.summary,
+                    highlights: JSON.stringify(aiAnalysis.highlights),
+                    actionItems: JSON.stringify(aiAnalysis.actionItems),
+                    speakers: JSON.stringify(aiAnalysis.speakers),
+                    duration: duration,
+                    processing: false,
+                    updatedAt: new Date(),
+                },
+                create: {
+                    meetingId,
+                    content: transcript,
+                    summary: aiAnalysis.summary,
+                    highlights: JSON.stringify(aiAnalysis.highlights),
+                    actionItems: JSON.stringify(aiAnalysis.actionItems),
+                    speakers: JSON.stringify(aiAnalysis.speakers),
+                    duration: duration,
+                    processing: false,
+                },
+            }),
+            // Update meeting status to COMPLETED
+            db.meeting.update({
+                where: { id: meetingId },
+                data: {
+                    status: "COMPLETED",
+                    updatedAt: new Date(),
+                },
+            }),
+        ]);
 
-                // Invalidate relevant caches
-                revalidateTag("meetings");
-                revalidateTag("meeting");
+        // Invalidate relevant caches
+        revalidateTag("meetings");
+        revalidateTag("meeting");
 
-                console.log(
-                    "✅ Meeting transcript processed and saved:",
-                    meetingId
-                );
-                return savedTranscript;
-            } catch (error) {
-                console.error(
-                    "Error processing complete transcription:",
-                    error
-                );
-                throw error;
-            }
+        console.log("✅ Meeting transcript processed and saved:", meetingId);
+        return savedTranscript;
+    } catch (error) {
+        console.error("Error processing complete transcription:", error);
+        throw error;
+    }
 }
 
 // Optimized AI summary generation using Gemini with better error handling
@@ -199,31 +187,31 @@ async function generateAISummary(transcript, meetingTitle) {
         if (!transcript || transcript.trim().length < 50) {
             return {
                 summary: `Brief ${meetingTitle} session completed.`,
-                        highlights: ["Short meeting session"],
-                        actionItems: ["Review meeting notes"],
-                        speakers: ["Meeting Participants"],
-                        duration: 5,
-                    };
-                }
+                highlights: ["Short meeting session"],
+                actionItems: ["Review meeting notes"],
+                speakers: ["Meeting Participants"],
+                duration: 5,
+            };
+        }
 
-                const model = genAI.getGenerativeModel({
-                    model: "gemini-1.5-flash",
-                    generationConfig: {
-                        temperature: 0.3, // Lower temperature for more consistent results
-                        topK: 40,
-                        topP: 0.8,
-                        maxOutputTokens: 1024, // Limit response size
-                    },
-                });
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: {
+                temperature: 0.3, // Lower temperature for more consistent results
+                topK: 40,
+                topP: 0.8,
+                maxOutputTokens: 1024, // Limit response size
+            },
+        });
 
-                // Optimized prompt for better JSON responses
-                const prompt = `
+        // Optimized prompt for better JSON responses
+        const prompt = `
 Analyze this meeting transcript and provide a JSON response:
 
 Meeting: ${meetingTitle}
 Transcript: ${transcript.substring(0, 4000)} ${
-                    transcript.length > 4000 ? "..." : ""
-                }
+            transcript.length > 4000 ? "..." : ""
+        }
 
 Respond ONLY with valid JSON:
 {
@@ -234,65 +222,57 @@ Respond ONLY with valid JSON:
   "duration": ${Math.ceil(transcript.split(" ").length / 150)}
 }`;
 
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const text = response.text();
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-                // Clean the response to extract JSON
-                const jsonMatch = text.match(/\{[\s\S]*\}/);
-                const jsonText = jsonMatch ? jsonMatch[0] : text;
+        // Clean the response to extract JSON
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const jsonText = jsonMatch ? jsonMatch[0] : text;
 
-                try {
-                    const parsed = JSON.parse(jsonText);
+        try {
+            const parsed = JSON.parse(jsonText);
 
-                    // Validate required fields
-                    return {
-                        summary:
-                            parsed.summary ||
-                            `Meeting summary for ${meetingTitle}`,
-                        highlights: Array.isArray(parsed.highlights)
-                            ? parsed.highlights
-                            : ["Meeting completed successfully"],
-                        actionItems: Array.isArray(parsed.actionItems)
-                            ? parsed.actionItems
-                            : ["Review meeting notes"],
-                        speakers: Array.isArray(parsed.speakers)
-                            ? parsed.speakers
-                            : ["Meeting Participants"],
-                        duration:
-                            typeof parsed.duration === "number"
-                                ? parsed.duration
-                                : 30,
-                    };
-                } catch (parseError) {
-                    console.warn(
-                        "⚠️ Failed to parse AI response, using fallback"
-                    );
-                    throw parseError;
-                }
-            } catch (error) {
-                console.error("❌ Error generating AI summary:", error);
+            // Validate required fields
+            return {
+                summary:
+                    parsed.summary || `Meeting summary for ${meetingTitle}`,
+                highlights: Array.isArray(parsed.highlights)
+                    ? parsed.highlights
+                    : ["Meeting completed successfully"],
+                actionItems: Array.isArray(parsed.actionItems)
+                    ? parsed.actionItems
+                    : ["Review meeting notes"],
+                speakers: Array.isArray(parsed.speakers)
+                    ? parsed.speakers
+                    : ["Meeting Participants"],
+                duration:
+                    typeof parsed.duration === "number" ? parsed.duration : 30,
+            };
+        } catch (parseError) {
+            console.warn("⚠️ Failed to parse AI response, using fallback");
+            throw parseError;
+        }
+    } catch (error) {
+        console.error("❌ Error generating AI summary:", error);
 
-                // Enhanced fallback summary based on transcript length
-                const wordCount = transcript ? transcript.split(" ").length : 0;
-                const estimatedDuration = Math.max(
-                    5,
-                    Math.ceil(wordCount / 150)
-                );
+        // Enhanced fallback summary based on transcript length
+        const wordCount = transcript ? transcript.split(" ").length : 0;
+        const estimatedDuration = Math.max(5, Math.ceil(wordCount / 150));
 
-                return {
-                    summary: `${meetingTitle} completed with ${wordCount} words discussed. AI analysis temporarily unavailable.`,
-                    highlights: [
-                        "Meeting transcript recorded successfully",
-                        `${wordCount} words of discussion captured`,
-                        "Participants engaged in productive conversation",
-                    ],
-                    actionItems: [
-                        "Review full transcript for detailed action items",
-                        "Follow up on key discussion points",
-                    ],
-                    speakers: ["Meeting Participants"],
-                    duration: estimatedDuration,
-                };
-            }
+        return {
+            summary: `${meetingTitle} completed with ${wordCount} words discussed. AI analysis temporarily unavailable.`,
+            highlights: [
+                "Meeting transcript recorded successfully",
+                `${wordCount} words of discussion captured`,
+                "Participants engaged in productive conversation",
+            ],
+            actionItems: [
+                "Review full transcript for detailed action items",
+                "Follow up on key discussion points",
+            ],
+            speakers: ["Meeting Participants"],
+            duration: estimatedDuration,
+        };
+    }
 }

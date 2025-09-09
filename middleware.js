@@ -27,14 +27,11 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.redirect(signInUrl);
     }
 
-    // If user is authenticated
     if (userId) {
-        // If user doesn't have an org and is not on onboarding or home page
-        if (!orgId && pathname !== "/onboarding" && pathname !== "/") {
+        if (!orgId && pathname !== "/onboarding") {
             return NextResponse.redirect(new URL("/onboarding", req.url));
         }
 
-        // If user has an org and is on the home page, redirect to organization dashboard
         if (orgId && pathname === "/") {
             return NextResponse.redirect(
                 new URL(`/organization/${orgId}`, req.url)

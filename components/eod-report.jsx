@@ -122,13 +122,21 @@ const EODReport = ({ repoUrl, projectId }) => {
       
       const data = await response.text();
       
-      if (data.includes("error") || data.includes("Error")) {
-        toast.error("Failed to generate commit report");
-      } else {
-        setCommitReport(data);
-        setShowCommitReport(true);
-        toast.success("Commit report generated successfully!");
+      // Check if the response is actually an error by looking for JSON error format
+      try {
+        const jsonData = JSON.parse(data);
+        if (jsonData.error) {
+          toast.error(`Failed to generate commit report: ${jsonData.error}`);
+          return;
+        }
+      } catch (e) {
+        // Not JSON, which means it's likely the markdown report
       }
+      
+      // If we got here, it's a successful report
+      setCommitReport(data);
+      setShowCommitReport(true);
+      toast.success("Commit report generated successfully!");
     } catch (error) {
       console.error("Error fetching commit report:", error);
       toast.error("Failed to generate commit report. Please try again");

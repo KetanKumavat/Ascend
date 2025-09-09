@@ -4,7 +4,7 @@ import React from "react";
 import SprintCreationForm from "../_components/create-sprint";
 import SprintBoard from "../_components/sprint-board";
 import TeamChat from "../_components/team-chat";
-import EODReport from "@/components/eod-report";
+import CommitsDashboard from "@/components/commits-dashboard";
 import EnhancedPageHeader from "@/components/ui/enhanced-page-header";
 import { createProjectNavigation } from "@/lib/navigation";
 
@@ -57,7 +57,10 @@ const page = async ({ params }) => {
                                 projectId={projectId}
                                 orgId={project.organizationId}
                             />
-                            <EODReport repoUrl={repoUrl} projectId={projectId} />
+                            <CommitsDashboard 
+                                projectId={projectId} 
+                                repoUrl={repoUrl} 
+                            />
                         </>
                     ) : (
                         <div className="bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 p-8 text-center shadow-sm">

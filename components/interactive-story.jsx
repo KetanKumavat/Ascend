@@ -19,7 +19,7 @@ const storySteps = [
         title: "Track everything automatically",
         description:
             "Every conversation transcribed, every commit tracked, every decision documented with intelligent categorization.",
-        image: "/transcript-mockup.jpg",
+        image: "/transcript-mockup.png",
         alt: "Automatic transcription and tracking",
     },
     {

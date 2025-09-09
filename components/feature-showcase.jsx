@@ -31,7 +31,7 @@ const features = [
         title: "Kanban Boards",
         description:
             "Drag-and-drop issue tracking with custom workflows, sprint planning, and team velocity insights.",
-        image: "/transcript-mockup.jpg",
+        image: "/transcript-mockup.png",
         alt: "Kanban board with drag and drop",
         icon: Brain,
         tag: "Organized",

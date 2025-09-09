@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from 'fs';
-import path from 'path';
-import { writeFile } from 'fs/promises';
+import fs from "fs";
+import path from "path";
+import { writeFile } from "fs/promises";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -12,27 +12,33 @@ export async function POST(request) {
     try {
         const { userId } = await auth();
         if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
         }
 
         const formData = await request.formData();
-        const audioFile = formData.get('audio');
-        const meetingId = formData.get('meetingId');
-        const meetingTitle = formData.get('meetingTitle');
+        const audioFile = formData.get("audio");
+        const meetingId = formData.get("meetingId");
+        const meetingTitle = formData.get("meetingTitle");
 
         if (!audioFile || !meetingId) {
-            return NextResponse.json({ error: "Missing audio file or meeting ID" }, { status: 400 });
+            return NextResponse.json(
+                { error: "Missing audio file or meeting ID" },
+                { status: 400 }
+            );
         }
 
         // Save audio file temporarily
         const bytes = await audioFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        
-        const tempDir = path.join(process.cwd(), 'temp');
+
+        const tempDir = path.join(process.cwd(), "temp");
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
         }
-        
+
         const audioPath = path.join(tempDir, `${meetingId}-${Date.now()}.webm`);
         await writeFile(audioPath, buffer);
 
@@ -43,13 +49,18 @@ export async function POST(request) {
         // - Whisper API
         // - Assembly AI
         // etc.
-        
+
         // For now, we'll simulate the transcript generation
-        const simulatedTranscript = await generateSimulatedTranscript(meetingTitle);
-        
+        const simulatedTranscript = await generateSimulatedTranscript(
+            meetingTitle
+        );
+
         // Generate AI summary using Gemini
-        const aiAnalysis = await generateAISummary(simulatedTranscript, meetingTitle);
-        
+        const aiAnalysis = await generateAISummary(
+            simulatedTranscript,
+            meetingTitle
+        );
+
         // Save to database
         const savedTranscript = await db.meetingTranscript.create({
             data: {
@@ -75,9 +86,8 @@ export async function POST(request) {
         return NextResponse.json({
             success: true,
             transcript: savedTranscript,
-            message: "Recording processed successfully"
+            message: "Recording processed successfully",
         });
-
     } catch (error) {
         console.error("Error processing recording:", error);
         return NextResponse.json(
@@ -120,7 +130,7 @@ async function generateSimulatedTranscript(meetingTitle) {
 // Generate AI summary using Gemini
 async function generateAISummary(transcript, meetingTitle) {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `
 Analyze this meeting transcript and provide a comprehensive summary:
@@ -148,39 +158,39 @@ Format your response as JSON with the following structure:
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-        
+
         // Parse the JSON response
         try {
             return JSON.parse(text);
         } catch (parseError) {
             console.error("Failed to parse AI response as JSON:", parseError);
-            
+
             // Fallback if JSON parsing fails
             return {
                 summary: `Meeting summary for ${meetingTitle}. Discussion covered project updates and progress.`,
                 highlights: [
                     "Project authentication system completed",
                     "Dashboard development in progress",
-                    "Timeline review and status updates"
+                    "Timeline review and status updates",
                 ],
                 actionItems: [
                     "Complete dashboard by end of week",
-                    "Send progress update by Wednesday"
+                    "Send progress update by Wednesday",
                 ],
                 speakers: ["Speaker 1", "Speaker 2"],
-                duration: 5
+                duration: 5,
             };
         }
     } catch (error) {
         console.error("Error generating AI summary:", error);
-        
+
         // Fallback summary
         return {
             summary: `Meeting summary for ${meetingTitle}. AI analysis temporarily unavailable.`,
             highlights: ["Meeting transcript recorded successfully"],
             actionItems: ["Review transcript for action items"],
             speakers: ["Meeting Participants"],
-            duration: 10
+            duration: 10,
         };
     }
 }

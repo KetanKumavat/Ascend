@@ -8,7 +8,10 @@
 
 - **Kanban Boards**: Visualize tasks with drag-and-drop ease for better organization.
 - **Sprint Planning**: Keep your team focused with streamlined sprint management.
-- **Automated GitHub Commit Reports**: Generate end-of-day reports summarizing GitHub commit activity to keep everyone aligned.
+- **GitHub Integration**: Full commit tracking with intelligent analysis and reporting.
+- **Daily Development Summaries**: Automated daily reports of development activity with email notifications.
+- **Commit Analysis**: AI-powered insights into code changes and their impact.
+- **Email Notifications**: Automated daily summary emails sent to team members at 5 PM.
 - **Real-Time Reporting**: Leverage actionable insights into project progress and team performance.
 - **Secure Authentication**: Powered by Clerk for robust user management and data security.
 - **Enhanced UI/UX**: Built with Next.js and Tailwind CSS for a sleek and intuitive experience.
@@ -40,8 +43,11 @@
 4. **Plan and Execute Sprints**
    - Schedule, prioritize, and track sprint progress to meet your team’s goals.
 
-5. **Automated GitHub Commit Reports**
-   - Link GitHub repositories to your projects and get automated end-of-day commit reports, summarizing key updates and changes.
+5. **GitHub Integration & Daily Summaries**
+   - Link GitHub repositories to your projects for automatic commit tracking.
+   - Generate individual commit reports with AI-powered analysis.
+   - Receive automated daily development summaries via email at 5 PM.
+   - View historical daily summaries and manually trigger new ones.
 
 6. **Track and Report Progress**
    - Access real-time, visually intuitive reports to monitor team performance and milestones.

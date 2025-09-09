@@ -51,47 +51,64 @@ export async function getIssuesForSprint(sprintId) {
 }
 
 export async function createIssue(projectId, data) {
-  const auth_result = await auth();
-  const { userId, orgId } = auth_result;
+  try {
+    const auth_result = await auth();
+    const { userId, orgId } = auth_result;
 
-  if (!userId || !orgId) {
-    throw new Error("Unauthorized");
+    if (!userId || !orgId) {
+      throw new Error("Unauthorized");
+    }
+
+    // Use cached user lookup
+    const user = await getCachedUser(userId);
+
+    // Validate assignee exists if provided
+    let validAssigneeId = null;
+    if (data.assigneeId) {
+      const assigneeExists = await db.user.findUnique({
+        where: { id: data.assigneeId },
+        select: { id: true }
+      });
+      if (assigneeExists) {
+        validAssigneeId = data.assigneeId;
+      }
+    }
+
+    // Optimize order calculation with more specific query
+    const lastIssue = await db.issue.findFirst({
+      where: { 
+        projectId, 
+        status: data.status 
+      },
+      select: { order: true },
+      orderBy: { order: "desc" },
+    });
+
+    const newOrder = lastIssue ? lastIssue.order + 1 : 0;
+
+    const issue = await db.issue.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        priority: data.priority,
+        projectId: projectId,
+        sprintId: data.sprintId,
+        reporterId: user.id,
+        assigneeId: validAssigneeId,
+        order: newOrder,
+      },
+      include: {
+        assignee: true,
+        reporter: true,
+      },
+    });
+
+    return issue;
+  } catch (error) {
+    console.error("Error creating issue:", error);
+    throw new Error("Failed to create issue. Please try again.");
   }
-
-  // Use cached user lookup
-  const user = await getCachedUser(userId);
-
-  // Optimize order calculation with more specific query
-  const lastIssue = await db.issue.findFirst({
-    where: { 
-      projectId, 
-      status: data.status 
-    },
-    select: { order: true },
-    orderBy: { order: "desc" },
-  });
-
-  const newOrder = lastIssue ? lastIssue.order + 1 : 0;
-
-  const issue = await db.issue.create({
-    data: {
-      title: data.title,
-      description: data.description,
-      status: data.status,
-      priority: data.priority,
-      projectId: projectId,
-      sprintId: data.sprintId,
-      reporterId: user.id,
-      assigneeId: data.assigneeId || null,
-      order: newOrder,
-    },
-    include: {
-      assignee: true,
-      reporter: true,
-    },
-  });
-
-  return issue;
 }
 
 export async function updateIssueOrder(updatedIssues) {

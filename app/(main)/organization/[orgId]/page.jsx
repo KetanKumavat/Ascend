@@ -17,18 +17,18 @@ export default async function OrganizationPage({ params }) {
         redirect("/sign-in");
     }
 
-    console.log("OrganizationPage - orgId:", orgId, "userId:", userId);
-    
+    // console.log("OrganizationPage - orgId:", orgId, "userId:", userId);
+
     const organization = await getOrganization(orgId);
-    
-    console.log("OrganizationPage - organization result:", organization);
+
+    // console.log("OrganizationPage - organization result:", organization);
 
     if (!organization) {
-        console.log("OrganizationPage - No organization found, showing error");
+        // console.log("OrganizationPage - No organization found, showing error");
         return <div>Organization not found</div>;
     }
 
-    console.log("OrganizationPage - Organization found, proceeding with render");
+    // console.log("OrganizationPage - Organization found, proceeding with render");
 
     const navigationItems = [
         {

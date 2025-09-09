@@ -39,6 +39,8 @@ model Project {
   messages       Message[] @relation("ProjectMessages")
   meetings       Meeting[]
   canvases       Canvas[]
+  commits        Commit[]
+  dailySummaries DailySummary[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -252,4 +254,64 @@ model Canvas {
   @@index([createdById], name: "idx_canvas_created_by")
   @@index([isDefault], name: "idx_canvas_is_default")
   @@index([organizationId, projectId, isDefault], name: "idx_canvas_org_project_default")
+}
+
+model Commit {
+  id            String   @id @default(cuid())
+  sha           String   @unique
+  message       String
+  author        String
+  authorEmail   String?
+  commitDate    DateTime
+  htmlUrl       String
+  projectId     String
+  totalChanges  Int?
+  additions     Int?
+  deletions     Int?
+  filesChanged  Json?
+  fetchedAt     DateTime @default(now())
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  report        CommitReport?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([projectId], name: "idx_commit_project_id")
+  @@index([commitDate], name: "idx_commit_date")
+  @@index([sha], name: "idx_commit_sha")
+  @@index([projectId, commitDate], name: "idx_commit_project_date")
+}
+
+model CommitReport {
+  id          String   @id @default(cuid())
+  commitId    String   @unique
+  content     String
+  summary     String?
+  impact      String?
+  generatedAt DateTime @default(now())
+  commit      Commit   @relation(fields: [commitId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([commitId], name: "idx_commit_report_commit_id")
+  @@index([generatedAt], name: "idx_commit_report_generated_at")
+}
+
+model DailySummary {
+  id             String   @id @default(cuid())
+  projectId      String
+  date           DateTime
+  content        String
+  commitsCount   Int
+  totalAdditions Int?
+  totalDeletions Int?
+  emailSent      Boolean  @default(false)
+  emailSentAt    DateTime?
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([projectId, date])
+  @@index([projectId], name: "idx_daily_summary_project_id")
+  @@index([date], name: "idx_daily_summary_date")
+  @@index([projectId, date], name: "idx_daily_summary_project_date")
 }

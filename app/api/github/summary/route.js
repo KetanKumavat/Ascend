@@ -96,7 +96,7 @@ export async function GET(req) {
       - Provide any insights on how these modifications affect the overall project, and highlight any potential areas for improvement.
     `;
 
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         const report = await result.response.text();
 

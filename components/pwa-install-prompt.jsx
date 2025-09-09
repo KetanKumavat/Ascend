@@ -9,8 +9,10 @@ export function PWAInstallPrompt() {
     const [showPrompt, setShowPrompt] = useState(false);
 
     useEffect(() => {
-        const hasUserDismissed = localStorage.getItem("pwa-install-dismissed");
-        const hasUserInstalled = localStorage.getItem("pwa-install-completed");
+        const hasUserDismissed =
+            localStorage.getItem("pwa-install-dismissed") === "true";
+        const hasUserInstalled =
+            localStorage.getItem("pwa-install-completed") === "true";
 
         if (hasUserDismissed || hasUserInstalled) {
             return;

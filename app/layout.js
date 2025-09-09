@@ -100,7 +100,7 @@ export default function RootLayout({ children }) {
                     className={`${inter.className} antialiased bg-black text-white overflow-x-hidden`}
                 >
                     <Header />
-                    <main className="w-full">
+                    <main className="w-full min-h-screen">
                         <PageWrapper>{children}</PageWrapper>
                     </main>
                     <Footer />

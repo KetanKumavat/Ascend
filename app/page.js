@@ -3,7 +3,6 @@ import React from "react";
 import Hero from "@/components/hero";
 import InteractiveStory from "@/components/interactive-story";
 import FeatureShowcase from "@/components/feature-showcase";
-import VisionStatement from "@/components/vision-statement";
 import FinalCTA from "@/components/final-cta";
 
 const Home = () => {
@@ -12,7 +11,6 @@ const Home = () => {
             <Hero />
             <InteractiveStory />
             <FeatureShowcase />
-            <VisionStatement />
             <FinalCTA />
         </main>
     );
