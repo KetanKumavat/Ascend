@@ -28,13 +28,19 @@ export function TranscriptDisplay({ meetingId, className = "" }) {
 
     const fetchTranscript = async () => {
         try {
-            const response = await fetch(`/api/meetings/${meetingId}/transcript`);
+            const response = await fetch(
+                `/api/meetings/${meetingId}/transcript`
+            );
             if (response.ok) {
                 const data = await response.json();
                 setTranscript(data);
+            } else {
+                console.error("Failed to fetch transcript:", response.status);
+                setTranscript(null);
             }
         } catch (error) {
             console.error("Error fetching transcript:", error);
+            setTranscript(null);
         } finally {
             setLoading(false);
         }
@@ -43,43 +49,109 @@ export function TranscriptDisplay({ meetingId, className = "" }) {
     const downloadTranscript = () => {
         if (!transcript) return;
 
-        const content = `Meeting Transcript
+        try {
+            const getSpeakers = () => {
+                try {
+                    return Array.isArray(transcript.speakers)
+                        ? transcript.speakers
+                        : transcript.speakers
+                        ? JSON.parse(transcript.speakers)
+                        : [];
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            const getHighlights = () => {
+                try {
+                    return Array.isArray(transcript.highlights)
+                        ? transcript.highlights
+                        : transcript.highlights
+                        ? JSON.parse(transcript.highlights)
+                        : [];
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            const getActionItems = () => {
+                try {
+                    return Array.isArray(transcript.actionItems)
+                        ? transcript.actionItems
+                        : transcript.actionItems
+                        ? JSON.parse(transcript.actionItems)
+                        : [];
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            const speakers = getSpeakers();
+            const highlights = getHighlights();
+            const actionItems = getActionItems();
+
+            const content = `Meeting Transcript
 ================
 Meeting ID: ${meetingId}
 Date: ${new Date(transcript.createdAt).toLocaleString()}
 Duration: ${transcript.duration || 0} minutes
-Speakers: ${transcript.speakers ? JSON.parse(transcript.speakers).join(', ') : 'Unknown'}
+Speakers: ${speakers.length > 0 ? speakers.join(", ") : "Unknown"}
 
 Summary:
-${transcript.summary || 'No summary available'}
+${transcript.summary || "No summary available"}
 
 Highlights:
-${transcript.highlights ? JSON.parse(transcript.highlights).map(h => `• ${h}`).join('\n') : 'No highlights available'}
+${
+    highlights.length > 0
+        ? highlights.map((h) => `• ${h}`).join("\n")
+        : "No highlights available"
+}
 
 Action Items:
-${transcript.actionItems ? JSON.parse(transcript.actionItems).map(a => `• ${a}`).join('\n') : 'No action items available'}
+${
+    actionItems.length > 0
+        ? actionItems.map((a) => `• ${a}`).join("\n")
+        : "No action items available"
+}
 
 Full Transcript:
 ================
 ${transcript.content}`;
 
-        const blob = new Blob([content], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `meeting-transcript-${meetingId}-${new Date().toISOString().split("T")[0]}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success("Transcript downloaded!");
+            const blob = new Blob([content], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `meeting-transcript-${meetingId}-${
+                new Date().toISOString().split("T")[0]
+            }.txt`;
+
+            // Safer DOM manipulation
+            if (document.body) {
+                document.body.appendChild(a);
+                a.click();
+                if (document.body.contains(a)) {
+                    document.body.removeChild(a);
+                }
+            }
+            URL.revokeObjectURL(url);
+            toast.success("Transcript downloaded!");
+        } catch (error) {
+            console.error("Error downloading transcript:", error);
+            toast.error("Failed to download transcript");
+        }
     };
 
     const copyToClipboard = () => {
         if (!transcript) return;
-        
-        navigator.clipboard.writeText(transcript.content);
-        toast.success("Transcript copied to clipboard!");
+
+        try {
+            navigator.clipboard.writeText(transcript.content);
+            toast.success("Transcript copied to clipboard!");
+        } catch (error) {
+            console.error("Error copying to clipboard:", error);
+            toast.error("Failed to copy transcript");
+        }
     };
 
     if (loading) {
@@ -100,18 +172,34 @@ ${transcript.content}`;
             <Card className={className}>
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                     <FileText className="w-12 h-12 text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Transcript Available</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                        No Transcript Available
+                    </h3>
                     <p className="text-muted-foreground">
-                        This meeting hasn&apos;t been recorded yet or the transcript is still being processed.
+                        This meeting hasn&apos;t been recorded yet or the
+                        transcript is still being processed.
                     </p>
                 </CardContent>
             </Card>
         );
     }
 
-    const highlights = transcript.highlights ? JSON.parse(transcript.highlights) : [];
-    const actionItems = transcript.actionItems ? JSON.parse(transcript.actionItems) : [];
-    const speakers = transcript.speakers ? JSON.parse(transcript.speakers) : [];
+    // Safely parse arrays with proper error handling
+    const getSafeArray = (data) => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        try {
+            const parsed = JSON.parse(data);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.warn("Failed to parse array data:", e);
+            return [];
+        }
+    };
+
+    const highlights = getSafeArray(transcript.highlights);
+    const actionItems = getSafeArray(transcript.actionItems);
+    const speakers = getSafeArray(transcript.speakers);
 
     return (
         <div className={`space-y-6 ${className}`}>
@@ -154,19 +242,33 @@ ${transcript.content}`;
                         </div>
                         <div className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
-                            <span>{speakers.length} speaker{speakers.length !== 1 ? 's' : ''}</span>
+                            <span>
+                                {speakers && speakers.length > 0
+                                    ? speakers.length
+                                    : 0}{" "}
+                                speaker
+                                {!speakers || speakers.length !== 1 ? "s" : ""}
+                            </span>
                         </div>
                         <div className="flex items-center gap-1">
                             <FileText className="w-4 h-4" />
-                            <span>{new Date(transcript.createdAt).toLocaleDateString()}</span>
+                            <span>
+                                {new Date(
+                                    transcript.createdAt
+                                ).toLocaleDateString()}
+                            </span>
                         </div>
                     </div>
 
                     {/* Summary */}
                     {transcript.summary && (
                         <div>
-                            <h4 className="font-semibold mb-2">Meeting Summary</h4>
-                            <p className="text-sm leading-relaxed">{transcript.summary}</p>
+                            <h4 className="font-semibold mb-2">
+                                Meeting Summary
+                            </h4>
+                            <p className="text-sm leading-relaxed">
+                                {transcript.summary}
+                            </p>
                         </div>
                     )}
                 </CardContent>
@@ -183,17 +285,22 @@ ${transcript.content}`;
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {highlights.length > 0 ? (
+                        {highlights && highlights.length > 0 ? (
                             <ul className="space-y-2">
                                 {highlights.map((highlight, index) => (
-                                    <li key={index} className="flex items-start gap-2 text-sm">
+                                    <li
+                                        key={index}
+                                        className="flex items-start gap-2 text-sm"
+                                    >
                                         <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
                                         <span>{highlight}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No highlights identified</p>
+                            <p className="text-sm text-muted-foreground">
+                                No highlights identified
+                            </p>
                         )}
                     </CardContent>
                 </Card>
@@ -207,17 +314,22 @@ ${transcript.content}`;
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {actionItems.length > 0 ? (
+                        {actionItems && actionItems.length > 0 ? (
                             <ul className="space-y-2">
                                 {actionItems.map((item, index) => (
-                                    <li key={index} className="flex items-start gap-2 text-sm">
+                                    <li
+                                        key={index}
+                                        className="flex items-start gap-2 text-sm"
+                                    >
                                         <CheckSquare className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                                         <span>{item}</span>
                                     </li>
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No action items identified</p>
+                            <p className="text-sm text-muted-foreground">
+                                No action items identified
+                            </p>
                         )}
                     </CardContent>
                 </Card>
@@ -234,50 +346,85 @@ ${transcript.content}`;
                 <CardContent>
                     <Tabs defaultValue="formatted" className="w-full">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="formatted">Formatted</TabsTrigger>
+                            <TabsTrigger value="formatted">
+                                Formatted
+                            </TabsTrigger>
                             <TabsTrigger value="raw">Raw Text</TabsTrigger>
                         </TabsList>
-                        
+
                         <TabsContent value="formatted" className="mt-4">
                             <ScrollArea className="h-96 w-full border rounded-md p-4">
                                 <div className="space-y-3">
-                                    {transcript.content.split('\n').map((line, index) => {
-                                        // Parse transcript lines that look like "[timestamp] Speaker: text"
-                                        const match = line.match(/^\[([^\]]+)\]\s*([^:]+):\s*(.+)$/);
-                                        if (match) {
-                                            const [, timestamp, speaker, text] = match;
-                                            return (
-                                                <div key={index} className="flex gap-3 p-3 bg-muted rounded-lg">
-                                                    <div className="flex-shrink-0 space-y-1">
-                                                        <Badge variant="outline" className="text-xs">
-                                                            {speaker.trim()}
-                                                        </Badge>
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {timestamp}
+                                    {transcript.content &&
+                                        transcript.content
+                                            .split("\n")
+                                            .map((line, index) => {
+                                                if (!line || !line.trim())
+                                                    return null;
+
+                                                // Parse transcript lines that look like "[timestamp] Speaker: text"
+                                                const match = line.match(
+                                                    /^\[([^\]]+)\]\s*([^:]+):\s*(.+)$/
+                                                );
+                                                if (match) {
+                                                    const [
+                                                        ,
+                                                        timestamp,
+                                                        speaker,
+                                                        text,
+                                                    ] = match;
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            className="flex gap-3 p-3 bg-muted rounded-lg"
+                                                        >
+                                                            <div className="flex-shrink-0 space-y-1">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="text-xs"
+                                                                >
+                                                                    {speaker
+                                                                        ? speaker.trim()
+                                                                        : "Unknown"}
+                                                                </Badge>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {timestamp ||
+                                                                        ""}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="text-sm leading-relaxed">
+                                                                    {text || ""}
+                                                                </p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className="text-sm leading-relaxed">{text}</p>
-                                                    </div>
-                                                </div>
-                                            );
-                                        } else if (line.trim()) {
-                                            return (
-                                                <div key={index} className="text-sm p-2">
-                                                    {line}
-                                                </div>
-                                            );
-                                        }
-                                        return null;
-                                    })}
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <div
+                                                            key={index}
+                                                            className="text-sm p-2"
+                                                        >
+                                                            {line}
+                                                        </div>
+                                                    );
+                                                }
+                                            })}
+                                    {(!transcript.content ||
+                                        transcript.content.trim() === "") && (
+                                        <p className="text-sm text-muted-foreground text-center py-8">
+                                            No transcript content available
+                                        </p>
+                                    )}
                                 </div>
                             </ScrollArea>
                         </TabsContent>
-                        
+
                         <TabsContent value="raw" className="mt-4">
                             <ScrollArea className="h-96 w-full border rounded-md p-4">
                                 <pre className="text-sm whitespace-pre-wrap font-mono">
-                                    {transcript.content}
+                                    {transcript.content ||
+                                        "No transcript content available"}
                                 </pre>
                             </ScrollArea>
                         </TabsContent>

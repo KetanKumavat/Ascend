@@ -154,6 +154,7 @@ model Meeting {
   project        Project? @relation(fields: [projectId], references: [id])
   participants   MeetingParticipant[]
   transcript     MeetingTranscript?
+  transcriptSegments TranscriptSegment[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -197,7 +198,6 @@ model MeetingTranscript {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   meeting     Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-  segments    TranscriptSegment[]
 
   @@index([meetingId], name: "idx_transcript_meeting_id")
   @@index([createdAt], name: "idx_transcript_created_at")
@@ -209,14 +209,24 @@ model TranscriptSegment {
   meetingId     String
   participantId String?
   text          String
+  speaker       String?
   isFinal       Boolean  @default(false)
   language      String   @default("en")
+  type          TranscriptType @default(RAW)
   timestamp     DateTime @default(now())
-  transcript    MeetingTranscript @relation(fields: [meetingId], references: [meetingId], onDelete: Cascade)
+  meeting       Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 
   @@index([meetingId], name: "idx_segment_meeting_id")
   @@index([timestamp], name: "idx_segment_timestamp")
   @@index([isFinal], name: "idx_segment_is_final")
+  @@index([type], name: "idx_segment_type")
+}
+
+enum TranscriptType {
+  RAW
+  PROCESSED
+  HIGHLIGHTS
+  SUMMARY
 }
 
 enum MeetingStatus {
