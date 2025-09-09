@@ -8,6 +8,7 @@ const Footer = () => {
                     <a
                         href="https://github.com/ketankumavat/ascend"
                         className="underline"
+                        target="_blank"
                     >
                         Github
                     </a>{" "}

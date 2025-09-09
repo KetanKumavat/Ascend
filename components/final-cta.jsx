@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const FinalCTA = () => {
     return (
@@ -37,10 +38,12 @@ const FinalCTA = () => {
 
                     {/* CTA Button */}
                     <div className="pt-8">
-                        <Button className="px-12 py-6 text-lg font-semibold bg-neutral-100 text-neutral-900 hover:bg-white transition-all duration-300 hover:scale-105 rounded-full group">
-                            Get Started
-                            <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
-                        </Button>
+                        <Link href="/onboarding">
+                            <Button className="px-12 py-6 text-lg font-semibold bg-neutral-100 text-neutral-900 hover:bg-white transition-all duration-300 hover:scale-105 rounded-full group">
+                                Get Started
+                                <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
+                            </Button>
+                        </Link>
                     </div>
 
                     {/* Subtle Additional Info */}

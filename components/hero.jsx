@@ -62,7 +62,7 @@ const Hero = () => {
                 <div className="max-w-5xl mx-auto space-y-8">
                     {/* Main Headline */}
                     <div className="space-y-6">
-                        <div className="absolute mt-[25vh] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-600 md:opacity-10 opacity-30 blur-3xl rounded-full pointer-events-none"></div>
+                        <div className="absolute mt-[25vh] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-600 md:opacity-10 opacity-30 blur-3xl rounded-full pointer-events-none -z-50"></div>
                         <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight cursor-default">
                             Elevate your team&apos;s productivity with{" "}
                             <span className="text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700 font-extrabold block mt-2 text-5xl md:text-8xl lg:text-9xl">
@@ -80,7 +80,7 @@ const Hero = () => {
                     {/* CTA Button */}
                     <div className="pt-8">
                         <Link href="/onboarding">
-                            <Button className="px-12 py-4 text-lg font-semibold bg-neutral-100 text-neutral-900 hover:bg-white transition-all duration-300 hover:scale-105 rounded-full group">
+                            <Button className="px-12 py-4 text-lg font-semibold bg-neutral-100 text-neutral-900 hover:bg-white transition-all duration-300 hover:scale-105 rounded-full group z-[1]">
                                 Get Started
                                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </Button>

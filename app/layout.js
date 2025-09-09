@@ -13,7 +13,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata = {
     title: "Ascend | Collaborative Project Management",
     description:
-        "Streamline workflows, enhance team communication, and drive project success with Ascend's collaborative project management platform.",
+        "Elevate your team's productivity with Ascend—a collaborative project management app designed to streamline workflows, enhance communication, and drive success. Get things done together, effortlessly!",
     manifest: "/manifest.json",
     keywords: [
         "project management",
@@ -22,20 +22,6 @@ export const metadata = {
         "workflow",
         "task management",
     ],
-    authors: [{ name: "Ascend Team" }],
-    openGraph: {
-        title: "Ascend | Collaborative Project Management",
-        description:
-            "Streamline workflows, enhance team communication, and drive project success.",
-        type: "website",
-        siteName: "Ascend",
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Ascend | Collaborative Project Management",
-        description:
-            "Streamline workflows, enhance team communication, and drive project success.",
-    },
 };
 
 const customDarkTheme = {
