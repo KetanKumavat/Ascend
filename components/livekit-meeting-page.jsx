@@ -40,8 +40,12 @@ export function LiveKitMeetingPage({
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
-                throw new Error(`Failed to get meeting access: ${errorMessage}`);
+                const errorMessage =
+                    errorData.error ||
+                    `HTTP ${response.status}: ${response.statusText}`;
+                throw new Error(
+                    `Failed to get meeting access: ${errorMessage}`
+                );
             }
 
             const data = await response.json();
@@ -67,7 +71,7 @@ export function LiveKitMeetingPage({
 
     if (isLoading) {
         return (
-            <div className="fixed inset-0 bg-black flex items-center justify-center">
+            <div className="fixed inset-0 bg-black flex items-center justify-center min-h-screen p-4">
                 <Card className="w-full max-w-md bg-black/50 border-gray-600">
                     <CardContent className="flex items-center justify-center py-12">
                         <div className="text-center">
@@ -97,7 +101,9 @@ export function LiveKitMeetingPage({
                             </h3>
                             <p className="text-gray-300 mb-4">{error}</p>
                             <Button
-                                onClick={() => window.location.href = `/meeting/${meetingId}`}
+                                onClick={() =>
+                                    (window.location.href = `/meeting/${meetingId}`)
+                                }
                                 variant="outline"
                             >
                                 Back to Meeting Details

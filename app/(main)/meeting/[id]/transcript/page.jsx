@@ -10,7 +10,8 @@ import Link from "next/link";
 
 export default async function MeetingTranscriptPage({ params }) {
     try {
-        const pid = await params.id;
+        const resolvedParams = await params;
+        const pid = await resolvedParams.id;
         if (!pid) {
             notFound();
         }

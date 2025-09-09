@@ -7,6 +7,7 @@ import { Clock, Users, Video, FileText, Calendar, PenTool } from "lucide-react";
 import PageHeader from "@/components/ui/page-header";
 import Link from "next/link";
 import { QuickShareButton } from "@/components/quick-share-button";
+import { MeetingShareCard } from "@/components/meeting-share-card";
 
 export default async function MeetingDetailsPage({ params }) {
     try {
@@ -221,7 +222,7 @@ export default async function MeetingDetailsPage({ params }) {
                         </CardContent>
                     </Card>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                         {meeting.project && (
                             <Card>
                                 <CardHeader>
@@ -291,6 +292,11 @@ export default async function MeetingDetailsPage({ params }) {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <MeetingShareCard 
+                            meetingId={meeting.id} 
+                            meetingTitle={meeting.title} 
+                        />
                     </div>
 
                     {meeting.participants &&

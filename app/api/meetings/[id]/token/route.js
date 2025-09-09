@@ -32,7 +32,6 @@ export async function POST(request, { params }) {
             select: { id: true, organizationId: true, isPublic: true },
         });
 
-        console.log("Meeting exists check:", meetingExists ? "Yes" : "No");
         if (!meetingExists) {
             return NextResponse.json(
                 { error: "Meeting not found" },
@@ -40,7 +39,6 @@ export async function POST(request, { params }) {
             );
         }
 
-        // Check if user has access (either same org or public meeting)
         const hasAccess =
             meetingExists.organizationId === orgId || meetingExists.isPublic;
 

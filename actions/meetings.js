@@ -24,8 +24,9 @@ export async function createMeeting(data) {
     }
 
     // Check if user has permission to create meetings (admin or specific role)
+    const client = await clerkClient();
     const { data: membershipList } =
-        await clerkClient().organizations.getOrganizationMembershipList({
+        await client.organizations.getOrganizationMembershipList({
             organizationId: orgId,
         });
 
@@ -639,7 +640,9 @@ export async function updateExpiredMeetingStatuses(orgId = null) {
         const expiredMeetingIds = expiredMeetings
             .filter((meeting) => {
                 const duration = meeting.duration || 60; // Default 60 minutes
-                const endTime = new Date(meeting.scheduledAt.getTime() + duration * 60 * 1000);
+                const endTime = new Date(
+                    meeting.scheduledAt.getTime() + duration * 60 * 1000
+                );
                 return now > endTime;
             })
             .map((meeting) => meeting.id);

@@ -37,6 +37,8 @@ export function LiveKitMeetingRoom({
     const [transcriptionStarted, setTranscriptionStarted] = useState(false);
     const [recognition, setRecognition] = useState(null);
     const [transcript, setTranscript] = useState("");
+    const [transcriptionStatus, setTranscriptionStatus] =
+        useState("Starting...");
 
     const formatDuration = (start) => {
         if (!start) return "00:00";
@@ -63,11 +65,13 @@ export function LiveKitMeetingRoom({
 
     // Initialize speech recognition for transcription
     useEffect(() => {
+        console.log("Initializing speech recognition...");
         if (
             typeof window !== "undefined" &&
             ("webkitSpeechRecognition" in window ||
                 "SpeechRecognition" in window)
         ) {
+            console.log("Speech recognition is supported");
             const SpeechRecognition =
                 window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognitionInstance = new SpeechRecognition();
@@ -76,11 +80,20 @@ export function LiveKitMeetingRoom({
             recognitionInstance.interimResults = true;
             recognitionInstance.lang = "en-US";
 
+            console.log("Speech recognition configured:", {
+                continuous: recognitionInstance.continuous,
+                interimResults: recognitionInstance.interimResults,
+                lang: recognitionInstance.lang,
+            });
+
             recognitionInstance.onstart = () => {
                 console.log("Speech recognition started");
+                setTranscriptionStatus("🎤 Listening...");
+                toast.info("🎤 Listening for speech...");
             };
 
             recognitionInstance.onresult = (event) => {
+                console.log("Speech recognition result received", event);
                 let finalTranscript = "";
                 let interimTranscript = "";
 
@@ -100,6 +113,10 @@ export function LiveKitMeetingRoom({
                     saveTranscriptSegment(finalTranscript);
                     toast.success("Transcribing...", { duration: 1000 });
                 }
+
+                if (interimTranscript) {
+                    console.log("Interim transcript:", interimTranscript);
+                }
             };
 
             recognitionInstance.onerror = (event) => {
@@ -111,21 +128,88 @@ export function LiveKitMeetingRoom({
                     setIsTranscribing(false);
                     setTranscriptionStarted(false);
                 } else if (event.error === "network") {
-                    toast.error("Network error. Transcription paused.");
-                    // Try to restart recognition
+                    console.log(
+                        "Speech recognition network error - this is often a browser service issue, not your network"
+                    );
+                    setTranscriptionStatus("⚠️ Browser service issue");
+
+                    // Don't show a toast immediately, just log it
+                    console.log(
+                        "Will attempt to restart speech recognition..."
+                    );
+
+                    // Try to restart recognition after a delay
                     setTimeout(() => {
-                        if (transcriptionStarted && recognition) {
+                        if (
+                            transcriptionStarted &&
+                            recognition &&
+                            isTranscribing
+                        ) {
                             try {
+                                console.log(
+                                    "Attempting to restart recognition after browser service issue"
+                                );
                                 recognition.start();
-                            } catch (e) {
-                                console.error("Failed to restart recognition:", e);
+                                setTranscriptionStatus("🎤 Listening...");
+                            } catch (error) {
+                                console.error(
+                                    "Failed to restart recognition after network error:",
+                                    error
+                                );
+                                setTranscriptionStatus(
+                                    "❌ Service unavailable"
+                                );
+                                // Only show toast if multiple restarts fail
+                                setTimeout(() => {
+                                    if (
+                                        transcriptionStarted &&
+                                        recognition &&
+                                        isTranscribing
+                                    ) {
+                                        try {
+                                            recognition.start();
+                                        } catch (e) {
+                                            console.error(
+                                                "Final restart attempt failed:",
+                                                e
+                                            );
+                                            toast.warning(
+                                                "Speech recognition service having issues. You can manually restart if needed."
+                                            );
+                                        }
+                                    }
+                                }, 5000);
                             }
                         }
-                    }, 2000);
+                    }, 1000);
                 } else if (event.error === "no-speech") {
                     console.log("No speech detected, continuing...");
+                    // Don't show error for no-speech, it's normal
+                } else if (event.error === "aborted") {
+                    console.log(
+                        "Speech recognition aborted (normal during restart)"
+                    );
+                    // Don't show error for aborted, it's normal during restarts
+                } else if (event.error === "audio-capture") {
+                    setTranscriptionStatus("❌ Audio error");
+                    toast.error(
+                        "Audio capture error. Please check your microphone."
+                    );
+                    setIsTranscribing(false);
+                    setTranscriptionStarted(false);
+                } else if (event.error === "service-not-allowed") {
+                    setTranscriptionStatus("❌ Service unavailable");
+                    toast.error(
+                        "Speech recognition service not available. Please try again later."
+                    );
+                    setIsTranscribing(false);
+                    setTranscriptionStarted(false);
                 } else {
-                    console.error("Recognition error:", event.error);
+                    console.error("Unhandled recognition error:", event.error);
+                    setTranscriptionStatus(`⚠️ ${event.error}`);
+                    toast.warning(
+                        `Speech recognition issue: ${event.error}. Continuing...`
+                    );
                 }
             };
 
@@ -133,20 +217,55 @@ export function LiveKitMeetingRoom({
                 console.log("Speech recognition ended");
                 // Restart if we're still supposed to be transcribing
                 if (transcriptionStarted && isTranscribing) {
+                    console.log("Attempting to restart speech recognition...");
                     setTimeout(() => {
                         try {
-                            recognitionInstance.start();
+                            if (
+                                recognitionInstance &&
+                                transcriptionStarted &&
+                                isTranscribing
+                            ) {
+                                recognitionInstance.start();
+                                console.log(
+                                    "Speech recognition restarted successfully"
+                                );
+                            }
                         } catch (e) {
                             console.error("Failed to restart recognition:", e);
+                            // Try again with longer delay if restart fails
+                            setTimeout(() => {
+                                try {
+                                    if (
+                                        recognitionInstance &&
+                                        transcriptionStarted &&
+                                        isTranscribing
+                                    ) {
+                                        recognitionInstance.start();
+                                        console.log(
+                                            "Speech recognition restarted after retry"
+                                        );
+                                    }
+                                } catch (retryError) {
+                                    console.error(
+                                        "Final restart attempt failed:",
+                                        retryError
+                                    );
+                                    toast.warning(
+                                        "Transcription will continue when speech is detected"
+                                    );
+                                }
+                            }, 2000);
                         }
-                    }, 100);
+                    }, 500);
                 }
             };
 
             setRecognition(recognitionInstance);
+            setTranscriptionStatus("Ready");
         } else {
             console.warn("Speech recognition not supported in this browser");
             setIsTranscribing(false);
+            setTranscriptionStatus("Not supported");
             toast.warning("Speech recognition not supported in this browser");
         }
     }, []);
@@ -237,10 +356,27 @@ export function LiveKitMeetingRoom({
             // Update meeting status to IN_PROGRESS
             updateMeetingStatus("IN_PROGRESS");
 
+            // Mark participant as joined
+            updateParticipantStatus("JOINED");
+
             // Auto-start transcription after a short delay
             setTimeout(() => {
-                if (!transcriptionStarted && recognition) {
+                console.log("Auto-starting transcription...", {
+                    transcriptionStarted: transcriptionStarted,
+                    recognition: !!recognition,
+                    isTranscribing: isTranscribing,
+                });
+
+                // Use a more reliable check - if recognition exists and we haven't started yet
+                if (recognition && !transcriptionStarted) {
+                    console.log("Starting transcription automatically...");
                     startTranscription();
+                } else {
+                    console.log("Transcription not auto-started because:", {
+                        hasRecognition: !!recognition,
+                        transcriptionStarted: transcriptionStarted,
+                        isTranscribing: isTranscribing,
+                    });
                 }
             }, 2000);
         });
@@ -266,7 +402,13 @@ export function LiveKitMeetingRoom({
 
             // Handle different disconnect reasons
             if (reason === DisconnectReason.CLIENT_INITIATED) {
-                // User initiated disconnect - don't reconnect
+                // User initiated disconnect - handle navigation properly
+                console.log("User initiated disconnect");
+                if (onMeetingEnd) {
+                    onMeetingEnd();
+                } else {
+                    window.location.href = `/meeting/${meetingId}`;
+                }
                 return;
             } else if (
                 reason === DisconnectReason.DUPLICATE_IDENTITY ||
@@ -287,6 +429,8 @@ export function LiveKitMeetingRoom({
                 toast.error(`Meeting ended: ${reasonText}`);
                 if (onMeetingEnd) {
                     onMeetingEnd();
+                } else {
+                    window.location.href = `/meeting/${meetingId}`;
                 }
                 updateMeetingStatus("COMPLETED");
             } else {
@@ -313,9 +457,24 @@ export function LiveKitMeetingRoom({
         room.on(RoomEvent.ParticipantDisconnected, (participant) => {
             if (!isMounted) return;
             console.log("Participant disconnected:", participant.name);
-            setParticipants((prev) =>
-                prev.filter((p) => p.sid !== participant.sid)
-            );
+            setParticipants((prev) => {
+                const newParticipants = prev.filter(
+                    (p) => p.sid !== participant.sid
+                );
+
+                // Check if this was the last participant (not including ourselves)
+                // We check room.remoteParticipants.size for accurate count
+                setTimeout(async () => {
+                    if (room && room.remoteParticipants.size === 0) {
+                        console.log(
+                            "Last participant left, checking if meeting should be completed"
+                        );
+                        await checkAndCompleteIfEmpty();
+                    }
+                }, 1000); // Small delay to ensure LiveKit has updated participant counts
+
+                return newParticipants;
+            });
             toast.info(`${participant.name || "Someone"} left the meeting`);
         });
 
@@ -347,13 +506,15 @@ export function LiveKitMeetingRoom({
                         meetingId,
                         attempt: retryCount + 1,
                     });
-                    
+
                     // Ensure we're not already connected
                     if (room.state === "connected") {
-                        console.log("Already connected, skipping connection attempt");
+                        console.log(
+                            "Already connected, skipping connection attempt"
+                        );
                         return;
                     }
-                    
+
                     await room.connect(serverUrl, token);
                 } catch (error) {
                     if (!isMounted) return;
@@ -361,18 +522,33 @@ export function LiveKitMeetingRoom({
                     console.error("Failed to connect to room:", error);
 
                     // Only retry for specific errors and limit retries
-                    if (retryCount < 2 && (
-                        error.message.includes("network") ||
-                        error.message.includes("timeout") ||
-                        error.message.includes("connection") ||
-                        error.message.includes("WebSocket")
-                    )) {
-                        console.log(`Retrying connection (attempt ${retryCount + 2}/3)...`);
-                        toast.info(`Retrying connection (${retryCount + 2}/3)...`);
-                        setTimeout(() => connectWithRetry(retryCount + 1), 1500);
+                    if (
+                        retryCount < 2 &&
+                        (error.message.includes("network") ||
+                            error.message.includes("timeout") ||
+                            error.message.includes("connection") ||
+                            error.message.includes("WebSocket"))
+                    ) {
+                        console.log(
+                            `Retrying connection (attempt ${
+                                retryCount + 2
+                            }/3)...`
+                        );
+                        toast.info(
+                            `Retrying connection (${retryCount + 2}/3)...`
+                        );
+                        setTimeout(
+                            () => connectWithRetry(retryCount + 1),
+                            1500
+                        );
                     } else {
-                        console.error("Connection failed permanently:", error.message);
-                        toast.error(`Failed to connect to meeting: ${error.message}`);
+                        console.error(
+                            "Connection failed permanently:",
+                            error.message
+                        );
+                        toast.error(
+                            `Failed to connect to meeting: ${error.message}`
+                        );
                         setConnectionState(ConnectionState.Disconnected);
                     }
                 }
@@ -385,18 +561,21 @@ export function LiveKitMeetingRoom({
         return () => {
             isMounted = false;
             isConnecting = false;
-            
+
             // Properly cleanup room connection
             if (room) {
                 try {
-                    if (room.state === "connected" || room.state === "connecting") {
+                    if (
+                        room.state === "connected" ||
+                        room.state === "connecting"
+                    ) {
                         room.disconnect(true); // Force disconnect
                     }
                 } catch (error) {
                     console.warn("Error during room cleanup:", error);
                 }
             }
-            
+
             // Cleanup transcription
             if (recognition && transcriptionStarted) {
                 try {
@@ -431,35 +610,50 @@ export function LiveKitMeetingRoom({
 
     // Start transcription with browser Speech Recognition API
     const startTranscription = async () => {
-        if (!recognition || transcriptionStarted) return;
+        console.log("startTranscription called", {
+            recognition: !!recognition,
+            transcriptionStarted,
+        });
+
+        // Check microphone permissions first
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+            });
+            console.log("Microphone access granted");
+            stream.getTracks().forEach((track) => track.stop()); // Clean up the test stream
+        } catch (error) {
+            console.error("Microphone access denied:", error);
+            toast.error(
+                "Microphone access denied. Please allow microphone access for transcription."
+            );
+            return;
+        }
+
+        if (!recognition) {
+            console.error("No recognition instance available");
+            toast.error("Speech recognition not available");
+            return;
+        }
 
         try {
-            // Request microphone permissions first
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                try {
-                    await navigator.mediaDevices.getUserMedia({ audio: true });
-                    console.log("Microphone permission granted");
-                } catch (permError) {
-                    console.error("Microphone permission denied:", permError);
-                    toast.error("Microphone access is required for transcription. Please allow microphone access.");
-                    setIsTranscribing(false);
-                    return;
-                }
-            }
-
             setTranscriptionStarted(true);
+            setIsTranscribing(true);
             recognition.start();
-            console.log("Transcription started successfully");
-            toast.success("AI transcription started - speak to see live text!");
+            console.log("Speech recognition start() called");
+            toast.success("Transcription started!");
         } catch (error) {
-            console.error("Failed to start transcription:", error);
+            console.error("Error starting speech recognition:", error);
             setTranscriptionStarted(false);
             setIsTranscribing(false);
-            toast.error("Failed to start transcription. Please check microphone permissions.");
+            if (error.name === "InvalidStateError") {
+                console.log("Recognition already running, continuing...");
+                toast.info("Transcription already active");
+            } else {
+                toast.error(`Failed to start transcription: ${error.message}`);
+            }
         }
-    };
-
-    // Stop transcription
+    }; // Stop transcription
     const stopTranscription = async () => {
         if (!recognition || !transcriptionStarted) return;
 
@@ -473,36 +667,74 @@ export function LiveKitMeetingRoom({
         }
     };
 
-    // Save transcript segment to backend
+    // Restart transcription manually
+    const restartTranscription = async () => {
+        console.log("Manual transcription restart requested");
+        toast.info("Restarting transcription...");
+
+        try {
+            // Stop current recognition if running
+            if (recognition && transcriptionStarted) {
+                recognition.stop();
+                setTranscriptionStarted(false);
+                setIsTranscribing(false);
+
+                // Wait a moment before restarting
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+
+            // Start fresh
+            await startTranscription();
+        } catch (error) {
+            console.error("Failed to restart transcription:", error);
+            toast.error("Failed to restart transcription. Please try again.");
+        }
+    };
+
     const saveTranscriptSegment = async (text) => {
         if (!text.trim()) return;
 
+        console.log("Saving transcript segment:", text);
         try {
-            await fetch(`/api/meetings/${meetingId}/transcript/autosave`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    content: text,
-                    timestamp: new Date().toISOString(),
-                    speaker: "participant", // Could be enhanced to identify speakers
-                }),
-            });
+            const response = await fetch(
+                `/api/meetings/${meetingId}/transcript/autosave`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        content: text,
+                        timestamp: new Date().toISOString(),
+                        speaker: "participant",
+                    }),
+                }
+            );
+
+            if (response.ok) {
+                console.log("Transcript segment saved successfully");
+            } else {
+                console.error(
+                    "Failed to save transcript segment:",
+                    response.status,
+                    response.statusText
+                );
+            }
         } catch (error) {
             console.error("Failed to save transcript:", error);
         }
     };
 
-    // Leave meeting
     const leaveMeeting = async () => {
         try {
+            await updateParticipantStatus("LEFT");
+
             if (room) {
                 await room.disconnect();
             }
-            // Update meeting status
-            await updateMeetingStatus("COMPLETED");
+
+            await checkAndCompleteIfEmpty();
+
             toast.info("Left meeting");
 
-            // Redirect to meeting details page
             if (onMeetingEnd) {
                 onMeetingEnd();
             } else {
@@ -510,8 +742,35 @@ export function LiveKitMeetingRoom({
             }
         } catch (error) {
             console.error("Error leaving meeting:", error);
-            // Force redirect even if there's an error
             window.location.href = `/meeting/${meetingId}`;
+        }
+    };
+
+    const updateParticipantStatus = async (status) => {
+        try {
+            await fetch(`/api/meetings/${meetingId}/participants`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status }),
+            });
+        } catch (error) {
+            console.error("Failed to update participant status:", error);
+        }
+    };
+
+    const checkAndCompleteIfEmpty = async () => {
+        try {
+            const response = await fetch(
+                `/api/meetings/${meetingId}/participants/count`
+            );
+            if (response.ok) {
+                const data = await response.json();
+                if (data.activeCount === 0) {
+                    await updateMeetingStatus("COMPLETED");
+                }
+            }
+        } catch (error) {
+            console.error("Failed to check participant count:", error);
         }
     };
 
@@ -595,21 +854,54 @@ export function LiveKitMeetingRoom({
                                         <Badge
                                             variant="secondary"
                                             className="flex items-center gap-1.5 bg-green-500/20 border-green-500 text-green-400 text-sm px-3 py-1"
+                                            title={transcriptionStatus}
                                         >
                                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                            AI Transcription
+                                            {transcriptionStatus}
+                                        </Badge>
+                                    )}
+                                    {!isTranscribing && recognition && (
+                                        <Badge
+                                            variant="outline"
+                                            className="flex items-center gap-1.5 bg-red-500/20 border-red-500 text-red-400 text-sm px-3 py-1"
+                                            title="Transcription stopped"
+                                        >
+                                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            Transcription Off
                                         </Badge>
                                     )}
                                 </div>
                             </div>
-                            <Button
-                                onClick={leaveMeeting}
-                                variant="destructive"
-                                size="sm"
-                                className="bg-red-600 hover:bg-red-700 text-sm px-4 py-2"
-                            >
-                                Leave Meeting
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                {!isTranscribing && recognition && (
+                                    <Button
+                                        onClick={restartTranscription}
+                                        variant="outline"
+                                        size="sm"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 text-sm px-3 py-2"
+                                    >
+                                        🎤 Restart Transcription
+                                    </Button>
+                                )}
+                                {isTranscribing && (
+                                    <Button
+                                        onClick={stopTranscription}
+                                        variant="outline"
+                                        size="sm"
+                                        className="bg-orange-600 hover:bg-orange-700 text-white border-orange-600 text-sm px-3 py-2"
+                                    >
+                                        Stop Transcription
+                                    </Button>
+                                )}
+                                <Button
+                                    onClick={leaveMeeting}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="bg-red-600 hover:bg-red-700 text-sm px-4 py-2"
+                                >
+                                    Leave Meeting
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -631,29 +923,6 @@ export function LiveKitMeetingRoom({
                             backgroundColor: "#000",
                         }}
                         room={room}
-                        options={{
-                            publishDefaults: {
-                                videoSimulcastLayers: [
-                                    {
-                                        resolution: { width: 640, height: 360 },
-                                        encoding: {
-                                            maxBitrate: 600_000,
-                                            maxFramerate: 20,
-                                        },
-                                    },
-                                    {
-                                        resolution: {
-                                            width: 1280,
-                                            height: 720,
-                                        },
-                                        encoding: {
-                                            maxBitrate: 2_000_000,
-                                            maxFramerate: 30,
-                                        },
-                                    },
-                                ],
-                            },
-                        }}
                     >
                         <VideoConference
                             chatMessageFormatter={(msg) =>

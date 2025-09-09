@@ -105,7 +105,6 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
         { value: 60, label: "1 hour" },
         { value: 90, label: "1.5 hours" },
         { value: 120, label: "2 hours" },
-        { value: 180, label: "3 hours" },
     ];
 
     return (
@@ -128,30 +127,6 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                         insights.
                     </DialogDescription>
                 </DialogHeader>
-
-                {/* FREE Features Banner */}
-                {/* <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
-                        🎉 What you get for FREE with Video Meetings:
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2 text-sm text-green-700">
-                        <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            Unlimited participants
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            No time limits
-                        </div>
-                        <div>✅ HD video & audio</div>
-                        <div>✅ Screen sharing</div>
-                        <div>✅ Live transcription</div>
-                        <div>✅ AI meeting insights</div>
-                        <div>✅ Local recording</div>
-                        <div>✅ Mobile app support</div>
-                    </div>
-                </div> */}
-
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <div className="space-y-2">
                         <label htmlFor="title" className="text-sm font-medium">
