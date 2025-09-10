@@ -207,7 +207,7 @@ const CreateProject = () => {
                 </div>
                 <Button
                     type="submit"
-                    className="w-full py-6 bg-lime-500 text-black text-xl font-semibold rounded-md hover:bg-lime-600 transition-all duration-300"
+                    className="w-full py-6 bg-lime-500 text-black text-md font-semibold rounded-md hover:bg-lime-600 transition-all duration-300"
                 >
                     Create Project
                 </Button>

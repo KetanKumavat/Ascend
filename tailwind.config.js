@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    darkMode: "class", // Keep this for dark: classes to work
+    darkMode: "class",
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -8,7 +8,6 @@ module.exports = {
     ],
     theme: {
         extend: {
-            // Keep all the color variables - your components depend on these
             colors: {
                 background: "hsl(var(--background))",
                 foreground: "hsl(var(--foreground))",
@@ -88,5 +87,5 @@ module.exports = {
             },
         },
     },
-    plugins: [require("tailwindcss-animate")], // Removed the color variables plugin since you have them in CSS
+    plugins: [require("tailwindcss-animate")], // Removed line-clamp plugin as it's built into newer Tailwind
 };

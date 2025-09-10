@@ -33,6 +33,7 @@ export default function IssueCreationDrawer({
     projectId,
     onIssueCreated,
     orgId,
+    initialData = null, // GitHub issue data to pre-fill
 }) {
     const mdEditorRef = useRef(null);
 
@@ -55,12 +56,14 @@ export default function IssueCreationDrawer({
         handleSubmit,
         formState: { errors },
         reset,
+        setValue,
     } = useForm({
         resolver: zodResolver(issueSchema),
         defaultValues: {
             priority: "MEDIUM",
             description: "",
             assigneeId: "unassigned",
+            title: "",
         },
     });
 
@@ -68,7 +71,13 @@ export default function IssueCreationDrawer({
         if (isOpen && orgId) {
             fetchUsers(orgId);
         }
-    }, [isOpen, orgId]);
+
+        // Pre-fill form with GitHub issue data if provided
+        if (isOpen && initialData) {
+            setValue("title", initialData.title);
+            setValue("description", initialData.body || "");
+        }
+    }, [isOpen, orgId, initialData, setValue]);
 
     // Enhanced cleanup when drawer closes
     useEffect(() => {
@@ -78,6 +87,7 @@ export default function IssueCreationDrawer({
                 priority: "MEDIUM",
                 description: "",
                 assigneeId: "unassigned",
+                title: "",
             });
 
             // Force scroll restoration and body cleanup
@@ -120,6 +130,7 @@ export default function IssueCreationDrawer({
                     priority: "MEDIUM",
                     description: "",
                     assigneeId: "unassigned",
+                    title: "",
                 });
             }, 200);
 
@@ -143,8 +154,13 @@ export default function IssueCreationDrawer({
             <DrawerContent className="md:w-1/2 w-full mx-auto bg-neutral-700/20 backdrop-blur-lg p-6 rounded-lg shadow-2xl">
                 <DrawerHeader className="mb-4">
                     <DrawerTitle className="text-lg font-semibold text-lime-400 text-center">
-                        Create New Issue
+                        {initialData ? "Create Issue from GitHub" : "Create New Issue"}
                     </DrawerTitle>
+                    {initialData && (
+                        <p className="text-sm text-neutral-400 text-center mt-2">
+                            GitHub Issue #{initialData.number}
+                        </p>
+                    )}
                 </DrawerHeader>
 
                 {usersLoading && <BarLoader width={"100%"} color="#84cc16" />}

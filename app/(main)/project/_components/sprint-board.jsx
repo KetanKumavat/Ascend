@@ -11,6 +11,7 @@ import SprintManager from "./sprint-manager";
 import IssueCreationDrawer from "./create-issue";
 import IssueCard from "@/components/issue-card";
 import BoardFilters from "./board-filters";
+import GitHubIssuesSection from "./github-issues-section";
 
 function reorder(list, startIndex, endIndex) {
   const result = Array.from(list);
@@ -25,6 +26,7 @@ export default function SprintBoard({ sprints, projectId, orgId }) {
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
+  const [githubIssueData, setGithubIssueData] = useState(null);
 
   const {
     loading: issuesLoading,
@@ -48,6 +50,13 @@ export default function SprintBoard({ sprints, projectId, orgId }) {
 
   const handleAddIssue = (status) => {
     setSelectedStatus(status);
+    setGithubIssueData(null); // Reset GitHub data
+    setIsDrawerOpen(true);
+  };
+
+  const handleGitHubIssueSelect = (githubIssue) => {
+    setSelectedStatus("TODO"); // Default status for GitHub issues
+    setGithubIssueData(githubIssue);
     setIsDrawerOpen(true);
   };
 
@@ -133,6 +142,12 @@ export default function SprintBoard({ sprints, projectId, orgId }) {
         projectId={projectId}
       />
 
+      {/* GitHub Issues Section */}
+      <GitHubIssuesSection 
+        projectId={projectId} 
+        onIssueSelect={handleGitHubIssueSelect}
+      />
+
       {issues && !issuesLoading && (
         <BoardFilters issues={issues} onFilterChange={handleFilterChange} />
       )}
@@ -209,12 +224,16 @@ export default function SprintBoard({ sprints, projectId, orgId }) {
 
       <IssueCreationDrawer
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setGithubIssueData(null); // Reset GitHub data when closing
+        }}
         sprintId={currentSprint.id}
         status={selectedStatus}
         projectId={projectId}
         onIssueCreated={handleIssueCreated}
         orgId={orgId}
+        initialData={githubIssueData}
       />
     </div>
   );
