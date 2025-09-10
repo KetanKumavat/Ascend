@@ -18,7 +18,6 @@ export async function getMessagesForProject(projectId) {
             id: true,
             content: true,
             createdAt: true,
-            updatedAt: true,
             userId: true,
             projectId: true,
             user: {
@@ -26,6 +25,7 @@ export async function getMessagesForProject(projectId) {
                     id: true,
                     name: true,
                     email: true,
+                    imageUrl: true,
                 },
             },
         },
@@ -60,7 +60,6 @@ export async function createMessage(projectId, data) {
             id: true,
             content: true,
             createdAt: true,
-            updatedAt: true,
             userId: true,
             projectId: true,
             user: {
@@ -68,6 +67,7 @@ export async function createMessage(projectId, data) {
                     id: true,
                     name: true,
                     email: true,
+                    imageUrl: true,
                 },
             },
         },

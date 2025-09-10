@@ -190,8 +190,8 @@ export default function ExcalidrawWrapper({
         <div className="w-full space-y-4">
             {/* Canvas Header (no navigation, only status and actions) */}
             <Card>
-                <CardHeader className="pb-3 ">
-                    <div className="flex items-center justify-between">
+                <CardHeader className="pb-3 rounded-lg">
+                    <div className="flex items-center px-1 justify-between">
                         <div className="flex items-center gap-3">
                             <CardTitle className="flex items-center gap-2">
                                 {title}
