@@ -192,6 +192,12 @@ Keep the response professional and focused on technical aspects.
 
         return NextResponse.json({
             report: newReport,
+            commit: {
+                ...commit,
+                totalChanges: commitDetails.stats?.total || 0,
+                additions: commitDetails.stats?.additions || 0,
+                deletions: commitDetails.stats?.deletions || 0,
+            },
             cached: false
         });
 

@@ -101,7 +101,17 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
             setCommits((prevCommits) =>
                 prevCommits.map((commit) =>
                     commit.id === commitId
-                        ? { ...commit, report: data.report }
+                        ? {
+                              ...commit,
+                              report: data.report,
+                              totalChanges:
+                                  data.commit?.totalChanges ??
+                                  commit.totalChanges,
+                              additions:
+                                  data.commit?.additions ?? commit.additions,
+                              deletions:
+                                  data.commit?.deletions ?? commit.deletions,
+                          }
                         : commit
                 )
             );
