@@ -94,9 +94,9 @@ export default function SprintManager({
 
     return (
         <>
-            <div className="flex justify-between items-center gap-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 w-full">
                 <Select value={sprint.id} onValueChange={handleSprintChange}>
-                    <SelectTrigger className="bg-neutral-700/20 border-neutral-800 self-start">
+                    <SelectTrigger className="w-full bg-neutral-700/20 border-neutral-800">
                         <SelectValue placeholder="Select Sprint" />
                     </SelectTrigger>
                     <SelectContent>
@@ -124,6 +124,7 @@ export default function SprintManager({
                         onClick={() => handleStatusChange("COMPLETED")}
                         disabled={loading}
                         variant="destructive"
+                        className=""
                     >
                         End Sprint
                     </Button>

@@ -3,6 +3,7 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
+import { sendIssueAssignmentEmail } from "@/lib/email-utils";
 
 export async function getIssuesForSprint(sprintId) {
   const auth_result = await auth();
@@ -101,8 +102,31 @@ export async function createIssue(projectId, data) {
       include: {
         assignee: true,
         reporter: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+            description: true
+          }
+        }
       },
     });
+
+    // Send email notification if issue is assigned to someone
+    if (validAssigneeId && issue.assignee) {
+      try {
+        await sendIssueAssignmentEmail({
+          issue,
+          assignee: issue.assignee,
+          project: issue.project,
+          reporter: issue.reporter
+        });
+        console.log(`Assignment email sent for issue: ${issue.title}`);
+      } catch (emailError) {
+        console.error("Failed to send assignment email:", emailError);
+        // Don't fail the issue creation if email fails
+      }
+    }
 
     return issue;
   } catch (error) {

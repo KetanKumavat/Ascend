@@ -240,8 +240,8 @@ export default function IssueCreationDrawer({
                                     ref={mdEditorRef}
                                     value={field.value}
                                     onChange={field.onChange}
-                                    className="bg-white text-gray-50"
-                                    data-color-mode="light"
+                                    className="bg-neutral-700 text-gray-50"
+                                    data-color-mode="dark"
                                 />
                             )}
                         />
