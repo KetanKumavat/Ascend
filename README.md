@@ -4,7 +4,7 @@
 
 **A comprehensive project management platform that combines team collaboration, AI-powered insights, and real-time communication.**
 
-[🌐 Live Demo](https://ascend-demo.vercel.app)
+[🌐 Live Demo](https://ascend.ketankumavat.me)
 
 </div>
 
@@ -330,6 +330,6 @@ To contribute to this project, follow these steps:
 
 ## ⭐ Star the Project
 
-If you find Ascend helpful, please consider giving it a star on GitHub! ⭐
+If you find Ascend helpful, please consider giving it a star! ⭐
 
 ---
