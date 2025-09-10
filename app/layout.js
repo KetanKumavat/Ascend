@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "./../components/header";
+import ScrollHeader from "./../components/scroll-header";
 import Footer from "./../components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
@@ -85,7 +86,9 @@ export default function RootLayout({ children }) {
                 <body
                     className={`${inter.className} antialiased bg-black text-white overflow-x-hidden`}
                 >
-                    <Header />
+                    <ScrollHeader>
+                        <Header />
+                    </ScrollHeader>
                     <main className="w-full min-h-screen">
                         <PageWrapper>{children}</PageWrapper>
                     </main>

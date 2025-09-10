@@ -136,17 +136,10 @@ export function LiveKitMeetingRoom({
                 backoffFactor: 1.5,
             },
             publishDefaults: {
-                videoSimulcastLayers: [
-                    {
-                        resolution: { width: 320, height: 240 },
-                        encoding: { maxBitrate: 150_000 },
-                    },
-                    {
-                        resolution: { width: 640, height: 480 },
-                        encoding: { maxBitrate: 400_000 },
-                    },
-                ],
-                audioBitrate: 64_000,
+                audioBitrate: 64000,
+                videoCodec: 'vp8',
+                audioCodec: 'opus',
+                simulcast: false, // Disable simulcast to avoid encoding issues
             },
         });
 
@@ -255,6 +248,7 @@ export function LiveKitMeetingRoom({
             RoomEvent.TrackSubscribed,
             (track, publication, participant) => {
                 if (!isMounted) return;
+                console.log(`Track subscribed: ${track.kind} from ${participant.identity}`);
                 if (track.kind === Track.Kind.Audio && agentActive) {
                     console.log(
                         `Audio track subscribed from ${participant.identity}, agent processing...`
@@ -263,15 +257,56 @@ export function LiveKitMeetingRoom({
             }
         );
 
+        room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+            if (!isMounted) return;
+            console.log(`Track unsubscribed: ${track.kind} from ${participant.identity}`);
+        });
+
+        room.on(RoomEvent.TrackPublished, (publication, participant) => {
+            if (!isMounted) return;
+            console.log(`Track published: ${publication.kind} from ${participant.identity}`);
+        });
+
+        room.on(RoomEvent.TrackUnpublished, (publication, participant) => {
+            if (!isMounted) return;
+            console.log(`Track unpublished: ${publication.kind} from ${participant.identity}`);
+        });
+
+        room.on(RoomEvent.TrackPublishFailed, (error, track) => {
+            if (!isMounted) return;
+            console.error("Track publish failed:", error);
+            toast.error(`Failed to share ${track.kind}: ${error.message}`);
+        });
+
+        room.on(RoomEvent.ConnectionQualityChanged, (quality, participant) => {
+            if (!isMounted) return;
+            if (participant?.identity && quality === 'poor') {
+                console.warn(`Poor connection quality for ${participant.identity}`);
+            }
+        });
+
         setRoom(room);
         setConnectionState(ConnectionState.Connecting);
 
         const connectWithRetry = async (retryCount = 0) => {
             try {
                 if (room.state === "connected") return;
+                
+                // Simple media permission check
+                try {
+                    await navigator.mediaDevices.getUserMedia({ 
+                        video: true, 
+                        audio: true
+                    });
+                } catch (mediaError) {
+                    console.warn("Media permission error:", mediaError);
+                    toast.error("Camera/microphone access denied. Please allow permissions and refresh.");
+                }
+                
                 await room.connect(serverUrl, token);
             } catch (error) {
                 if (!isMounted) return;
+                console.error("Connection error:", error);
                 if (
                     retryCount < 2 &&
                     (error.message.includes("network") ||
@@ -284,7 +319,7 @@ export function LiveKitMeetingRoom({
                         1000 * (retryCount + 1)
                     );
                 } else {
-                    toast.error("Failed to connect to meeting");
+                    toast.error("Failed to connect to meeting: " + error.message);
                     setConnectionState(ConnectionState.Disconnected);
                 }
             }
@@ -294,8 +329,15 @@ export function LiveKitMeetingRoom({
 
         return () => {
             isMounted = false;
+            if (agentActive) {
+                stopTranscriptionAgent();
+            }
             if (room) {
                 try {
+                    // Remove all event listeners first
+                    room.removeAllListeners();
+                    
+                    // Disconnect if connected
                     if (
                         room.state === "connected" ||
                         room.state === "connecting"
@@ -305,9 +347,6 @@ export function LiveKitMeetingRoom({
                 } catch (error) {
                     console.warn("Error during room cleanup:", error);
                 }
-            }
-            if (agentActive) {
-                stopTranscriptionAgent();
             }
         };
     }, [token, serverUrl, meetingId, onMeetingEnd, onTranscriptUpdate]);
@@ -417,10 +456,34 @@ export function LiveKitMeetingRoom({
 
     return (
         <div className="fixed inset-0 bg-black z-[9999] min-h-screen">
-            <div className="absolute top-4 left-4 right-4 z-10">
-                <Card className="bg-black/80 backdrop-blur-md border-gray-600">
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
+            <div className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 z-10">
+                <Card className="bg-black/80 backdrop-blur-md border-neutral-800">
+                    <CardContent className="p-2 md:p-4">
+                        {/* Mobile Layout */}
+                        <div className="md:hidden">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center  gap-2 flex-1 min-w-0">
+                                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                                    <h1 className="text-sm font-semibold text-white truncate">
+                                        {meetingTitle}
+                                    </h1>
+                                    <div className="flex items-center gap-1 text-xs text-gray-300 ml-2">
+                                        <Users className="w-3 h-3" />
+                                        <span>{participants.length + 1}</span>
+                                    </div>
+                                </div>
+                                <Button
+                                    onClick={leaveMeeting}
+                                    variant="destructive"
+                                    size="sm"
+                                    className="bg-red-600 hover:bg-red-700 text-xs px-3 py-1 flex-shrink-0"
+                                >
+                                    Leave
+                                </Button>
+                            </div>
+                        </div>
+                        {/* Desktop Layout */}
+                        <div className="hidden md:flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -449,7 +512,7 @@ export function LiveKitMeetingRoom({
                                             title="Transcription agent recording meeting content"
                                         >
                                             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                            🎤 Recording
+                                            Recording
                                         </Badge>
                                     )}
                                     {!agentActive && (
@@ -465,14 +528,14 @@ export function LiveKitMeetingRoom({
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                                                {!agentActive && (
+                                {!agentActive && (
                                     <Button
                                         onClick={startTranscriptionAgent}
                                         variant="outline"
                                         size="sm"
                                         className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-sm px-3 py-2"
                                     >
-                                        🎤 Start Recording
+                                        Start Recording
                                     </Button>
                                 )}
                                 {agentActive && (
@@ -499,7 +562,7 @@ export function LiveKitMeetingRoom({
                 </Card>
             </div>
 
-            <div className="w-full h-full pt-20 pb-4 px-4">
+            <div className="w-full h-full pt-16 md:pt-20 pb-4 px-2 md:px-4">
                 <div className="w-full h-full max-w-7xl mx-auto">
                     <LiveKitRoom
                         video={true}
@@ -514,15 +577,24 @@ export function LiveKitMeetingRoom({
                             backgroundColor: "#000",
                         }}
                         room={room}
+                        onError={(error) => {
+                            console.error("LiveKit error:", error);
+                            toast.error("Camera/microphone error: " + error.message);
+                        }}
+                        onDisconnected={() => {
+                            console.log("LiveKitRoom disconnected");
+                        }}
                     >
-                        <VideoConference
-                            chatMessageFormatter={(msg) =>
-                                `${msg.from?.name || "Anonymous"}: ${
-                                    msg.message
-                                }`
-                            }
-                        />
-                        <RoomAudioRenderer />
+                        <div className="h-full w-full">
+                            <VideoConference
+                                chatMessageFormatter={(msg) =>
+                                    `${msg.from?.name || "Anonymous"}: ${
+                                        msg.message
+                                    }`
+                                }
+                            />
+                            <RoomAudioRenderer />
+                        </div>
                     </LiveKitRoom>
                 </div>
             </div>
