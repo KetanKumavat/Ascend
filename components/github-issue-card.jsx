@@ -2,24 +2,35 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, GitBranch, User } from "lucide-react";
+import { ExternalLink, GitBranch, User, CheckCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 
 export default function GitHubIssueCard({ issue, onClick }) {
+    console.log("GitHubIssueCard - issue:", issue);
     const created = formatDistanceToNow(new Date(issue.createdAt), {
         addSuffix: true,
     });
 
     return (
         <Card
-            className="hover:shadow-md transition-all cursor-pointer bg-neutral-800/40 border-neutral-700 hover:border-neutral-600"
-            onClick={() => onClick(issue)}
+            className={`hover:shadow-md transition-all cursor-pointer bg-neutral-800/40 border-neutral-700 hover:border-neutral-600 ${
+                issue.isAlreadyImported
+                    ? "opacity-60 ring-2 ring-green-500/30"
+                    : ""
+            }`}
+            onClick={() => !issue.isAlreadyImported && onClick(issue)}
         >
             <CardHeader className="pb-3">
                 <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-sm font-medium text-neutral-100 leading-tight">
                         {issue.title}
+                        {issue.isAlreadyImported && (
+                            <div className="flex items-center gap-1 mt-1 text-xs text-green-400">
+                                <CheckCircle className="h-3 w-3" />
+                                Already imported as: {issue.existingIssueTitle}
+                            </div>
+                        )}
                     </CardTitle>
                     <div className="flex items-center gap-1 text-xs text-neutral-400 shrink-0">
                         <GitBranch className="h-3 w-3" />#{issue.number}

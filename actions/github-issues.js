@@ -54,6 +54,28 @@ export async function getGitHubIssues(projectId) {
 
         const githubIssues = await response.json();
 
+        // Get existing project issues to check for duplicates
+        const existingIssues = await db.issue.findMany({
+            where: {
+                projectId: projectId,
+                githubIssueNumber: {
+                    not: null,
+                },
+            },
+            select: {
+                githubIssueNumber: true,
+                title: true,
+            },
+        });
+
+        console.log('Existing issues with GitHub numbers:', existingIssues);
+
+        const existingGithubNumbers = new Set(
+            existingIssues.map((issue) => issue.githubIssueNumber)
+        );
+
+        console.log('Existing GitHub numbers set:', Array.from(existingGithubNumbers));
+
         const issues = githubIssues
             .filter((issue) => !issue.pull_request)
             .map((issue) => ({
@@ -79,7 +101,18 @@ export async function getGitHubIssues(projectId) {
                     login: issue.user.login,
                     avatarUrl: issue.user.avatar_url,
                 },
+                // Check if this GitHub issue already exists in our project
+                isAlreadyImported: existingGithubNumbers.has(issue.number),
+                existingIssueTitle: existingIssues.find(
+                    (existing) => existing.githubIssueNumber === issue.number
+                )?.title,
             }));
+
+        console.log('Processed issues with import status:', issues.map(i => ({
+            number: i.number,
+            title: i.title,
+            isAlreadyImported: i.isAlreadyImported
+        })));
 
         return { issues, error: null };
     } catch (error) {

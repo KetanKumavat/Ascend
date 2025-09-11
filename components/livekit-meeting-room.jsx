@@ -137,8 +137,8 @@ export function LiveKitMeetingRoom({
             },
             publishDefaults: {
                 audioBitrate: 64000,
-                videoCodec: 'vp8',
-                audioCodec: 'opus',
+                videoCodec: "vp8",
+                audioCodec: "opus",
                 simulcast: false, // Disable simulcast to avoid encoding issues
             },
         });
@@ -248,7 +248,9 @@ export function LiveKitMeetingRoom({
             RoomEvent.TrackSubscribed,
             (track, publication, participant) => {
                 if (!isMounted) return;
-                console.log(`Track subscribed: ${track.kind} from ${participant.identity}`);
+                console.log(
+                    `Track subscribed: ${track.kind} from ${participant.identity}`
+                );
                 if (track.kind === Track.Kind.Audio && agentActive) {
                     console.log(
                         `Audio track subscribed from ${participant.identity}, agent processing...`
@@ -257,19 +259,28 @@ export function LiveKitMeetingRoom({
             }
         );
 
-        room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-            if (!isMounted) return;
-            console.log(`Track unsubscribed: ${track.kind} from ${participant.identity}`);
-        });
+        room.on(
+            RoomEvent.TrackUnsubscribed,
+            (track, publication, participant) => {
+                if (!isMounted) return;
+                console.log(
+                    `Track unsubscribed: ${track.kind} from ${participant.identity}`
+                );
+            }
+        );
 
         room.on(RoomEvent.TrackPublished, (publication, participant) => {
             if (!isMounted) return;
-            console.log(`Track published: ${publication.kind} from ${participant.identity}`);
+            console.log(
+                `Track published: ${publication.kind} from ${participant.identity}`
+            );
         });
 
         room.on(RoomEvent.TrackUnpublished, (publication, participant) => {
             if (!isMounted) return;
-            console.log(`Track unpublished: ${publication.kind} from ${participant.identity}`);
+            console.log(
+                `Track unpublished: ${publication.kind} from ${participant.identity}`
+            );
         });
 
         room.on(RoomEvent.TrackPublishFailed, (error, track) => {
@@ -280,8 +291,10 @@ export function LiveKitMeetingRoom({
 
         room.on(RoomEvent.ConnectionQualityChanged, (quality, participant) => {
             if (!isMounted) return;
-            if (participant?.identity && quality === 'poor') {
-                console.warn(`Poor connection quality for ${participant.identity}`);
+            if (participant?.identity && quality === "poor") {
+                console.warn(
+                    `Poor connection quality for ${participant.identity}`
+                );
             }
         });
 
@@ -291,18 +304,20 @@ export function LiveKitMeetingRoom({
         const connectWithRetry = async (retryCount = 0) => {
             try {
                 if (room.state === "connected") return;
-                
+
                 // Simple media permission check
                 try {
-                    await navigator.mediaDevices.getUserMedia({ 
-                        video: true, 
-                        audio: true
+                    await navigator.mediaDevices.getUserMedia({
+                        video: true,
+                        audio: true,
                     });
                 } catch (mediaError) {
                     console.warn("Media permission error:", mediaError);
-                    toast.error("Camera/microphone access denied. Please allow permissions and refresh.");
+                    toast.error(
+                        "Camera/microphone access denied. Please allow permissions and refresh."
+                    );
                 }
-                
+
                 await room.connect(serverUrl, token);
             } catch (error) {
                 if (!isMounted) return;
@@ -319,7 +334,9 @@ export function LiveKitMeetingRoom({
                         1000 * (retryCount + 1)
                     );
                 } else {
-                    toast.error("Failed to connect to meeting: " + error.message);
+                    toast.error(
+                        "Failed to connect to meeting: " + error.message
+                    );
                     setConnectionState(ConnectionState.Disconnected);
                 }
             }
@@ -336,7 +353,7 @@ export function LiveKitMeetingRoom({
                 try {
                     // Remove all event listeners first
                     room.removeAllListeners();
-                    
+
                     // Disconnect if connected
                     if (
                         room.state === "connected" ||
@@ -455,7 +472,7 @@ export function LiveKitMeetingRoom({
     }
 
     return (
-        <div className="fixed inset-0 bg-black z-[9999] min-h-screen">
+        <div className="fixed inset-0 bg-black z-[9999]">
             <div className="absolute top-2 left-2 right-2 md:top-4 md:left-4 md:right-4 z-10">
                 <Card className="bg-black/80 backdrop-blur-md border-neutral-800">
                     <CardContent className="p-2 md:p-4">
@@ -579,7 +596,9 @@ export function LiveKitMeetingRoom({
                         room={room}
                         onError={(error) => {
                             console.error("LiveKit error:", error);
-                            toast.error("Camera/microphone error: " + error.message);
+                            toast.error(
+                                "Camera/microphone error: " + error.message
+                            );
                         }}
                         onDisconnected={() => {
                             console.log("LiveKitRoom disconnected");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Github, AlertCircle } from "lucide-react";
@@ -9,7 +9,7 @@ import useFetch from "@/hooks/useFetch";
 import { getGitHubIssues } from "@/actions/github-issues";
 import GitHubIssueCard from "@/components/github-issue-card";
 
-export default function GitHubIssuesSection({ projectId, onIssueSelect }) {
+const GitHubIssuesSection = forwardRef(function GitHubIssuesSection({ projectId, onIssueSelect }, ref) {
     const {
         loading: issuesLoading,
         error: issuesError,
@@ -30,13 +30,26 @@ export default function GitHubIssuesSection({ projectId, onIssueSelect }) {
     };
 
     const handleIssueClick = (githubIssue) => {
-        onIssueSelect({
+        if (githubIssue.isAlreadyImported) {
+            return; // Do nothing if already imported
+        }
+        
+        const issueData = {
             title: githubIssue.title,
             body: githubIssue.body,
             number: githubIssue.number,
             htmlUrl: githubIssue.htmlUrl,
-        });
+            githubIssueNumber: githubIssue.number,
+            githubIssueUrl: githubIssue.htmlUrl,
+        };
+        
+        console.log('Passing GitHub issue data to onIssueSelect:', issueData);
+        onIssueSelect(issueData);
     };
+
+    useImperativeHandle(ref, () => ({
+        refresh: handleRefresh
+    }));
 
     const issues = githubData?.issues || [];
     const error = githubData?.error || issuesError?.message;
@@ -109,7 +122,7 @@ export default function GitHubIssuesSection({ projectId, onIssueSelect }) {
                     <div className="space-y-4">
                         <p className="text-sm text-neutral-400">
                             Click on any issue to create it in your project with
-                            pre-filled details
+                            pre-filled details. Issues already imported are marked with a green indicator.
                         </p>
 
                         <div className="grid gap-3">
@@ -139,4 +152,6 @@ export default function GitHubIssuesSection({ projectId, onIssueSelect }) {
             </CardContent>
         </Card>
     );
-}
+});
+
+export default GitHubIssuesSection;

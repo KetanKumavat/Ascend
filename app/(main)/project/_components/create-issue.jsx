@@ -116,6 +116,9 @@ export default function IssueCreationDrawer({
             ...data,
             status,
             sprintId,
+            // Include GitHub issue data if available
+            githubIssueNumber: initialData?.githubIssueNumber || null,
+            githubIssueUrl: initialData?.githubIssueUrl || null,
         });
     };
 

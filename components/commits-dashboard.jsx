@@ -42,6 +42,7 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
     const [generatingSummary, setGeneratingSummary] = useState(false);
     const [selectedSummary, setSelectedSummary] = useState(null);
     const [sendingEmail, setSendingEmail] = useState(null);
+    const [lastFetchDate, setLastFetchDate] = useState(null);
 
     const fetchCommits = async (page = 1, refresh = false) => {
         try {
@@ -282,8 +283,32 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
         if (repoUrl) {
             fetchCommits();
             fetchDailySummaries();
+            setLastFetchDate(new Date().toDateString());
         }
     }, [projectId, repoUrl]);
+
+    // Auto-refresh commits on new day
+    useEffect(() => {
+        const checkNewDay = () => {
+            const currentDate = new Date().toDateString();
+            if (lastFetchDate && lastFetchDate !== currentDate && repoUrl) {
+                fetchCommits(1, true);
+                setLastFetchDate(currentDate);
+            }
+        };
+
+        const handleFocus = () => {
+            checkNewDay();
+        };
+
+        checkNewDay();
+
+        window.addEventListener("focus", handleFocus);
+
+        return () => {
+            window.removeEventListener("focus", handleFocus);
+        };
+    }, [lastFetchDate, repoUrl]);
 
     if (!repoUrl) {
         return (

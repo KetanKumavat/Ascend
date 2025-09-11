@@ -83,6 +83,8 @@ model Issue {
   projectId   String
   sprint      Sprint?    @relation(fields: [sprintId], references: [id], onDelete: SetNull)
   sprintId    String?
+  githubIssueNumber Int?  // GitHub issue number for tracking imported issues
+  githubIssueUrl    String? // GitHub issue URL for reference
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -96,6 +98,7 @@ model Issue {
   @@index([projectId, status], name: "idx_issue_project_status")
   @@index([assigneeId, projectId, status], name: "idx_issue_assignee_project_status")
   @@index([reporterId, projectId, status], name: "idx_issue_reporter_project_status")
+  @@index([githubIssueNumber], name: "idx_issue_github_number")
 }
 
 model Message {
