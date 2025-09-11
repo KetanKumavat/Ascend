@@ -68,13 +68,9 @@ export async function getGitHubIssues(projectId) {
             },
         });
 
-        console.log('Existing issues with GitHub numbers:', existingIssues);
-
         const existingGithubNumbers = new Set(
             existingIssues.map((issue) => issue.githubIssueNumber)
         );
-
-        console.log('Existing GitHub numbers set:', Array.from(existingGithubNumbers));
 
         const issues = githubIssues
             .filter((issue) => !issue.pull_request)
@@ -107,12 +103,6 @@ export async function getGitHubIssues(projectId) {
                     (existing) => existing.githubIssueNumber === issue.number
                 )?.title,
             }));
-
-        console.log('Processed issues with import status:', issues.map(i => ({
-            number: i.number,
-            title: i.title,
-            isAlreadyImported: i.isAlreadyImported
-        })));
 
         return { issues, error: null };
     } catch (error) {

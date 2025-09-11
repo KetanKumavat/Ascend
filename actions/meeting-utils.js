@@ -1,4 +1,3 @@
-// Enhanced Meeting Integration with LiveKit and AI Transcript Support
 "use server";
 
 import { db } from "@/lib/prisma";
@@ -17,11 +16,11 @@ export async function createLiveKitRoom(meetingData) {
         // Meeting URL points to our LiveKit room page
         const meetingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/meeting/${meetingData.id}/room`;
 
-        console.log("LiveKit meeting room configured:", {
-            roomName,
-            meetingUrl,
-            features: "HD Video, Audio, Screen Share, Chat, AI Transcription",
-        });
+        // console.log("LiveKit meeting room configured:", {
+        //     roomName,
+        //     meetingUrl,
+        //     features: "HD Video, Audio, Screen Share, Chat, AI Transcription",
+        // });
 
         return {
             meetingUrl,
@@ -32,7 +31,7 @@ export async function createLiveKitRoom(meetingData) {
                 screenShare: true,
                 recording: true,
                 chat: true,
-                transcription: true, // AI-powered via LiveKit agents
+                transcription: true,
                 participants: "unlimited",
                 timeLimit: "none",
                 cost: "Enterprise-grade",

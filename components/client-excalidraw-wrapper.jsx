@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 
-// Client-side dynamic import wrapper for Excalidraw
 const ExcalidrawWrapper = dynamic(
     async () => (await import("./excalidraw-wrapper")).default,
     {

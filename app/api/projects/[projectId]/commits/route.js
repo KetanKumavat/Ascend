@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { getUsernameFromRepoUrl } from "@/lib/getUsername";
-import { content } from "googleapis/build/src/apis/content";
 
 export async function GET(request, { params }) {
     try {

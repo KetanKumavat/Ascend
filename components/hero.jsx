@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const Hero = () => {
     const [typedText, setTypedText] = useState("");
@@ -92,10 +93,12 @@ const Hero = () => {
                         <div className="relative max-w-4xl mx-auto">
                             <div className="relative bg-neutral-900/80 border border-neutral-800 rounded-2xl p-6 backdrop-blur-sm">
                                 <div className="aspect-video bg-neutral-800 rounded-lg mb-4 overflow-hidden">
-                                    <img
+                                    <Image
                                         src="/meeting-mockup.jpg"
                                         alt="Live meeting interface with real-time transcription"
                                         className="w-full h-full object-cover"
+                                        width={800}
+                                        height={450}
                                     />
                                 </div>
 

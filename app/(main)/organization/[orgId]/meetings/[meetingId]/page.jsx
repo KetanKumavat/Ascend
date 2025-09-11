@@ -14,8 +14,9 @@ import {
     UsersIcon,
     PlayIcon,
 } from "lucide-react";
-import { format } from "date-fns";
+import format from "date-fns/format";
 import Link from "next/link";
+import Image from "next/image";
 
 export default async function MeetingDetailPage({ params }) {
     const { orgId, meetingId } = await params;
@@ -207,10 +208,12 @@ export default async function MeetingDetailPage({ params }) {
                                 </p>
                                 <div className="flex items-center gap-2">
                                     {meeting.createdBy.imageUrl && (
-                                        <img
+                                        <Image
                                             src={meeting.createdBy.imageUrl}
                                             alt={meeting.createdBy.name}
                                             className="w-6 h-6 rounded-full"
+                                            width={24}
+                                            height={24}
                                         />
                                     )}
                                     <span className="font-medium">
@@ -239,7 +242,7 @@ export default async function MeetingDetailPage({ params }) {
                                                 >
                                                     {participant.user
                                                         .imageUrl && (
-                                                        <img
+                                                        <Image
                                                             src={
                                                                 participant.user
                                                                     .imageUrl
@@ -249,6 +252,8 @@ export default async function MeetingDetailPage({ params }) {
                                                                     .name
                                                             }
                                                             className="w-8 h-8 rounded-full"
+                                                            width={32}
+                                                            height={32}
                                                         />
                                                     )}
                                                     <div className="flex-1">

@@ -709,8 +709,8 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
 
             {/* Daily Summary Modal */}
             {selectedSummary && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto  border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                         <CardHeader className="border-b border-neutral-200 dark:border-neutral-800">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -778,8 +778,8 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
 
             {/* Add Repository Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <Card className="w-full max-w-md border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 ">
+                    <Card className="w-full max-w-md  border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
                         <CardHeader>
                             <CardTitle className="text-neutral-900 dark:text-neutral-100">
                                 Add Repository URL

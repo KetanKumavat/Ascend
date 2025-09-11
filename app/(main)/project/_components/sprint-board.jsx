@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,13 @@ import SprintManager from "./sprint-manager";
 import IssueCreationDrawer from "./create-issue";
 import IssueCard from "@/components/issue-card";
 import BoardFilters from "./board-filters";
-import GitHubIssuesSection from "./github-issues-section";
+import dynamic from "next/dynamic";
+
+const GitHubIssuesSection = dynamic(() => import("./github-issues-section"), {
+    loading: () => (
+        <div className="animate-pulse h-32 bg-gray-200 rounded"></div>
+    ),
+});
 
 function reorder(list, startIndex, endIndex) {
     const result = Array.from(list);

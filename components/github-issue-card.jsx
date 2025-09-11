@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink, GitBranch, User, CheckCircle } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import Link from "next/link";
 
 export default function GitHubIssueCard({ issue, onClick }) {
@@ -16,7 +16,7 @@ export default function GitHubIssueCard({ issue, onClick }) {
         <Card
             className={`hover:shadow-md transition-all cursor-pointer bg-neutral-800/40 border-neutral-700 hover:border-neutral-600 ${
                 issue.isAlreadyImported
-                    ? "opacity-60 ring-2 ring-green-500/30"
+                    ? "opacity-60 ring-2 ring-green-500"
                     : ""
             }`}
             onClick={() => !issue.isAlreadyImported && onClick(issue)}

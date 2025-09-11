@@ -9,7 +9,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 async function handleTranscriptionWebhook(request) {
     const data = await request.json();
 
-    console.log("LiveKit transcription webhook received:", data);
+    // console.log("LiveKit transcription webhook received:", data);
 
     if (data.event === "transcription_complete") {
         await handleTranscriptionComplete(data);

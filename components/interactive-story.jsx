@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const storySteps = [
@@ -133,10 +134,12 @@ const InteractiveStory = () => {
                             >
                                 <div className="relative glassmorphic rounded-2xl p-1 glow-soft">
                                     <div className="bg-deep rounded-xl overflow-hidden">
-                                        <img
+                                        <Image
                                             src={step.image}
                                             alt={step.alt}
                                             className="w-full h-auto transform hover:scale-105 transition-transform duration-500"
+                                            width={600}
+                                            height={400}
                                         />
                                     </div>
                                 </div>

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ChevronLeft,
     ChevronRight,
@@ -7,6 +7,7 @@ import {
     Users,
     Brain,
 } from "lucide-react";
+import Image from "next/image";
 
 const features = [
     {
@@ -48,7 +49,6 @@ const features = [
 ];
 
 const FeatureShowcase = () => {
-    const scrollRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -181,7 +181,7 @@ const FeatureShowcase = () => {
                                                         {/* Image Side */}
                                                         <div className="relative">
                                                             <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-neutral-800">
-                                                                <img
+                                                                <Image
                                                                     src={
                                                                         feature.image
                                                                     }
@@ -189,6 +189,8 @@ const FeatureShowcase = () => {
                                                                         feature.alt
                                                                     }
                                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                                    width={600}
+                                                                    height={400}
                                                                 />
                                                             </div>
 

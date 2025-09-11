@@ -2,11 +2,24 @@ import { getProject } from "@/actions/project";
 import { notFound } from "next/navigation";
 import React from "react";
 import SprintCreationForm from "../_components/create-sprint";
-import SprintBoard from "../_components/sprint-board";
 import TeamChat from "../_components/team-chat";
-import CommitsDashboard from "@/components/commits-dashboard";
 import EnhancedPageHeader from "@/components/ui/enhanced-page-header";
 import { createProjectNavigation } from "@/lib/navigation";
+import dynamic from "next/dynamic";
+const SprintBoard = dynamic(() => import("../_components/sprint-board"), {
+    loading: () => (
+        <div className="animate-pulse h-96 bg-neutral-600 rounded"></div>
+    ),
+});
+
+const CommitsDashboard = dynamic(
+    () => import("@/components/commits-dashboard"),
+    {
+        loading: () => (
+            <div className="animate-pulse h-64 bg-neutral-600 rounded"></div>
+        ),
+    }
+);
 
 const page = async ({ params }) => {
     const { projectId } = await params;
@@ -22,7 +35,7 @@ const page = async ({ params }) => {
         <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
             {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pointer-events-none" />
-            
+
             {/* Subtle grid pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(163_163_163/0.15)_1px,transparent_0)] [background-size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(115_115_115/0.15)_1px,transparent_0)] pointer-events-none" />
 
@@ -57,17 +70,27 @@ const page = async ({ params }) => {
                                 projectId={projectId}
                                 orgId={project.organizationId}
                             />
-                            <CommitsDashboard 
-                                projectId={projectId} 
-                                repoUrl={repoUrl} 
+                            <CommitsDashboard
+                                projectId={projectId}
+                                repoUrl={repoUrl}
                             />
                         </>
                     ) : (
                         <div className="bg-white/50 dark:bg-neutral-800/50 backdrop-blur-sm rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 p-8 text-center shadow-sm">
                             <div className="flex flex-col items-center gap-4">
                                 <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-neutral-400 dark:text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    <svg
+                                        className="w-8 h-8 text-neutral-400 dark:text-neutral-500"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={1.5}
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        />
                                     </svg>
                                 </div>
                                 <div>
@@ -75,7 +98,9 @@ const page = async ({ params }) => {
                                         No Sprints Yet
                                     </h3>
                                     <p className="text-neutral-600 dark:text-neutral-400">
-                                        Create your first sprint to start organizing your project tasks and workflow.
+                                        Create your first sprint to start
+                                        organizing your project tasks and
+                                        workflow.
                                     </p>
                                 </div>
                             </div>

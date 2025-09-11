@@ -23,7 +23,7 @@ export async function createMeeting(data) {
         throw new Error("Unauthorized");
     }
 
-    // Check if user has permission to create meetings (admin or specific role)
+    // Check if user has permission to create meetings
     const client = await clerkClient();
     const { data: membershipList } =
         await client.organizations.getOrganizationMembershipList({
@@ -42,20 +42,18 @@ export async function createMeeting(data) {
         throw new Error("Insufficient permissions to create meetings");
     }
 
-    // Get or create user in database using cached utility
     const user = await getOrCreateUser(userId);
 
     if (!user) {
         throw new Error("User not found");
     }
 
-    // Validate project if specified with optimized query
     let project = null;
     if (data.projectId) {
         project = await db.project.findFirst({
             where: {
                 id: data.projectId,
-                organizationId: orgId, // Include org check in query
+                organizationId: orgId,
             },
             select: {
                 id: true,
@@ -93,7 +91,6 @@ export async function createMeeting(data) {
             },
         });
 
-        // Create LiveKit meeting room
         let meetingUrl = null;
         let livekitRoomName = null;
 
@@ -104,8 +101,7 @@ export async function createMeeting(data) {
             meetingUrl = `${process.env.NEXT_PUBLIC_APP_URL}/meeting/${meeting.id}/room`;
         } catch (error) {
             console.error("Failed to create meeting:", error.message);
-
-            // Fallback to Jitsi Meet
+            // fallback to jitsi
             const simpleRoom = `ascend-${Date.now()}`;
             meetingUrl = `https://meet.jit.si/${simpleRoom}`;
             livekitRoomName = simpleRoom;
@@ -130,6 +126,10 @@ export async function createMeeting(data) {
             },
         });
 
+        // Revalidate cache
+        revalidateTag("meetings");
+        revalidateTag("meeting");
+
         return updatedMeeting;
     } catch (error) {
         throw new Error("Error creating meeting: " + error.message);
@@ -144,10 +144,8 @@ export async function getMeetings(projectId = null, page = 1, limit = 20) {
         throw new Error("Unauthorized");
     }
 
-    // Auto-update expired meeting statuses before fetching
     await updateExpiredMeetingStatuses(orgId);
 
-    // Use optimized cached meetings with pagination support
     return await getCachedMeetings(orgId, userId, projectId, page, limit);
 }
 
@@ -159,7 +157,6 @@ export async function getMeeting(meetingId) {
         throw new Error("Unauthorized");
     }
 
-    // Use optimized cached meeting with better performance
     return await getCachedMeeting(meetingId, orgId, userId);
 }
 
@@ -182,7 +179,7 @@ export async function joinMeeting(meetingId) {
     const meeting = await db.meeting.findFirst({
         where: {
             id: meetingId,
-            organizationId: orgId, // Include org check in query
+            organizationId: orgId,
         },
         select: {
             id: true,
@@ -211,6 +208,10 @@ export async function joinMeeting(meetingId) {
             status: "JOINED",
         },
     });
+
+    revalidateTag("meetings");
+    revalidateTag("meeting");
+
     return {
         meetingUrl: meeting.meetingUrl,
         meetingId: meeting.meetingId,
@@ -236,10 +237,7 @@ export async function updateMeetingStatus(meetingId, status) {
         where: {
             id: meetingId,
             organizationId: orgId,
-            OR: [
-                { createdById: user.id }, // User is creator
-                // Admin check will be done after if needed
-            ],
+            OR: [{ createdById: user.id }],
         },
         select: {
             id: true,
@@ -253,7 +251,6 @@ export async function updateMeetingStatus(meetingId, status) {
         throw new Error("Meeting not found or access denied");
     }
 
-    // Check if user has permission to update meeting status
     if (meeting.createdById !== user.id && orgRole !== "org:admin") {
         throw new Error("Insufficient permissions to update meeting");
     }
@@ -272,6 +269,10 @@ export async function updateMeetingStatus(meetingId, status) {
             transcript: true,
         },
     });
+
+    // Revalidate cache
+    revalidateTag("meetings");
+    revalidateTag("meeting");
 
     return updatedMeeting;
 }
@@ -309,6 +310,9 @@ export async function deleteMeeting(meetingId) {
         where: { id: meetingId },
     });
 
+    revalidateTag("meetings");
+    revalidateTag("meeting");
+
     return { success: true };
 }
 
@@ -328,7 +332,6 @@ export async function addMeetingTranscript(meetingId, transcriptContent) {
         throw new Error("Meeting not found or access denied");
     }
 
-    // Generate AI highlights using Gemini
     const highlights = await generateMeetingHighlights(transcriptContent);
 
     const transcript = await db.meetingTranscript.upsert({
@@ -344,11 +347,14 @@ export async function addMeetingTranscript(meetingId, transcriptContent) {
         },
     });
 
-    // Update meeting status to completed
     await db.meeting.update({
         where: { id: meetingId },
         data: { status: "COMPLETED" },
     });
+
+    // Revalidate cache to ensure transcript and status changes appear immediately
+    revalidateTag("meetings");
+    revalidateTag("meeting");
 
     return transcript;
 }
@@ -423,6 +429,11 @@ export async function saveTranscript(meetingId, transcriptData) {
         });
 
         console.log("📝 Transcript saved with AI insights:", transcript.id);
+
+        // Revalidate cache to ensure transcript changes appear immediately
+        revalidateTag("meetings");
+        revalidateTag("meeting");
+
         return transcript;
     } catch (error) {
         console.error("Failed to save transcript:", error);

@@ -53,19 +53,17 @@ export async function POST(request) {
         try {
             // For cron jobs, get orgId from the project
             const targetOrgId = orgId || summary.project.organizationId;
-
+            const clerk = await clerkClient();
             if (targetOrgId) {
                 const memberships =
-                    await clerkClient.organizations.getOrganizationMembershipList(
-                        {
-                            organizationId: targetOrgId,
-                        }
-                    );
+                    await clerk.organizations.getOrganizationMembershipList({
+                        organizationId: targetOrgId,
+                    });
 
                 const userIds = memberships.data.map(
                     (membership) => membership.publicUserData.userId
                 );
-                const users = await clerkClient.users.getUserList({
+                const users = await clerk.users.getUserList({
                     userId: userIds,
                 });
 
@@ -87,7 +85,7 @@ export async function POST(request) {
             console.error("Error fetching organization members:", error);
             // Fallback to current user if not a cron job
             if (!isCronJob && userId) {
-                const currentUser = await clerkClient.users.getUser(userId);
+                const currentUser = await clerk.users.getUser(userId);
                 if (
                     currentUser.emailAddresses &&
                     currentUser.emailAddresses.length > 0
@@ -117,7 +115,7 @@ export async function POST(request) {
         // Use centralized email API to send daily summary
         const emailResult = await sendDailySummaryEmail({
             summary,
-            organizationMembers
+            organizationMembers,
         });
 
         // Update the summary to mark as sent
