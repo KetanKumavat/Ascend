@@ -4,9 +4,9 @@ import { GitHub, Twitter, Linkedin } from "./ui/social-icons";
 
 const Footer = () => {
     return (
-        <footer className="bg-background/80 backdrop-blur-md border-t border-border">
-            <div className="max-w-7xl mx-auto px-6 py-4">
-                <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <footer className="bg-neutral-900/50 backdrop-blur-md border-t border-border">
+            <div className="max-w-7xl mx-auto px-6 py-6">
+                <div className="flex flex-row justify-around md:justify-between items-center">
                     <div className="flex items-center space-x-6">
                         <Link
                             href="https://linkedin.com/in/ketankumavat"
@@ -34,16 +34,11 @@ const Footer = () => {
                             <GitHub className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
                         </Link>
                     </div>
-
-                    {/* Brand */}
-                    <div className="flex flex-col items-center md:items-end space-y-2">
-                        <div className="text-2xl text-neutral-300 font-semibold">
+                    <Link href="/" className="flex items-center space-x-2">
+                        <span className="text-2xl text-neutral-300 font-semibold text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700">
                             Ascend
-                        </div>
-                        <p className="text-sm text-foreground/60">
-                            © 2025 Ketan. All rights reserved.
-                        </p>
-                    </div>
+                        </span>
+                    </Link>
                 </div>
             </div>
         </footer>

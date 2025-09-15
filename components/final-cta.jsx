@@ -39,9 +39,9 @@ const FinalCTA = () => {
                     {/* CTA Button */}
                     <div className="pt-8">
                         <Link href="/onboarding">
-                            <button className="relative group px-8 py-3 bg-white text-neutral-900 font-semibold rounded-full hover:bg-neutral-50 hover:shadow-xl hover:shadow-white/20 transform hover:scale-105 transition-all duration-300 text-base border border-neutral-200">
+                            <button className="relative group px-6 py-2.5 bg-white text-neutral-900 font-semibold rounded-full hover:bg-neutral-200 transform transition-all duration-300 text-base">
                                 <span className="flex items-center gap-2">
-                                    Start Building
+                                    Get Started
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                                 </span>
                             </button>
