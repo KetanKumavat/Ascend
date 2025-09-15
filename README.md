@@ -162,11 +162,11 @@ Visit [http://localhost:3000](http://localhost:3000) to start using Ascend! 🎉
 
 ### 📋 Project Management
 
-![Sprint Board](./public/screenshots/project-dash-2.png)
+![Github](./public/screenshots/project-dashboard.png)
 
 ### 🎥 Github Integration
 
-![Github](./public/screenshots/project-dashboard.png)
+![Sprint Board](./public/ascend-git.png)
 
 </div>
 

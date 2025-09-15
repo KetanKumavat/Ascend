@@ -14,7 +14,7 @@ const features = [
         title: "Smart Meetings",
         description:
             "High-quality video calls with real-time transcription, AI summaries, and automatic action item extraction.",
-        image: "/meeting-mockup.jpg",
+        image: "/ascend-meet.png",
         alt: "Video meeting with live transcription",
         icon: Users,
         tag: "Collaborative",
@@ -23,7 +23,7 @@ const features = [
         title: "Interactive Canvas",
         description:
             "Whiteboard and diagramming tools for brainstorming, system design, and visual collaboration in real-time.",
-        image: "/dashboard-mockup.jpg",
+        image: "/ascend-dash.png",
         alt: "Interactive whiteboard canvas",
         icon: Play,
         tag: "Creative",
@@ -32,7 +32,7 @@ const features = [
         title: "Kanban Boards",
         description:
             "Drag-and-drop issue tracking with custom workflows, sprint planning, and team velocity insights.",
-        image: "/transcript-mockup.png",
+        image: "/screenshots/project-dashboard.png",
         alt: "Kanban board with drag and drop",
         icon: Brain,
         tag: "Organized",
@@ -41,7 +41,7 @@ const features = [
         title: "GitHub Integration",
         description:
             "Automatic commit tracking, code review insights, and AI-powered development reports with deployment analytics.",
-        image: "/ai-report-mockup.jpg",
+        image: "/ascend-git.png",
         alt: "GitHub integration dashboard",
         icon: Zap,
         tag: "Connected",

@@ -166,23 +166,38 @@ export default async function MeetingDetailsPage({ params }) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <Link href={`/meeting/${meeting.id}/room`}>
+                                {!isPast ? (
+                                    <Link href={`/meeting/${meeting.id}/room`}>
+                                        <Button
+                                            className="w-full h-20 flex-col gap-2"
+                                            variant={isLive ? "default" : "outline"}
+                                        >
+                                            <Video className="h-6 w-6" />
+                                            <span className="font-medium">
+                                                Join Meeting Room
+                                            </span>
+                                            {isLive && (
+                                                <Badge className="bg-green-500 text-white text-xs">
+                                                    Live Now
+                                                </Badge>
+                                            )}
+                                        </Button>
+                                    </Link>
+                                ) : (
                                     <Button
                                         className="w-full h-20 flex-col gap-2"
-                                        variant={isLive ? "default" : "outline"}
-                                        disabled={isPast}
+                                        variant="outline"
+                                        disabled={true}
                                     >
                                         <Video className="h-6 w-6" />
                                         <span className="font-medium">
-                                            Join Meeting Room
+                                            Meeting Ended
                                         </span>
-                                        {isLive && (
-                                            <Badge className="bg-green-500 text-white text-xs">
-                                                Live Now
-                                            </Badge>
-                                        )}
+                                        <span className="text-xs text-muted-foreground">
+                                            This meeting has ended
+                                        </span>
                                     </Button>
-                                </Link>
+                                )}
 
                                 <Link
                                     href={`/meeting/${meeting.id}/transcript`}

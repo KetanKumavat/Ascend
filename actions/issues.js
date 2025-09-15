@@ -183,16 +183,24 @@ export async function deleteIssue(issueId) {
 
     const issue = await db.issue.findUnique({
         where: { id: issueId },
-        include: { project: true },
+        include: { 
+            project: {
+                select: {
+                    id: true,
+                    organizationId: true,
+                }
+            }
+        },
     });
 
     if (!issue) {
         throw new Error("Issue not found");
     }
 
+    // Check if user is the reporter or if it's in the same organization
     if (
         issue.reporterId !== user.id &&
-        !issue.project.adminIds.includes(user.id)
+        issue.project.organizationId !== orgId
     ) {
         throw new Error("You don't have permission to delete this issue");
     }

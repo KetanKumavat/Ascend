@@ -18,6 +18,11 @@ const withBundleAnalyzer = bundleAnalyzer({
     enabled: process.env.ANALYZE === "true",
 });
 
-const nextConfig = {};
+const nextConfig = {
+    reactStrictMode: true,
+    images: {
+        domains: ["peerlist.io"],
+    },
+};
 
 export default withBundleAnalyzer(withPWA(nextConfig));

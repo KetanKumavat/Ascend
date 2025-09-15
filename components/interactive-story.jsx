@@ -6,28 +6,28 @@ const storySteps = [
         title: "Create your workspace",
         description:
             "Set up your project with integrated kanban boards, canvas tools, and team collaboration features.",
-        image: "/dashboard-mockup.jpg",
+        image: "/ascend-dash.png",
         alt: "Project workspace with kanban and canvas",
     },
     {
         title: "Collaborate in real-time",
         description:
             "Jump into HD video meetings with live transcription, screen sharing, and interactive whiteboard sessions.",
-        image: "/meeting-mockup.jpg",
+        image: "/ascend-meet.png",
         alt: "Meeting with transcription and canvas",
     },
     {
         title: "Track everything automatically",
         description:
             "Every conversation transcribed, every commit tracked, every decision documented with intelligent categorization.",
-        image: "/transcript-mockup.png",
+        image: "/screenshots/project-dashboard.png",
         alt: "Automatic transcription and tracking",
     },
     {
         title: "Get AI-powered insights",
         description:
             "Transform your project data into actionable reports with development analytics, team performance, and progress tracking.",
-        image: "/ai-report-mockup.jpg",
+        image: "/ascend-git.png",
         alt: "AI insights and analytics dashboard",
     },
 ];
@@ -64,7 +64,7 @@ const InteractiveStory = () => {
     }, []);
 
     return (
-        <section ref={sectionRef} className="py-32 relative">
+        <section ref={sectionRef} className="py-28 relative">
             <div className="container-wide section-padding">
                 <div className="text-center mb-20">
                     <h2 className="text-5xl md:text-6xl font-bold text-neutral-100 mb-6">
