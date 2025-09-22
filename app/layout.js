@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import PageWrapper from "@/components/landing-wrapper";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
+import { Analytics } from "@vercel/analytics/next";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -117,6 +118,7 @@ export default function RootLayout({ children }) {
                     <Toaster />
                     <PWAInstallPrompt />
                     <ServiceWorkerProvider />
+                    <Analytics />
                 </body>
             </html>
         </ClerkProvider>
