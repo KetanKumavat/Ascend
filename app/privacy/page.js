@@ -121,7 +121,7 @@ const PrivacyPolicy = () => {
                     <p>
                         We may update this policy periodically. If you have
                         questions about our privacy practices, please contact us
-                        at ketan.kumavat1984@gmail.com.
+                        at ascend@ketankumavat.me
                     </p>
                 </section>
 
