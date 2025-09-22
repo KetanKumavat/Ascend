@@ -23,6 +23,27 @@ export const metadata = {
         "workflow",
         "task management",
     ],
+    other: {
+        "google-site-verification":
+            "p1huHXOL8RR54CzIU5UaVW4Y7MK_JGE4Gjz_Lax86Gw",
+    },
+    openGraph: {
+        type: "website",
+        locale: "en_US",
+        url: "https://ascend.ketankumavat.me",
+        siteName: "Ascend",
+        title: "Ascend | Collaborative Project Management",
+        description:
+            "Elevate your team's productivity with Ascend—a collaborative project management app",
+        images: [
+            {
+                url: "/logo.png",
+                width: 1200,
+                height: 630,
+                alt: "Ascend Logo",
+            },
+        ],
+    },
 };
 
 const customDarkTheme = {
