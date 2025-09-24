@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -28,14 +29,15 @@ import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-const CommitsDashboard = ({ projectId, repoUrl }) => {
+const CommitsDashboard = ({ projectId, repoUrl, onShowModal, showModal }) => {
     const [commits, setCommits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
     const [generatingReport, setGeneratingReport] = useState(null);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-    const [showModal, setShowModal] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
     const [newRepoUrl, setNewRepoUrl] = useState("");
     const [dailySummaries, setDailySummaries] = useState([]);
     const [loadingSummaries, setLoadingSummaries] = useState(false);
@@ -280,6 +282,10 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
     };
 
     useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    useEffect(() => {
         if (repoUrl) {
             fetchCommits();
             fetchDailySummaries();
@@ -324,7 +330,17 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
                 </CardHeader>
                 <CardContent>
                     <Button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                            console.log("Button clicked - calling onShowModal");
+                            if (onShowModal) {
+                                onShowModal();
+                            } else {
+                                console.log(
+                                    "onShowModal not provided, using internal modal"
+                                );
+                                setShowModal(true);
+                            }
+                        }}
                         className="bg-lime-500 hover:bg-lime-600 text-black"
                     >
                         Add Repository URL
@@ -669,152 +685,120 @@ const CommitsDashboard = ({ projectId, repoUrl }) => {
             )}
 
             {/* Report Modal */}
-            {selectedReport && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-                        <CardHeader className="border-b border-neutral-200 dark:border-neutral-800">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-neutral-900 dark:text-neutral-100">
-                                        Commit Analysis Report
-                                    </CardTitle>
-                                    <CardDescription className="text-neutral-600 dark:text-neutral-400">
-                                        {
-                                            selectedReport.commit?.message.split(
-                                                "\n"
-                                            )[0]
-                                        }
-                                    </CardDescription>
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setSelectedReport(null)}
-                                    className="border-neutral-300 dark:border-neutral-600"
-                                >
-                                    Close
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-6 overflow-y-auto">
-                            <div className="prose prose-neutral dark:prose-invert max-w-none">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {selectedReport.content ||
-                                        selectedReport.summary}
-                                </ReactMarkdown>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* Daily Summary Modal */}
-            {selectedSummary && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-                    <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto  border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-                        <CardHeader className="border-b border-neutral-200 dark:border-neutral-800">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-neutral-900 dark:text-neutral-100">
-                                        Daily Development Summary
-                                    </CardTitle>
-                                    <CardDescription className="text-neutral-600 dark:text-neutral-400">
-                                        {new Date(
-                                            selectedSummary.date
-                                        ).toLocaleDateString("en-US", {
-                                            weekday: "long",
-                                            year: "numeric",
-                                            month: "long",
-                                            day: "numeric",
-                                        })}{" "}
-                                        • {selectedSummary.commitsCount} commits
-                                        analyzed
-                                    </CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    {!selectedSummary.emailSent && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() =>
-                                                sendDailySummaryEmail(
-                                                    selectedSummary.id
-                                                )
+            {isMounted &&
+                selectedReport &&
+                createPortal(
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                        <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                            <CardHeader className="border-b border-neutral-200 dark:border-neutral-800">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-neutral-900 dark:text-neutral-100">
+                                            Commit Analysis Report
+                                        </CardTitle>
+                                        <CardDescription className="text-neutral-600 dark:text-neutral-400">
+                                            {
+                                                selectedReport.commit?.message.split(
+                                                    "\n"
+                                                )[0]
                                             }
-                                            disabled={
-                                                sendingEmail ===
-                                                selectedSummary.id
-                                            }
-                                            className="border-lime-300 text-lime-700 hover:bg-lime-50 dark:border-lime-600 dark:text-lime-400 dark:hover:bg-lime-950"
-                                        >
-                                            {sendingEmail ===
-                                            selectedSummary.id ? (
-                                                <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-                                            ) : (
-                                                <Mail className="w-4 h-4 mr-1" />
-                                            )}
-                                            Send Email
-                                        </Button>
-                                    )}
+                                        </CardDescription>
+                                    </div>
                                     <Button
                                         variant="outline"
-                                        onClick={() => setSelectedSummary(null)}
+                                        onClick={() => setSelectedReport(null)}
                                         className="border-neutral-300 dark:border-neutral-600"
                                     >
                                         Close
                                     </Button>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-6 overflow-y-auto">
-                            <div className="prose prose-neutral dark:prose-invert max-w-none">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {selectedSummary.content}
-                                </ReactMarkdown>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
+                            </CardHeader>
+                            <CardContent className="p-6 overflow-y-auto">
+                                <div className="prose prose-neutral dark:prose-invert max-w-none">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {selectedReport.content ||
+                                            selectedReport.summary}
+                                    </ReactMarkdown>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>,
+                    document.body
+                )}
 
-            {/* Add Repository Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 ">
-                    <Card className="w-full max-w-md  border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
-                        <CardHeader>
-                            <CardTitle className="text-neutral-900 dark:text-neutral-100">
-                                Add Repository URL
-                            </CardTitle>
-                            <CardDescription className="text-neutral-600 dark:text-neutral-400">
-                                Enter the GitHub repository URL to track commits
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <input
-                                type="text"
-                                value={newRepoUrl}
-                                onChange={(e) => setNewRepoUrl(e.target.value)}
-                                placeholder="https://github.com/username/repository"
-                                className="w-full p-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-lime-500"
-                            />
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowModal(false)}
-                                    className="border-neutral-300 dark:border-neutral-600"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleAddRepoUrl}
-                                    className="bg-lime-500 hover:bg-lime-600 text-black"
-                                >
-                                    Save
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
+            {/* Daily Summary Modal */}
+            {isMounted &&
+                selectedSummary &&
+                createPortal(
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+                        <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto  border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                            <CardHeader className="border-b border-neutral-200 dark:border-neutral-800">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-neutral-900 dark:text-neutral-100">
+                                            Daily Development Summary
+                                        </CardTitle>
+                                        <CardDescription className="text-neutral-600 dark:text-neutral-400">
+                                            {new Date(
+                                                selectedSummary.date
+                                            ).toLocaleDateString("en-US", {
+                                                weekday: "long",
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })}{" "}
+                                            • {selectedSummary.commitsCount}{" "}
+                                            commits analyzed
+                                        </CardDescription>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {!selectedSummary.emailSent && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() =>
+                                                    sendDailySummaryEmail(
+                                                        selectedSummary.id
+                                                    )
+                                                }
+                                                disabled={
+                                                    sendingEmail ===
+                                                    selectedSummary.id
+                                                }
+                                                className="border-lime-300 text-lime-700 hover:bg-lime-50 dark:border-lime-600 dark:text-lime-400 dark:hover:bg-lime-950"
+                                            >
+                                                {sendingEmail ===
+                                                selectedSummary.id ? (
+                                                    <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                                                ) : (
+                                                    <Mail className="w-4 h-4 mr-1" />
+                                                )}
+                                                Send Email
+                                            </Button>
+                                        )}
+                                        <Button
+                                            variant="outline"
+                                            onClick={() =>
+                                                setSelectedSummary(null)
+                                            }
+                                            className="border-neutral-300 dark:border-neutral-600"
+                                        >
+                                            Close
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6 overflow-y-auto">
+                                <div className="prose prose-neutral dark:prose-invert max-w-none">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {selectedSummary.content}
+                                    </ReactMarkdown>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>,
+                    document.body
+                )}
         </div>
     );
 };

@@ -6,20 +6,13 @@ import TeamChat from "../_components/team-chat";
 import EnhancedPageHeader from "@/components/ui/enhanced-page-header";
 import { createProjectNavigation } from "@/lib/navigation";
 import dynamic from "next/dynamic";
+import ClientCommitsDashboard from "./_components/client-commits-dashboard";
+
 const SprintBoard = dynamic(() => import("../_components/sprint-board"), {
     loading: () => (
         <div className="animate-pulse h-96 bg-neutral-600 rounded"></div>
     ),
 });
-
-const CommitsDashboard = dynamic(
-    () => import("@/components/commits-dashboard"),
-    {
-        loading: () => (
-            <div className="animate-pulse h-64 bg-neutral-600 rounded"></div>
-        ),
-    }
-);
 
 const page = async ({ params }) => {
     const { projectId } = await params;
@@ -70,7 +63,7 @@ const page = async ({ params }) => {
                                 projectId={projectId}
                                 orgId={project.organizationId}
                             />
-                            <CommitsDashboard
+                            <ClientCommitsDashboard
                                 projectId={projectId}
                                 repoUrl={repoUrl}
                             />

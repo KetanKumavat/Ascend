@@ -106,7 +106,7 @@ export default function RootLayout({ children }) {
         <ClerkProvider appearance={{ baseTheme: customDarkTheme }}>
             <html lang="en" className="dark" suppressHydrationWarning={true}>
                 <body
-                    className={`${inter.className} antialiased bg-black text-white overflow-x-hidden`}
+                    className={`${inter.className} antialiased bg-black text-white overflow-x-hidden min-h-screen`}
                 >
                     <ScrollHeader>
                         <Header />

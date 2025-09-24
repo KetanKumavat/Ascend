@@ -68,7 +68,7 @@
     ],
     "screenshots": [
         {
-            "src": "/meeting-mockup.jpg",
+            "src": "/ascend-meet.png",
             "sizes": "1280x720",
             "type": "image/jpeg",
             "form_factor": "wide",
@@ -79,6 +79,13 @@
             "sizes": "720x1280",
             "type": "image/jpeg",
             "form_factor": "narrow",
+            "label": "Project dashboard"
+        },
+        {
+            "src": "/project-dashboard.png",
+            "sizes": "1280x720",
+            "type": "image/jpeg",
+            "form_factor": "wide",
             "label": "Project dashboard"
         }
     ]
