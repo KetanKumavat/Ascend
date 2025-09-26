@@ -1,9 +1,24 @@
+"use client";
 import React from "react";
 import Link from "next/link";
 import { GitHub, Twitter, Linkedin } from "./ui/social-icons";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
+    const pathname = usePathname();
+    // Hide footer on specific routes
+    if (
+        pathname.startsWith("/sign-in") ||
+        pathname.startsWith("/sign-up") ||
+        pathname.startsWith("/organization/") ||
+        pathname.startsWith("/onboarding") ||
+        pathname.startsWith("/project/") ||
+        pathname.startsWith("/meeting/") ||
+        pathname.startsWith("/canvas")
+    ) {
+        return null;
+    }
     return (
         <footer className="px-4 pt-2 md:px-8 pb-6 relative overflow-hidden">
             <div className="max-w-6xl mx-auto">

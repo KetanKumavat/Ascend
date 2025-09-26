@@ -224,9 +224,6 @@ const CreateProject = () => {
                                     </TooltipProvider>
                                 </div>
                                 <div className="relative">
-                                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400 text-sm font-mono pointer-events-none">
-                                        https://
-                                    </div>
                                     <input
                                         type="text"
                                         id="repoName"
