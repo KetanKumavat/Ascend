@@ -6,7 +6,6 @@ import Footer from "./../components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
-import PageWrapper from "@/components/landing-wrapper";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
@@ -111,9 +110,7 @@ export default function RootLayout({ children }) {
                     <ScrollHeader>
                         <Header />
                     </ScrollHeader>
-                    <main className="w-full min-h-screen">
-                        <PageWrapper>{children}</PageWrapper>
-                    </main>
+                    <main className="w-full min-h-screen">{children}</main>
                     <Footer />
                     <Toaster />
                     <PWAInstallPrompt />

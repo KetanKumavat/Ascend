@@ -2,8 +2,13 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import peerlistDark from "@/public/peerlist-dark.svg";
+import SplitText from "./SplitText.jsx";
 
 const Hero = () => {
+    const handleAnimationComplete = () => {
+        console.log("All letters have animated!");
+    };
+
     return (
         <section className="min-h-screen relative flex items-center justify-center pt-28">
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neutral-800/5 rounded-full blur-3xl animate-float" />
@@ -32,10 +37,26 @@ const Hero = () => {
                     <div className="space-y-6">
                         <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-600 md:opacity-10 opacity-30 blur-3xl rounded-full pointer-events-none -z-50"></div>
                         <h1 className="text-3xl md:text-6xl lg:text-7xl font-bold leading-tight md:leading-tight lg:leading-tight cursor-default">
-                            Elevate your team&apos;s productivity with{" "}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-b from-lime-200 via-lime-500 to-lime-700 font-extrabold block mt-2 text-5xl md:text-8xl lg:text-9xl">
-                                Ascend
-                            </span>
+                            <SplitText
+                                text="Elevate your team's productivity with "
+                                className="inline text-white"
+                                tag="span"
+                                delay={30}
+                                duration={0.6}
+                                ease="power3.out"
+                                splitType="chars"
+                                gradient={false}
+                            />
+                            <SplitText
+                                text="Ascend"
+                                className="block mt-2 text-5xl md:text-8xl lg:text-9xl font-extrabold"
+                                tag="span"
+                                delay={30}
+                                duration={0.6}
+                                ease="power3.out"
+                                splitType="chars"
+                                gradient={true} // 👈 only this part is gradient
+                            />
                         </h1>
                         <p className="mt-8 text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto cursor-default">
                             Ascend — a collaborative project management app
