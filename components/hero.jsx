@@ -30,8 +30,7 @@ const Hero = () => {
                         <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-1/2 bg-lime-600 md:opacity-5 opacity-15 blur-3xl rounded-full pointer-events-none -z-50 hidden"></div>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold leading-tight cursor-default">
                             Elevate productivity{" "}
-                            <span className="flex justify-center items-center gap-3 md:gap-4 lg:gap-6 mt-4">
-                                {" "}
+                            <span className="flex justify-center items-center gap-3 md:gap-4 lg:gap-6">
                                 with
                                 <SplitText
                                     text="Ascend"
