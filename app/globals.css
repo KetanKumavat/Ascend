@@ -62,6 +62,21 @@ body {
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
         --radius: 0.5rem;
+        --color-1: oklch(66.2% 0.225 25.9);
+        --color-2: oklch(60.4% 0.26 302);
+        --color-3: oklch(69.6% 0.165 251);
+        --color-4: oklch(80.2% 0.134 225);
+        --color-5: oklch(90.7% 0.231 133);
+    }
+  .theme {
+        --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
+    }
+  .dark {
+        --color-1: oklch(66.2% 0.225 25.9);
+        --color-2: oklch(60.4% 0.26 302);
+        --color-3: oklch(69.6% 0.165 251);
+        --color-4: oklch(80.2% 0.134 225);
+        --color-5: oklch(90.7% 0.231 133);
     }
 }
 
@@ -297,4 +312,32 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .read-the-docs {
     color: #888;
+}
+
+/* Rainbow Button Animation */
+@keyframes rainbow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Rainbow Button Styles */
+.animate-rainbow {
+    background-size: 200% 200%;
+    animation: rainbow 2s linear infinite;
+}
+
+/* Enhanced Rainbow Button Colors */
+.animate-rainbow {
+    --color-1: #ff0080;
+    --color-2: #0080ff;
+    --color-3: #8000ff;
+    --color-4: #ff8000;
+    --color-5: #00ff80;
 }

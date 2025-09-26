@@ -1,20 +1,10 @@
-import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { RainbowButton } from "./ui/rainbow-button";
 
 const FinalCTA = () => {
     return (
         <section className="py-32 relative overflow-hidden">
-            {/* Dramatic Background */}
-            <div className="absolute inset-0">
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full h-full bg-gradient-to-b from-neutral-800/5 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 w-96 h-96 bg-neutral-700/10 rounded-full blur-3xl animate-float" />
-                <div
-                    className="absolute top-1/3 right-0 w-64 h-64 bg-neutral-800/8 rounded-full blur-3xl animate-float"
-                    style={{ animationDelay: "-3s" }}
-                />
-            </div>
-
             <div className="container-wide section-padding relative z-10">
                 <div className="text-center max-w-4xl mx-auto space-y-12">
                     {/* Main Headline */}
@@ -39,12 +29,15 @@ const FinalCTA = () => {
                     {/* CTA Button */}
                     <div className="pt-8">
                         <Link href="/onboarding">
-                            <button className="relative group px-6 py-2.5 bg-white text-neutral-900 font-semibold rounded-full hover:bg-neutral-200 transform transition-all duration-300 text-base">
+                            <RainbowButton
+                                className="rounded-full text-black px-8 py-4"
+                                style={{ "--button-bg": "white" }}
+                            >
                                 <span className="flex items-center gap-2">
                                     Get Started
-                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                    <ArrowRight className="w-4 h-4" />
                                 </span>
-                            </button>
+                            </RainbowButton>
                         </Link>
                     </div>
 
@@ -76,9 +69,6 @@ const FinalCTA = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Bottom Glow Effect */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-32 bg-gradient-to-t from-neutral-800/10 to-transparent" />
         </section>
     );
 };

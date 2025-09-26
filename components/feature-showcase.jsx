@@ -193,16 +193,6 @@ const FeatureShowcase = () => {
                                                                     height={400}
                                                                 />
                                                             </div>
-
-                                                            {/* Floating Elements */}
-                                                            <div className="absolute -top-4 -right-4 w-20 h-20 bg-neutral-700/20 rounded-full blur-2xl animate-float" />
-                                                            <div
-                                                                className="absolute -bottom-6 -left-6 w-24 h-24 bg-neutral-600/10 rounded-full blur-3xl animate-float"
-                                                                style={{
-                                                                    animationDelay:
-                                                                        "-2s",
-                                                                }}
-                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -280,13 +270,6 @@ const FeatureShowcase = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Background Elements */}
-            <div className="absolute top-1/4 left-0 w-96 h-96 bg-neutral-800/3 rounded-full blur-3xl animate-float" />
-            <div
-                className="absolute bottom-1/4 right-0 w-64 h-64 bg-neutral-700/5 rounded-full blur-3xl animate-float"
-                style={{ animationDelay: "-3s" }}
-            />
         </section>
     );
 };

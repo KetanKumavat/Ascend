@@ -143,13 +143,6 @@ const InteractiveStory = () => {
                                         />
                                     </div>
                                 </div>
-
-                                {/* Floating Elements */}
-                                <div className="absolute -top-4 -right-4 w-24 h-24 bg-neutral-700/10 rounded-full blur-2xl animate-float" />
-                                <div
-                                    className="absolute -bottom-6 -left-6 w-32 h-32 bg-neutral-800/5 rounded-full blur-3xl animate-float"
-                                    style={{ animationDelay: "-2s" }}
-                                />
                             </div>
                         </div>
                     ))}

@@ -80,12 +80,23 @@ module.exports = {
                         backgroundPosition: "350% 50%, 350% 50%",
                     },
                 },
+                rainbow: {
+                    "0%": { backgroundPosition: "0% 50%" },
+                    "50%": { backgroundPosition: "100% 50%" },
+                    "100%": { backgroundPosition: "0% 50%" },
+                },
+                float: {
+                    "0%, 100%": { transform: "translateY(0px)" },
+                    "50%": { transform: "translateY(-20px)" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                rainbow: "rainbow 2s linear infinite",
+                float: "float 6s ease-in-out infinite",
             },
         },
     },
-    plugins: [require("tailwindcss-animate")], // Removed line-clamp plugin as it's built into newer Tailwind
+    plugins: [require("tailwindcss-animate")],
 };
