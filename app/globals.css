@@ -68,10 +68,10 @@ body {
         --color-4: oklch(80.2% 0.134 225);
         --color-5: oklch(90.7% 0.231 133);
     }
-  .theme {
+    .theme {
         --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
     }
-  .dark {
+    .dark {
         --color-1: oklch(66.2% 0.225 25.9);
         --color-2: oklch(60.4% 0.26 302);
         --color-3: oklch(69.6% 0.165 251);
