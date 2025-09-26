@@ -7,7 +7,7 @@ import { RainbowButton } from "@/components/ui/rainbow-button";
 
 const Hero = () => {
     return (
-        <section className="mt-[10vh] md:-mt-20 md:min-h-screen relative flex items-center justify-center">
+        <section className="mt-[10vh] md:-mt-20 md:min-h-screen relative flex items-center justify-center pt-28">
             <div className="container-wide section-padding text-center relative z-10">
                 <div className="max-w-5xl mx-auto space-y-8">
                     <div className="flex justify-center">
