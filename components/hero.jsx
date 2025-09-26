@@ -21,6 +21,7 @@ const Hero = () => {
                                 src={peerlistDark}
                                 alt="Peerlist logo"
                                 className="md:w-56 w-44"
+                                unoptimized
                             />
                         </Link>
                     </div>

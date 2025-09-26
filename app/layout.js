@@ -116,9 +116,7 @@ export default function RootLayout({ children }) {
                     <ScrollHeader>
                         <Header />
                     </ScrollHeader>
-                    <main className="w-full relative min-h-screen">
-                        {children}
-                    </main>
+                    <main className="w-full min-h-screen">{children}</main>
                     <Footer />
                     <Toaster />
                     <PWAInstallPrompt />

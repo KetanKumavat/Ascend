@@ -60,7 +60,7 @@ export default async function OrganizationPage({ params }) {
             {/* Subtle grid pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgb(163_163_163/0.15)_1px,transparent_0)] [background-size:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgb(115_115_115/0.15)_1px,transparent_0)] pointer-events-none" />
 
-            <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="relative w-full px-4 sm:px-6 lg:px-8">
                 {/* Header Section */}
                 <header className="pt-16 pb-8">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">

@@ -141,6 +141,7 @@ const InteractiveStory = () => {
                                             className="w-full h-auto transform hover:scale-105 transition-transform duration-500"
                                             width={600}
                                             height={400}
+                                            unoptimized
                                         />
                                     </div>
                                 </div>

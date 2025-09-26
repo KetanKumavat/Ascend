@@ -187,6 +187,7 @@ const FeatureShowcase = () => {
                                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                                                                     width={600}
                                                                     height={400}
+                                                                    unoptimized
                                                                 />
                                                             </div>
                                                         </div>
