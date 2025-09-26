@@ -60,6 +60,7 @@ const Footer = () => {
                                 width={30}
                                 height={30}
                                 className="h-auto"
+                                unoptimized
                             />
                         </Link>
                     </div>

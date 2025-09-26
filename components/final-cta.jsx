@@ -9,7 +9,7 @@ const FinalCTA = () => {
                 <div className="text-center max-w-4xl mx-auto space-y-12">
                     {/* Main Headline */}
                     <div className="space-y-6">
-                        <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold text-neutral-100 leading-tight">
+                        <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-neutral-100 leading-tight">
                             Start your first project
                             <span className="block text-neutral-200">
                                 with{" "}

@@ -341,3 +341,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     --color-4: #ff8000;
     --color-5: #00ff80;
 }
+
+.instrument-serif {
+    font-family: "Instrument Serif", serif;
+}
+
+.inter {
+    font-family: "Inter", sans-serif;
+}

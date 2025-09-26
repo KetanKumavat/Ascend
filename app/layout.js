@@ -9,7 +9,13 @@ import { Toaster } from "@/components/ui/sonner";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
+import { Instrument_Serif } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
+
+const instrumentSerif = Instrument_Serif({
+    subsets: ["latin"],
+    weight: ["400"],
+});
 
 export const metadata = {
     title: "Ascend | Collaborative Project Management",

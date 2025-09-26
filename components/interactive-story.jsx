@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import LightRays from "./LightRays.jsx";
 
 const storySteps = [
     {
@@ -67,7 +68,7 @@ const InteractiveStory = () => {
         <section ref={sectionRef} className="py-28 relative">
             <div className="container-wide section-padding">
                 <div className="text-center mb-20">
-                    <h2 className="text-5xl md:text-6xl font-bold text-neutral-100 mb-6">
+                    <h2 className="text-4xl md:text-6xl font-bold text-neutral-100 mb-6">
                         Your journey to better collaboration
                     </h2>
                     <p className="text-xl text-neutral-400 max-w-3xl mx-auto">
@@ -103,7 +104,7 @@ const InteractiveStory = () => {
                                     Step {index + 1}
                                 </div>
 
-                                <h3 className="text-4xl md:text-5xl font-bold text-neutral-100 leading-tight">
+                                <h3 className="text-3xl md:text-5xl font-bold text-neutral-100 leading-tight">
                                     {step.title}
                                 </h3>
 
