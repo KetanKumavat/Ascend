@@ -54,7 +54,10 @@ const CommitsDashboard = ({ projectId, repoUrl, onShowModal, showModal }) => {
             const response = await fetch(
                 `/api/projects/${projectId}/commits?page=${page}&limit=10${
                     refresh ? "&refresh=true" : ""
-                }`
+                }`,
+                {
+                    cache: 'no-store' // Force fresh data
+                }
             );
 
             if (!response.ok) {
@@ -72,6 +75,11 @@ const CommitsDashboard = ({ projectId, repoUrl, onShowModal, showModal }) => {
                 page === 1 ? data.commits : [...prevCommits, ...data.commits]
             );
             setPagination(data.pagination);
+            
+            // Show success message for refresh
+            if (refresh && data.commits.length > 0) {
+                toast.success(`Updated with ${data.commits.length} commits`);
+            }
         } catch (error) {
             console.error("Error fetching commits:", error);
             toast.error("Failed to fetch commits, please try again.");
@@ -160,7 +168,8 @@ const CommitsDashboard = ({ projectId, repoUrl, onShowModal, showModal }) => {
             toast.success("Repository URL added successfully!");
             setShowModal(false);
             setNewRepoUrl("");
-            window.location.reload();
+            // Instead of reloading, fetch commits directly
+            fetchCommits(1, true);
         } catch (error) {
             console.error("Error updating project:", error);
             toast.error(error.message || "Failed to add repository URL");

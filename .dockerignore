@@ -1,0 +1,26 @@
+Dockerfile
+.dockerignore
+.next
+README.md
+.env*.local
+.git
+.gitignore
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+
+# Vercel
+.vercel
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+public/client_secret_646807628135-fq53q79dqer7033oaifklrvaqnid407k.apps.googleusercontent.com.json
+.gitignore
+public/ins_2o7YrZW4IMW2twrwgDVLUq6z54z.csv
+public/User.json

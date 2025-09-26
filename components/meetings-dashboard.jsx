@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { format, isToday, isTomorrow } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import {
     VideoIcon,
     CalendarIcon,
@@ -36,19 +37,34 @@ import { JoinExternalMeetDialog } from "@/components/join-external-meeting-dialo
 import { toast } from "sonner";
 import Link from "next/link";
 
+const getUserTimezone = () => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+};
+
+const formatInUserTimezone = (utcDate, formatString) => {
+    const userTz = getUserTimezone();
+    return formatInTimeZone(utcDate, userTz, formatString);
+};
+
+// Helper to check if a UTC date is today/tomorrow in user's timezone
+const isDateInUserTimezone = (utcDate, checkFunction) => {
+    const userTz = getUserTimezone();
+    // Create a date object in user's timezone for comparison
+    const userDate = new Date(formatInTimeZone(utcDate, userTz, "yyyy-MM-dd'T'HH:mm:ss"));
+    return checkFunction(userDate);
+};
+
 export function MeetingsDashboard({ projects = [] }) {
     const [meetings, setMeetings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
 
-    // Auto-select project if only one is available
     useEffect(() => {
         if (projects.length === 1 && selectedProjectId === "all") {
             setSelectedProjectId(projects[0].id);
         }
     }, [projects, selectedProjectId]);
 
-    // Fetch meetings with better caching and real-time updates
     useEffect(() => {
         let isMounted = true;
 
@@ -70,8 +86,11 @@ export function MeetingsDashboard({ projects = [] }) {
                 const data = await response.json();
 
                 if (isMounted) {
-                    // Extract meetings array from response object
-                    const meetingsArray = data?.meetings ? data.meetings : (Array.isArray(data) ? data : []);
+                    const meetingsArray = data?.meetings
+                        ? data.meetings
+                        : Array.isArray(data)
+                        ? data
+                        : [];
                     setMeetings(meetingsArray);
                     setLoading(false);
                 }
@@ -112,7 +131,11 @@ export function MeetingsDashboard({ projects = [] }) {
 
             const data = await response.json();
             // Extract meetings array from response object
-            const meetingsArray = data?.meetings ? data.meetings : (Array.isArray(data) ? data : []);
+            const meetingsArray = data?.meetings
+                ? data.meetings
+                : Array.isArray(data)
+                ? data
+                : [];
             setMeetings(meetingsArray);
         } catch (error) {
             console.error("Error refreshing meetings:", error);
@@ -174,9 +197,9 @@ export function MeetingsDashboard({ projects = [] }) {
             return { status: "live", label: "Live", variant: "destructive" };
         } else if (endTime <= now) {
             return { status: "ended", label: "Ended", variant: "secondary" };
-        } else if (isToday(scheduledTime)) {
+        } else if (isDateInUserTimezone(scheduledTime, isToday)) {
             return { status: "today", label: "Today", variant: "default" };
-        } else if (isTomorrow(scheduledTime)) {
+        } else if (isDateInUserTimezone(scheduledTime, isTomorrow)) {
             return {
                 status: "tomorrow",
                 label: "📅 Tomorrow",
@@ -260,8 +283,8 @@ export function MeetingsDashboard({ projects = [] }) {
                         <div className="flex items-center gap-2">
                             <CalendarIcon className="w-4 h-4 text-muted-foreground" />
                             <span>
-                                {format(
-                                    new Date(meeting.scheduledAt),
+                                {formatInUserTimezone(
+                                    meeting.scheduledAt,
                                     "MMM d, yyyy"
                                 )}
                             </span>
@@ -269,8 +292,8 @@ export function MeetingsDashboard({ projects = [] }) {
                         <div className="flex items-center gap-2">
                             <ClockIcon className="w-4 h-4 text-muted-foreground" />
                             <span>
-                                {format(
-                                    new Date(meeting.scheduledAt),
+                                {formatInUserTimezone(
+                                    meeting.scheduledAt,
                                     "h:mm a"
                                 )}
                             </span>
@@ -278,7 +301,10 @@ export function MeetingsDashboard({ projects = [] }) {
                         <div className="flex items-center gap-2">
                             <UsersIcon className="w-4 h-4 text-muted-foreground" />
                             <span>
-                                {meeting._count?.participants || meeting.participants?.length || 0} participants
+                                {meeting._count?.participants ||
+                                    meeting.participants?.length ||
+                                    0}{" "}
+                                participants
                             </span>
                         </div>
                     </div>

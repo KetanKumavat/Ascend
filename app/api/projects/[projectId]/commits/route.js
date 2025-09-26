@@ -49,12 +49,12 @@ export async function GET(request, { params }) {
             );
         }
 
-        // If refresh is requested, fetch from GitHub and update database
         if (refresh) {
             await fetchAndStoreCommits(projectId, username, repo);
         }
 
-        // Get commits from database with pagination
+        // console.log(`Querying commits for projectId: ${projectId}`);
+
         const commits = await db.commit.findMany({
             where: { projectId },
             include: {
@@ -71,6 +71,10 @@ export async function GET(request, { params }) {
             skip: (page - 1) * limit,
             take: limit,
         });
+
+        // console.log(
+        //     `Found ${commits.length} commits in database for projectId: ${projectId}`
+        // );
 
         const totalCommits = await db.commit.count({
             where: { projectId },
@@ -95,8 +99,10 @@ export async function GET(request, { params }) {
 }
 
 async function fetchAndStoreCommits(projectId, username, repo) {
+    // console.log(
+    //     `Fetching commits for ${username}/${repo} with projectId: ${projectId}`
+    // );
     try {
-        // Fetch last 30 days of commits
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -118,8 +124,15 @@ async function fetchAndStoreCommits(projectId, username, repo) {
 
         const githubCommits = await response.json();
 
+        // console.log(
+        //     `Fetched ${githubCommits.length} commits from GitHub for ${username}/${repo}`
+        // );
+
         for (const githubCommit of githubCommits) {
-            await db.commit.upsert({
+            // console.log(
+            //     `Storing commit ${githubCommit.sha} for projectId: ${projectId}`
+            // );
+            const result = await db.commit.upsert({
                 where: { sha: githubCommit.sha },
                 update: {
                     message: githubCommit.commit.message,
@@ -140,6 +153,9 @@ async function fetchAndStoreCommits(projectId, username, repo) {
                     fetchedAt: new Date(),
                 },
             });
+            // console.log(
+            //     `Commit ${githubCommit.sha} stored with ID: ${result.id}`
+            // );
         }
     } catch (error) {
         console.error("Error fetching commits from GitHub:", error);

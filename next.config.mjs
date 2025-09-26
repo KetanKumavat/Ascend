@@ -19,6 +19,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig = {
+    output: "standalone",
     reactStrictMode: true,
     images: {
         domains: ["peerlist.io"],

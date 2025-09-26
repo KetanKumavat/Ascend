@@ -60,6 +60,9 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
     const onSubmit = async (data) => {
         setIsLoading(true);
         try {
+            // Convert the datetime-local value to ISO string (UTC)
+            const scheduledAtISO = new Date(data.scheduledAt).toISOString();
+            
             const response = await fetch("/api/meetings", {
                 method: "POST",
                 headers: {
@@ -67,6 +70,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                 },
                 body: JSON.stringify({
                     ...data,
+                    scheduledAt: scheduledAtISO,
                     projectId:
                         data.projectId && data.projectId !== "none"
                             ? data.projectId
@@ -115,7 +119,7 @@ export function CreateMeetingDialog({ projects = [], onMeetingCreated }) {
                     Create Meeting
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[550px] mx-auto px-8 md:px-4">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <VideoIcon className="w-5 h-5 text-blue-600" />

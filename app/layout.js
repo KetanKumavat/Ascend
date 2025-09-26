@@ -8,7 +8,7 @@ import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
-import { Analytics } from "@vercel/analytics/next";
+// import { Analytics } from "@vercel/analytics/next";
 import { Instrument_Serif } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -29,27 +29,6 @@ export const metadata = {
         "workflow",
         "task management",
     ],
-    other: {
-        "google-site-verification":
-            "p1huHXOL8RR54CzIU5UaVW4Y7MK_JGE4Gjz_Lax86Gw",
-    },
-    openGraph: {
-        type: "website",
-        locale: "en_US",
-        url: "https://ascend.ketankumavat.me",
-        siteName: "Ascend",
-        title: "Ascend | Collaborative Project Management",
-        description:
-            "Elevate your team's productivity with Ascend—a collaborative project management app",
-        images: [
-            {
-                url: "/logo.png",
-                width: 1200,
-                height: 630,
-                alt: "Ascend Logo",
-            },
-        ],
-    },
 };
 
 const customDarkTheme = {
@@ -84,18 +63,16 @@ const customDarkTheme = {
                 borderColor: "#606060",
             },
         },
-        button: {
-            color: "#ffffff",
-            padding: "5px 10px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
-            transition: "background-color 0.3s ease, transform 0.2s",
-
-            hover: {
-                backgroundColor: "#3a3a3a",
-                transform: "scale(1.03)",
-            },
-        },
-
+        // button: {
+        //     color: "#ffffff",
+        //     padding: "5px 10px",
+        //     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        //     transition: "background-color 0.3s ease, transform 0.2s",
+        //     hover: {
+        //         backgroundColor: "#3a3a3a",
+        //         transform: "scale(1.03)",
+        //     },
+        // },
         link: {
             color: "#d4af37",
             transition: "color 0.3s ease",
@@ -121,7 +98,7 @@ export default function RootLayout({ children }) {
                     <Toaster />
                     <PWAInstallPrompt />
                     <ServiceWorkerProvider />
-                    <Analytics />
+                    {/* <Analytics /> */}
                 </body>
             </html>
         </ClerkProvider>
