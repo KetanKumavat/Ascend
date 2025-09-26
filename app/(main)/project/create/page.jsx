@@ -230,8 +230,8 @@ const CreateProject = () => {
                                         name="repoName"
                                         value={formData.repoName}
                                         onChange={handleChange}
-                                        className="w-full pl-20 pr-4 py-3 bg-neutral-950/50 border border-neutral-700/50 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500/50 transition-all duration-200 hover:border-neutral-600"
-                                        placeholder="github.com/username/repository"
+                                        className="w-full px-4 py-3 bg-neutral-950/50 border border-neutral-700/50 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500/50 transition-all duration-200 hover:border-neutral-600"
+                                        placeholder="https://github.com/username/repository"
                                     />
                                 </div>
                                 <p className="text-neutral-500 text-xs">

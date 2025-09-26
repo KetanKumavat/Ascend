@@ -53,7 +53,7 @@ export default async function OrganizationPage({ params }) {
     ];
 
     return (
-        <div className="pt-10 bg-neutral-50 dark:bg-neutral-950">
+        <div className="pt-10 max-w-7xl mx-auto bg-neutral-50 dark:bg-neutral-950">
             {/* Background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pointer-events-none" />
 

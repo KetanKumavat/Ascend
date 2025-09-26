@@ -190,7 +190,7 @@ export default function ExcalidrawWrapper({
         <div className="w-full space-y-4">
             {/* Canvas Header (no navigation, only status and actions) */}
             <Card>
-                <CardHeader className="pb-3 rounded-lg">
+                <CardHeader className="pb-3 rounded-lg bg-neutral-900/80">
                     <div className="flex items-center px-1 justify-between">
                         <div className="flex items-center gap-3">
                             <CardTitle className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function ExcalidrawWrapper({
             {/* Excalidraw Canvas */}
             <Card>
                 <CardContent className="p-0">
-                    <div className="w-full h-[600px]">
+                    <div className="w-full h-[75vh]">
                         <Excalidraw
                             ref={(api) => setExcalidrawAPI(api)}
                             initialData={{

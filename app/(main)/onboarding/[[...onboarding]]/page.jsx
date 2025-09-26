@@ -15,7 +15,7 @@ const Onboarding = () => {
     }, [organization, router]);
 
     return (
-        <div className="min-h-screen flex justify-center items-center ">
+        <div className="min-h-screen max-w-7xl mx-auto flex justify-center items-center ">
             <OrganizationList
                 hidePersonal
                 afterLeaveOrganizationUrl="/organization/:slug"

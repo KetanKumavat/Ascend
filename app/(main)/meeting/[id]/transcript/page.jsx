@@ -34,7 +34,7 @@ export default async function MeetingTranscriptPage({ params }) {
         const isPast = meeting.status === "COMPLETED" || endTime <= now;
 
         return (
-            <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
+            <div className="min-h-screen max-w-7xl mx-auto bg-neutral-50 dark:bg-neutral-950">
                 {/* Background gradient */}
                 <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pointer-events-none" />
 

@@ -55,7 +55,7 @@ export default async function MeetingDetailsPage({ params }) {
         };
 
         return (
-            <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
+            <div className="min-h-screen max-w-7xl mx-auto bg-neutral-50 dark:bg-neutral-900">
                 <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800 pointer-events-none" />
 
                 {/* Subtle grid pattern */}
@@ -170,7 +170,9 @@ export default async function MeetingDetailsPage({ params }) {
                                     <Link href={`/meeting/${meeting.id}/room`}>
                                         <Button
                                             className="w-full h-20 flex-col gap-2"
-                                            variant={isLive ? "default" : "outline"}
+                                            variant={
+                                                isLive ? "default" : "outline"
+                                            }
                                         >
                                             <Video className="h-6 w-6" />
                                             <span className="font-medium">
@@ -308,9 +310,9 @@ export default async function MeetingDetailsPage({ params }) {
                             </CardContent>
                         </Card>
 
-                        <MeetingShareCard 
-                            meetingId={meeting.id} 
-                            meetingTitle={meeting.title} 
+                        <MeetingShareCard
+                            meetingId={meeting.id}
+                            meetingTitle={meeting.title}
                         />
                     </div>
 
