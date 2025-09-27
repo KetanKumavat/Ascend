@@ -130,7 +130,7 @@ const TermsAndConditions = () => {
                     </h2>
                     <p>
                         For questions about these Terms, contact us at:
-                        ascend@ketankumavat.me
+                        contact@letsascend.app
                     </p>
                 </section>
 

@@ -121,7 +121,7 @@ const PrivacyPolicy = () => {
                     <p>
                         We may update this policy periodically. If you have
                         questions about our privacy practices, please contact us
-                        at ascend@ketankumavat.me
+                        at contact@letsascend.app
                     </p>
                 </section>
 
