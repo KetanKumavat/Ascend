@@ -4,7 +4,7 @@
 
 **A comprehensive project management platform that combines team collaboration, AI-powered insights, and real-time communication.**
 
-[🌐 Live Demo](https://ascend.ketankumavat.me)
+[🌐 Live Demo](https://letsascend.app)
 
 </div>
 
