@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { format, isToday, isTomorrow } from "date-fns";
+import { isToday, isTomorrow } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import {
     VideoIcon,
@@ -50,7 +50,9 @@ const formatInUserTimezone = (utcDate, formatString) => {
 const isDateInUserTimezone = (utcDate, checkFunction) => {
     const userTz = getUserTimezone();
     // Create a date object in user's timezone for comparison
-    const userDate = new Date(formatInTimeZone(utcDate, userTz, "yyyy-MM-dd'T'HH:mm:ss"));
+    const userDate = new Date(
+        formatInTimeZone(utcDate, userTz, "yyyy-MM-dd'T'HH:mm:ss")
+    );
     return checkFunction(userDate);
 };
 

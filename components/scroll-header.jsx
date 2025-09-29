@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import LightRays from "./LightRays";
 
 export default function ScrollHeader({ children }) {
     const [isVisible, setIsVisible] = useState(true);

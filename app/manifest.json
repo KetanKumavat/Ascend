@@ -68,23 +68,23 @@
     ],
     "screenshots": [
         {
-            "src": "/ascend-meet.png",
+            "src": "/ascend-meet.webp",
             "sizes": "1280x720",
-            "type": "image/jpeg",
+            "type": "image/webp",
             "form_factor": "wide",
             "label": "Meeting interface with live transcription"
         },
         {
-            "src": "/ascend-dash.png",
+            "src": "/ascend-dash.webp",
             "sizes": "720x1280",
-            "type": "image/jpeg",
+            "type": "image/webp",
             "form_factor": "narrow",
             "label": "Project dashboard"
         },
         {
-            "src": "/project-dashboard.png",
+            "src": "screenshots/project-dashboard.webp",
             "sizes": "1280x720",
-            "type": "image/jpeg",
+            "type": "image/webp",
             "form_factor": "wide",
             "label": "Project dashboard"
         }

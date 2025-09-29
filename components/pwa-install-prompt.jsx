@@ -80,7 +80,7 @@ export function PWAInstallPrompt() {
     }
 
     return (
-        <div className="fixed bottom-4 left-4 right-4 z-50 bg-zinc-900 border border-zinc-700 rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-2">
+        <div className="fixed bottom-4 w-1/4 right-4 z-50 bg-zinc-900 border border-zinc-700 rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-2">
             <div className="flex items-start gap-3">
                 <Download className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -95,7 +95,7 @@ export function PWAInstallPrompt() {
                         <Button
                             onClick={handleInstallClick}
                             size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5"
+                            className="bg-lime-500 hover:bg-lime-600 text-black font-medium text-xs px-3 py-1.5"
                         >
                             Install
                         </Button>

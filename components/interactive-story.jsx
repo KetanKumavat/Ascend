@@ -1,34 +1,33 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import LightRays from "./LightRays.jsx";
 
 const storySteps = [
     {
         title: "Create your workspace",
         description:
             "Set up your project with integrated kanban boards, canvas tools, and team collaboration features.",
-        image: "/ascend-dash.png",
+        image: "/ascend-dash.webp",
         alt: "Project workspace with kanban and canvas",
     },
     {
         title: "Collaborate in real-time",
         description:
             "Jump into HD video meetings with live transcription, screen sharing, and interactive whiteboard sessions.",
-        image: "/ascend-meet.png",
+        image: "/ascend-meet.webp",
         alt: "Meeting with transcription and canvas",
     },
     {
         title: "Track everything automatically",
         description:
             "Every conversation transcribed, every commit tracked, every decision documented with intelligent categorization.",
-        image: "/screenshots/project-dashboard.png",
+        image: "/screenshots/project-dashboard.webp",
         alt: "Automatic transcription and tracking",
     },
     {
         title: "Get AI-powered insights",
         description:
             "Transform your project data into actionable reports with development analytics, team performance, and progress tracking.",
-        image: "/ascend-git.png",
+        image: "/ascend-git.webp",
         alt: "AI insights and analytics dashboard",
     },
 ];

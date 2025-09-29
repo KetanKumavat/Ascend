@@ -158,15 +158,15 @@ Visit [http://localhost:3000](http://localhost:3000) to start using Ascend! 🎉
 
 ### 🏠 Dashboard Overview
 
-![Dashboard](./public/screenshots/dashboard.png)
+![Dashboard](./public/screenshots/dashboard.webp)
 
 ### 📋 Project Management
 
-![Github](./public/screenshots/project-dashboard.png)
+![Github](./public/screenshots/project-dashboard.webp)
 
 ### 🎥 Github Integration
 
-![Sprint Board](./public/ascend-git.png)
+![Sprint Board](./public/ascend-git.webp)
 
 </div>
 

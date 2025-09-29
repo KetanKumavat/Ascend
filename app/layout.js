@@ -9,13 +9,9 @@ import { Toaster } from "@/components/ui/sonner";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { Analytics } from "@vercel/analytics/next";
-import { Instrument_Serif } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
-const instrumentSerif = Instrument_Serif({
-    subsets: ["latin"],
-    weight: ["400"],
-});
+const baseUrl = "https://letsascend.app";
 
 export const metadata = {
     title: "Ascend | Collaborative Project Management",
@@ -29,6 +25,41 @@ export const metadata = {
         "workflow",
         "task management",
     ],
+    icons: {
+        icon: [
+            { url: `${baseUrl}/favicon.ico` },
+            {
+                url: `${baseUrl}/icon-192.png`,
+                sizes: "192x192",
+                type: "image/png",
+            },
+        ],
+        shortcut: [{ url: `${baseUrl}/favicon.ico` }],
+        apple: [
+            {
+                url: `${baseUrl}/apple-icon-180.png`,
+                sizes: "180x180",
+                type: "image/png",
+            },
+        ],
+    },
+    openGraph: {
+        title: "Ascend | Collaborative Project Management",
+        description:
+            "Elevate your team's productivity with Ascend—a collaborative project management app designed to streamline workflows, enhance communication, and drive success. Get things done together, effortlessly!",
+        url: baseUrl,
+        siteName: "Ascend",
+        images: [
+            {
+                url: `${baseUrl}/ascend-new-dash.webp`,
+                width: 1920,
+                height: 1080,
+                alt: "Ascend - Collaborative Project Management",
+            },
+        ],
+        locale: "en_US",
+        type: "website",
+    },
 };
 
 const customDarkTheme = {
@@ -63,16 +94,16 @@ const customDarkTheme = {
                 borderColor: "#606060",
             },
         },
-        // button: {
-        //     color: "#ffffff",
-        //     padding: "5px 10px",
-        //     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
-        //     transition: "background-color 0.3s ease, transform 0.2s",
-        //     hover: {
-        //         backgroundColor: "#3a3a3a",
-        //         transform: "scale(1.03)",
-        //     },
-        // },
+        button: {
+            color: "#ffffff",
+            // padding: "5px 10px",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+            transition: "background-color 0.3s ease, transform 0.2s",
+            hover: {
+                backgroundColor: "#3a3a3a",
+                transform: "scale(1.03)",
+            },
+        },
         link: {
             color: "#d4af37",
             transition: "color 0.3s ease",
