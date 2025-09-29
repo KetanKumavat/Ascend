@@ -8,7 +8,7 @@ import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
 import ServiceWorkerProvider from "@/components/service-worker-provider";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
-// import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/next";
 import { Instrument_Serif } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -98,7 +98,7 @@ export default function RootLayout({ children }) {
                     <Toaster />
                     <PWAInstallPrompt />
                     <ServiceWorkerProvider />
-                    {/* <Analytics /> */}
+                    <Analytics />
                 </body>
             </html>
         </ClerkProvider>
