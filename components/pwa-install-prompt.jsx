@@ -8,61 +8,79 @@ export function PWAInstallPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showPrompt, setShowPrompt] = useState(false);
 
+    const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+    const INITIAL_DELAY = 10000; // 10 seconds
+
     useEffect(() => {
-        const hasUserDismissed =
-            localStorage.getItem("pwa-install-dismissed") === "true";
-        const hasUserInstalled =
+        const dismissedUntil = localStorage.getItem(
+            "pwa-install-dismissed-until"
+        );
+        const hasInstalled =
             localStorage.getItem("pwa-install-completed") === "true";
 
-        if (hasUserDismissed || hasUserInstalled) {
+        if (
+            (dismissedUntil && Date.now() < parseInt(dismissedUntil)) ||
+            hasInstalled
+        )
             return;
-        }
 
-        if (window.matchMedia("(display-mode: standalone)").matches) {
+        const standalone =
+            window.matchMedia("(display-mode: standalone)").matches ||
+            window.navigator.standalone === true;
+        if (standalone) {
             localStorage.setItem("pwa-install-completed", "true");
             return;
         }
 
-        const handler = (e) => {
+        const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
-            setTimeout(() => setShowPrompt(true), 1000);
+            setTimeout(() => setShowPrompt(true), INITIAL_DELAY);
         };
 
-        window.addEventListener("beforeinstallprompt", handler);
+        window.addEventListener(
+            "beforeinstallprompt",
+            handleBeforeInstallPrompt
+        );
 
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isInStandaloneMode = window.navigator.standalone;
+        const isInStandaloneMode = window.navigator.standalone === true;
 
         if (isIOS && !isInStandaloneMode) {
-            setTimeout(() => setShowPrompt(true), 3000);
+            setTimeout(() => setShowPrompt(true), 15000);
         }
 
         return () => {
-            window.removeEventListener("beforeinstallprompt", handler);
+            window.removeEventListener(
+                "beforeinstallprompt",
+                handleBeforeInstallPrompt
+            );
         };
     }, []);
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) {
             alert(
-                'To install this app on your device:\n\n1. Tap the Share button\n2. Select "Add to Home Screen"\n3. Tap "Add"'
+                'To install this app:\n\n1. Tap the Share icon\n2. Select "Add to Home Screen"\n3. Tap "Add"'
             );
-            localStorage.setItem("pwa-install-dismissed", "true");
             setShowPrompt(false);
+            localStorage.setItem(
+                "pwa-install-dismissed-until",
+                Date.now() + DISMISS_DURATION
+            );
             return;
         }
 
         deferredPrompt.prompt();
-
         const { outcome } = await deferredPrompt.userChoice;
 
         if (outcome === "accepted") {
             localStorage.setItem("pwa-install-completed", "true");
-            console.log("User accepted the install prompt");
         } else {
-            localStorage.setItem("pwa-install-dismissed", "true");
-            console.log("User dismissed the install prompt");
+            localStorage.setItem(
+                "pwa-install-dismissed-until",
+                Date.now() + DISMISS_DURATION
+            );
         }
 
         setDeferredPrompt(null);
@@ -70,19 +88,28 @@ export function PWAInstallPrompt() {
     };
 
     const handleDismiss = () => {
-        localStorage.setItem("pwa-install-dismissed", "true");
         setShowPrompt(false);
         setDeferredPrompt(null);
+        localStorage.setItem(
+            "pwa-install-dismissed-until",
+            Date.now() + DISMISS_DURATION
+        );
     };
 
-    if (!showPrompt) {
-        return null;
-    }
+    if (!showPrompt) return null;
 
     return (
-        <div className="fixed bottom-4 w-1/4 right-4 z-50 bg-zinc-900 border border-zinc-700 rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-2">
-            <div className="flex items-start gap-3">
+        <div className="fixed bottom-2 md:bottom-4 right-2 w-[95%] sm:w-2/3 md:w-1/3 lg:w-1/4 z-50 bg-zinc-900 border border-zinc-700 rounded-lg p-4 shadow-lg animate-in slide-in-from-bottom-2">
+            <div className="relative flex flex-col sm:flex-row sm:items-start gap-3">
+                <button
+                    onClick={handleDismiss}
+                    className="absolute top-2 right-2 text-zinc-400 hover:text-white"
+                >
+                    <X className="h-4 w-4" />
+                </button>
+
                 <Download className="h-5 w-5 text-blue-400 mt-0.5 flex-shrink-0" />
+
                 <div className="flex-1">
                     <h3 className="font-semibold text-white text-sm">
                         Install Ascend
@@ -91,7 +118,7 @@ export function PWAInstallPrompt() {
                         Get quick access to your projects and meetings. Install
                         our app for the best experience.
                     </p>
-                    <div className="flex gap-2 mt-3">
+                    <div className="flex flex-wrap gap-2 mt-3">
                         <Button
                             onClick={handleInstallClick}
                             size="sm"
@@ -109,12 +136,6 @@ export function PWAInstallPrompt() {
                         </Button>
                     </div>
                 </div>
-                <button
-                    onClick={handleDismiss}
-                    className="text-zinc-400 hover:text-white flex-shrink-0"
-                >
-                    <X className="h-4 w-4" />
-                </button>
             </div>
         </div>
     );

@@ -29,7 +29,6 @@ const Home = () => {
                 />
             </div>
 
-            {/* Content sits above */}
             <div className="relative z-20">
                 <Hero />
                 <InteractiveStory />
