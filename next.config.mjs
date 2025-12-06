@@ -21,8 +21,14 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig = {
     output: "standalone",
     reactStrictMode: true,
+    turbopack: {}, // Explicitly enable Turbopack to resolve build conflicts
     images: {
-        domains: ["peerlist.io"],
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "peerlist.io",
+            },
+        ],
     },
 };
 
