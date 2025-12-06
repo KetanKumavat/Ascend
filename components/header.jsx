@@ -2,17 +2,9 @@ import { SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
 import UserMenu from "./ui/user-menu";
 import SignInBtn from "./ui/signin-btn";
-
-import { checkUser } from "@/lib/checkUser";
 import Image from "next/image";
 
 const Header = async () => {
-    try {
-        await checkUser();
-    } catch (error) {
-        console.error("Header checkUser error:", error.message);
-    }
-
     return (
         <header className="flex justify-between items-center left-1/2 -translate-x-1/2 p-4 gap-3 bg-neutral-400 relative top-4 w-[min(768px,100%_-_2rem)] min-w-fit rounded-full bg-opacity-15 backdrop-blur-md shadow-lg border-white border border-opacity-10">
             <Link
