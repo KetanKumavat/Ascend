@@ -51,7 +51,7 @@ export const metadata = {
         siteName: "Ascend",
         images: [
             {
-                url: `${baseUrl}/ascend-new-dash.webp`,
+                url: `${baseUrl}/og2.png`,
                 width: 1920,
                 height: 1080,
                 alt: "Ascend - Collaborative Project Management",
