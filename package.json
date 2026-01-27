@@ -49,7 +49,7 @@
     "livekit-client": "^2.15.6",
     "livekit-server-sdk": "^2.13.3",
     "lucide-react": "^0.454.0",
-    "next": "^16.0.7",
+    "next": "16.0.10",
     "next-themes": "^0.3.0",
     "ogl": "^1.0.11",
     "react": "^19.2.1",
