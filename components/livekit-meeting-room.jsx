@@ -11,7 +11,6 @@ import {
     RoomEvent,
     ConnectionState,
     DisconnectReason,
-    Track,
 } from "livekit-client";
 import "@livekit/components-styles";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,16 +26,13 @@ export function LiveKitMeetingRoom({
     token,
     serverUrl,
     onMeetingEnd,
-    onTranscriptUpdate,
 }) {
     const [room, setRoom] = useState(null);
     const [connectionState, setConnectionState] = useState(
-        ConnectionState.Disconnected
+        ConnectionState.Disconnected,
     );
     const [participants, setParticipants] = useState([]);
     const [startTime, setStartTime] = useState(null);
-    const [transcriptionStatus, setTranscriptionStatus] = useState("Ready");
-    const [agentActive, setAgentActive] = useState(false);
     const [currentTime, setCurrentTime] = useState("00:00");
 
     const formatDuration = (start) => {
@@ -55,45 +51,6 @@ export function LiveKitMeetingRoom({
         }, 1000);
         return () => clearInterval(timer);
     }, [startTime]);
-
-    const startTranscriptionAgent = async () => {
-        try {
-            setTranscriptionStatus("Starting Transcription Agent...");
-            const response = await fetch("/api/transcription/agent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ meetingId, action: "start" }),
-            });
-
-            if (response.ok) {
-                setAgentActive(true);
-                setTranscriptionStatus("🤖 Recording Meeting");
-                toast.success(
-                    "Transcription agent started - meeting content will be recorded and processed"
-                );
-            }
-        } catch (error) {
-            console.error("Failed to start transcription agent:", error);
-            setTranscriptionStatus("Agent failed");
-            toast.error("Failed to start transcription agent");
-        }
-    };
-
-    const stopTranscriptionAgent = async () => {
-        try {
-            setTranscriptionStatus("Stopping Transcription Agent...");
-            await fetch("/api/transcription/agent", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ meetingId, action: "stop" }),
-            });
-            setAgentActive(false);
-            setTranscriptionStatus("Recording Stopped");
-            toast.info("Transcription agent stopped");
-        } catch (error) {
-            console.error("Failed to stop transcription agent:", error);
-        }
-    };
 
     useEffect(() => {
         const header = document.querySelector("header");
@@ -150,10 +107,6 @@ export function LiveKitMeetingRoom({
             toast.success("Connected to meeting");
             updateMeetingStatus("IN_PROGRESS");
             updateParticipantStatus("JOINED");
-
-            setTimeout(() => {
-                startTranscriptionAgent();
-            }, 2000);
         });
 
         room.on(RoomEvent.Reconnecting, () => {
@@ -206,7 +159,7 @@ export function LiveKitMeetingRoom({
                 return [...prev, participant];
             });
             toast.success(
-                `${participant.name || "Someone"} joined the meeting`
+                `${participant.name || "Someone"} joined the meeting`,
             );
         });
 
@@ -214,7 +167,7 @@ export function LiveKitMeetingRoom({
             if (!isMounted) return;
             setParticipants((prev) => {
                 const newParticipants = prev.filter(
-                    (p) => p.sid !== participant.sid
+                    (p) => p.sid !== participant.sid,
                 );
                 setTimeout(async () => {
                     if (room && room.remoteParticipants.size === 0) {
@@ -226,37 +179,14 @@ export function LiveKitMeetingRoom({
             toast.info(`${participant.name || "Someone"} left the meeting`);
         });
 
-        room.on(RoomEvent.DataReceived, (payload, participant) => {
-            if (!isMounted) return;
-            try {
-                const data = JSON.parse(new TextDecoder().decode(payload));
-                if (data.type === "transcript") {
-                    setRealtimeTranscript((prev) => {
-                        const newTranscript = `${data.speaker}: ${data.text}`;
-                        return prev + (prev ? " " : "") + newTranscript;
-                    });
-                    if (onTranscriptUpdate) {
-                        onTranscriptUpdate(data);
-                    }
-                }
-            } catch (error) {
-                console.error("Error parsing data message:", error);
-            }
-        });
-
         room.on(
             RoomEvent.TrackSubscribed,
             (track, publication, participant) => {
                 if (!isMounted) return;
                 console.log(
-                    `Track subscribed: ${track.kind} from ${participant.identity}`
+                    `Track subscribed: ${track.kind} from ${participant.identity}`,
                 );
-                if (track.kind === Track.Kind.Audio && agentActive) {
-                    console.log(
-                        `Audio track subscribed from ${participant.identity}, agent processing...`
-                    );
-                }
-            }
+            },
         );
 
         room.on(
@@ -264,22 +194,22 @@ export function LiveKitMeetingRoom({
             (track, publication, participant) => {
                 if (!isMounted) return;
                 console.log(
-                    `Track unsubscribed: ${track.kind} from ${participant.identity}`
+                    `Track unsubscribed: ${track.kind} from ${participant.identity}`,
                 );
-            }
+            },
         );
 
         room.on(RoomEvent.TrackPublished, (publication, participant) => {
             if (!isMounted) return;
             console.log(
-                `Track published: ${publication.kind} from ${participant.identity}`
+                `Track published: ${publication.kind} from ${participant.identity}`,
             );
         });
 
         room.on(RoomEvent.TrackUnpublished, (publication, participant) => {
             if (!isMounted) return;
             console.log(
-                `Track unpublished: ${publication.kind} from ${participant.identity}`
+                `Track unpublished: ${publication.kind} from ${participant.identity}`,
             );
         });
 
@@ -293,7 +223,7 @@ export function LiveKitMeetingRoom({
             if (!isMounted) return;
             if (participant?.identity && quality === "poor") {
                 console.warn(
-                    `Poor connection quality for ${participant.identity}`
+                    `Poor connection quality for ${participant.identity}`,
                 );
             }
         });
@@ -314,7 +244,7 @@ export function LiveKitMeetingRoom({
                 } catch (mediaError) {
                     console.warn("Media permission error:", mediaError);
                     toast.error(
-                        "Camera/microphone access denied. Please allow permissions and refresh."
+                        "Camera/microphone access denied. Please allow permissions and refresh.",
                     );
                 }
 
@@ -331,11 +261,11 @@ export function LiveKitMeetingRoom({
                 ) {
                     setTimeout(
                         () => connectWithRetry(retryCount + 1),
-                        1000 * (retryCount + 1)
+                        1000 * (retryCount + 1),
                     );
                 } else {
                     toast.error(
-                        "Failed to connect to meeting: " + error.message
+                        "Failed to connect to meeting: " + error.message,
                     );
                     setConnectionState(ConnectionState.Disconnected);
                 }
@@ -346,9 +276,6 @@ export function LiveKitMeetingRoom({
 
         return () => {
             isMounted = false;
-            if (agentActive) {
-                stopTranscriptionAgent();
-            }
             if (room) {
                 try {
                     // Remove all event listeners first
@@ -366,7 +293,7 @@ export function LiveKitMeetingRoom({
                 }
             }
         };
-    }, [token, serverUrl, meetingId, onMeetingEnd, onTranscriptUpdate]);
+    }, [token, serverUrl, meetingId, onMeetingEnd]);
 
     const updateMeetingStatus = async (status) => {
         try {
@@ -395,7 +322,7 @@ export function LiveKitMeetingRoom({
     const checkAndCompleteIfEmpty = async () => {
         try {
             const response = await fetch(
-                `/api/meetings/${meetingId}/participants/count`
+                `/api/meetings/${meetingId}/participants/count`,
             );
             if (response.ok) {
                 const data = await response.json();
@@ -522,49 +449,9 @@ export function LiveKitMeetingRoom({
                                             {currentTime}
                                         </Badge>
                                     )}
-                                    {agentActive && (
-                                        <Badge
-                                            variant="secondary"
-                                            className="flex items-center gap-1.5 bg-green-500/20 border-green-500 text-green-400 text-sm px-3 py-1"
-                                            title="Transcription agent recording meeting content"
-                                        >
-                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                            Recording
-                                        </Badge>
-                                    )}
-                                    {!agentActive && (
-                                        <Badge
-                                            variant="outline"
-                                            className="flex items-center gap-1.5 bg-gray-500/20 border-gray-500 text-gray-400 text-sm px-3 py-1"
-                                            title="Transcription agent offline"
-                                        >
-                                            <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                                            Not Recording
-                                        </Badge>
-                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                {!agentActive && (
-                                    <Button
-                                        onClick={startTranscriptionAgent}
-                                        variant="outline"
-                                        size="sm"
-                                        className="bg-green-600 hover:bg-green-700 text-white border-green-600 text-sm px-3 py-2"
-                                    >
-                                        Start Recording
-                                    </Button>
-                                )}
-                                {agentActive && (
-                                    <Button
-                                        onClick={stopTranscriptionAgent}
-                                        variant="outline"
-                                        size="sm"
-                                        className="bg-orange-600 hover:bg-orange-700 text-white border-orange-600 text-sm px-3 py-2"
-                                    >
-                                        Stop Recording
-                                    </Button>
-                                )}
                                 <Button
                                     onClick={leaveMeeting}
                                     variant="destructive"
@@ -597,7 +484,7 @@ export function LiveKitMeetingRoom({
                         onError={(error) => {
                             console.error("LiveKit error:", error);
                             toast.error(
-                                "Camera/microphone error: " + error.message
+                                "Camera/microphone error: " + error.message,
                             );
                         }}
                         onDisconnected={() => {
