@@ -124,7 +124,7 @@ import {
     getCachedProjects,
     getCachedOrganizationUsers,
 } from "@/lib/cache";
-import { getCachedUser } from "@/lib/user-utils";
+import { getCachedUser, getOrCreateUser } from "@/lib/user-utils";
 
 export async function getOrganization(slug) {
     const auth_result = await auth();
@@ -133,8 +133,8 @@ export async function getOrganization(slug) {
         throw new Error("Unauthorized");
     }
 
-    // Use cached user lookup
-    const user = await getCachedUser(userId);
+    // Ensure we have a database user record for newly signed-in Clerk users.
+    const user = await getOrCreateUser(userId);
 
     if (!user) {
         throw new Error("User not found");
@@ -163,8 +163,8 @@ export async function getUserIssues(userId) {
         throw new Error("No user id or organization id found");
     }
 
-    // Use cached user lookup
-    const user = await getCachedUser(userId);
+    // Ensure the user exists in DB before querying by internal user ID.
+    const user = await getOrCreateUser(userId);
 
     if (!user) {
         throw new Error("User not found");
